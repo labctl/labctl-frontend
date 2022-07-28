@@ -2,21 +2,19 @@
   <n-grid :cols="5" :x-gap="4" :y-gap="4">
     <n-grid-item> . </n-grid-item>
     <n-grid-item :span="2"> . </n-grid-item>
+    <n-grid-item></n-grid-item>
     <n-grid-item>
-      <n-checkbox v-model:checked="d3ForceEnabled"> Checkbox </n-checkbox>
-    </n-grid-item>
-    <n-grid-item>
-      <n-select v-model:value="layoutHandler" :options="layoutOptions" />
+      <n-select v-model:value="layout" :options="layoutOptions" />
     </n-grid-item>
   </n-grid>
 
-  <n-divider>{{ store.options.nodes }}</n-divider>
+  <n-divider>{{ store.topo.name }}</n-divider>
 
   <v-network-graph
-    :nodes="store.options.nodes"
-    :edges="store.options.links"
+    :nodes="store.topo.nodes"
+    :edges="store.topo.links"
     :configs="configs"
-    :layouts="store.layouts"
+    :layouts="store.lab.layouts"
     :event-handlers="eventHandlers"
   >
   </v-network-graph>
@@ -31,14 +29,12 @@
       {{ log }}
     </div>
   </div>
-
-  <p>{{ layouts }}</p>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { reactive, computed, watch } from "vue";
 import { useMainStore } from "@/stores/mainStore";
-import { NDivider, NCheckbox, NSelect, NGridItem, NGrid } from "naive-ui";
+import { NDivider, NSelect, NGridItem, NGrid } from "naive-ui";
 import * as vNG from "v-network-graph";
 import { ForceLayout } from "v-network-graph/lib/force-layout";
 import dayjs from "dayjs";
@@ -63,9 +59,6 @@ const layoutOptions = [
   },
 ];
 
-//const rawLayouts = ref(store.layouts.nodes);
-const layouts = ref({});
-
 const EVENTS_COUNT = 6;
 
 const eventLogs = reactive<[string, string, string][]>([]);
@@ -77,7 +70,7 @@ const eventHandlers: vNG.EventHandlers = {
     wsSend({
       code: 100,
       change: event,
-      data: { layouts: store.layouts },
+      data: store.lab,
     });
   }, 1000),
   // wildcard: capture all events
@@ -92,54 +85,31 @@ const eventHandlers: vNG.EventHandlers = {
     eventLogs.unshift([timestamp, type, JSON.stringify(event)]);
   },
 };
-//const lays = refDebounced(lay);
-//const lays = ref({});
 
-// watchDebounced(
-//   ref(store.layouts),
-//   () => {
-//     lays.value = store.layouts.nodes;
-//     console.log("changed!");
-//   },
-//   { debounce: 500, maxWait: 1500 }
-// );
-
-const layoutHandler = computed({
-  get: () => {
-    if (configs.view.layoutHandler instanceof ForceLayout) {
-      return "force";
-    }
-    if (configs.view.layoutHandler instanceof vNG.GridLayout) {
-      return "grid";
-    }
-    return "free";
-  },
-  set: (value: string) => {
-    if (value === "force") {
-      configs.view.layoutHandler = new ForceLayout();
-    } else if (value === "grid") {
-      configs.view.layoutHandler = new vNG.GridLayout({ grid: 15 });
-    } else {
-      configs.view.layoutHandler = new vNG.SimpleLayout();
-    }
+const layout = computed({
+  get: () => store.lab.options.layout,
+  set: (v) => {
+    store.lab.options.layout = v;
   },
 });
 
-const d3ForceEnabled = computed({
-  get: () => configs.view.layoutHandler instanceof ForceLayout,
-  set: (value: boolean) => {
-    if (value) {
-      configs.view.layoutHandler = new ForceLayout();
-    } else {
-      configs.view.layoutHandler = new vNG.SimpleLayout();
-    }
-  },
+function getLayoutHandler() {
+  if (layout.value === "force") {
+    return new ForceLayout();
+  } else if (layout.value === "grid") {
+    return new vNG.GridLayout({ grid: 15 });
+  }
+  return new vNG.SimpleLayout();
+}
+
+watch(layout, () => {
+  configs.view.layoutHandler = getLayoutHandler();
 });
 
 const configs = reactive(
   vNG.defineConfigs({
     view: {
-      layoutHandler: new ForceLayout(),
+      layoutHandler: getLayoutHandler(),
       scalingObjects: true,
       minZoomLevel: 0.1,
       maxZoomLevel: 16,

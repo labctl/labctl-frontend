@@ -1,26 +1,28 @@
 import { defineStore } from "pinia";
+//import { App } from "vue";
 // @ts-ignore
 import { app } from "../main.js";
+import VueNativeSock from "vue-native-websocket-vue3";
 
-interface SocketStore {
-  // Connection Status
-  isConnected: boolean;
-  // Message content
-  message: string;
-  // Reconnect error
-  reconnectError: boolean;
-  // Heartbeat message sending time
-  heartBeatInterval: number;
-  // Heartbeat timer
-  heartBeatTimer: number;
-}
+// interface SocketStore {
+//   // Connection Status
+//   isConnected: boolean;
+//   // Message content
+//   message: string;
+//   // Reconnect error
+//   reconnectError: boolean;
+//   // Heartbeat message sending time
+//   heartBeatInterval: number;
+//   // Heartbeat timer
+//   heartBeatTimer: number;
+// }
 
 export function wsSend(obj: Record<string, any>) {
   app.config.globalProperties.$socket.sendObj(obj);
 }
 
 export const useSocketStore = defineStore("socket", {
-  state: (): SocketStore => ({
+  state: () => ({
     // Connection Status
     isConnected: false,
     // Message content
@@ -33,6 +35,16 @@ export const useSocketStore = defineStore("socket", {
     heartBeatTimer: 0,
   }),
   actions: {
+    init() {
+      app.use(VueNativeSock, "ws://tes4:8080/ws", {
+        store: this,
+        format: "json",
+        reconnection: true,
+        //   reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+      });
+    },
+
     // Connection open
     SOCKET_ONOPEN(event: any) {
       console.log("open", event);
@@ -75,3 +87,8 @@ export const useSocketStore = defineStore("socket", {
     },
   },
 });
+
+// Need to be used outside the setup
+// export function useSocketStoreWithOut() {
+//   return useSocketStore(pinia);
+// }

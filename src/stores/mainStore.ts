@@ -16,14 +16,19 @@ export const useMainStore = defineStore("main", {
   // a function that returns a fresh state
   state: () => ({
     this_app: "",
-    options: {
+    topo: {
       name: "my-lab",
       nodes: {},
       links: {},
       vars: {},
     },
-    layouts: {
-      nodes: { CE1: { x: 1, y: 1 } },
+    lab: {
+      options: {
+        layout: "grid",
+      },
+      layouts: {
+        nodes: { CE1: { x: 1, y: 1 } },
+      },
     },
     loading: 0,
     dark: useLocalStorage("dark_mode", false),
@@ -39,13 +44,13 @@ export const useMainStore = defineStore("main", {
   },
   // optional actions
   actions: {
-    created() {
+    init() {
       message();
       json_fetch("/topo").then((topo) => {
-        Object.assign(this.options, topo);
+        Object.assign(this.topo, topo);
       });
       json_fetch("/vars").then((vars) => {
-        Object.assign(this.options.vars, vars);
+        Object.assign(this.topo.vars, vars);
       });
     },
 

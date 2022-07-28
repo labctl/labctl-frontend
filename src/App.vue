@@ -23,7 +23,7 @@
           <n-space justify="space-between" size="large" :wrap="false">
             <n-space justify="space-around" :wrap="false">
               <n-icon size="24" style="padding-top: 6px"><RadarRound /></n-icon>
-              <span style="font-size: 24px">{{ store.options.name }}</span>
+              <span style="font-size: 24px">{{ store.topo.name }}</span>
             </n-space>
             <!-- <n-text tag="div" class="ui-logo" :depth="1"> </n-text> -->
             <!--v-spacer />-->
@@ -78,7 +78,10 @@
                   </n-button>
                 </template>
               </n-input> -->
-              <div class="nav-end"></div>
+              <div class="nav-end">
+                {{ isConnected }}<span v-if="isConnected">yes</span>
+                <span v-else>x</span>
+              </div>
             </n-space>
           </n-space>
         </n-layout-header>
@@ -120,12 +123,21 @@ import {
 //import { IMe } from "@/componen ts/types";
 
 import { useMainStore } from "@/stores/mainStore";
+import { useSocketStore } from "@/stores/socketStore";
 import { useRoute, useRouter } from "vue-router";
-const store = useMainStore();
+import { storeToRefs } from "pinia";
 
+const store = useMainStore();
+const socket = useSocketStore();
+
+//const app = getCurrentInstance().appContext.app;
 onBeforeMount(() => {
-  store.created();
+  store.init();
+  socket.init();
+  //console.log("app.vue", app);
 });
+
+const { isConnected } = storeToRefs(socket);
 
 const route = useRoute();
 const router = useRouter();
