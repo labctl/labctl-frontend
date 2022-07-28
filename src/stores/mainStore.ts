@@ -12,7 +12,7 @@ function message(): MessageApi {
   return (window as any).$message;
 }
 
-export const usemainStore = defineStore("main", {
+export const useMainStore = defineStore("main", {
   // a function that returns a fresh state
   state: () => ({
     this_app: "",
@@ -22,7 +22,9 @@ export const usemainStore = defineStore("main", {
       links: {},
       vars: {},
     },
-    layouts: {},
+    layouts: {
+      nodes: { CE1: { x: 1, y: 1 } },
+    },
     loading: 0,
     dark: useLocalStorage("dark_mode", false),
   }),

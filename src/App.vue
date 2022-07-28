@@ -119,9 +119,9 @@ import {
 
 //import { IMe } from "@/componen ts/types";
 
-import { usemainStore } from "@/stores/mainStore";
+import { useMainStore } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
-const store = usemainStore();
+const store = useMainStore();
 
 onBeforeMount(() => {
   store.created();
