@@ -31,3 +31,22 @@ export interface LabelValue {
   label: string;
   value: string;
 }
+
+interface coord {
+  x: number;
+  y: number;
+}
+
+export interface UiData {
+  options: {
+    layout: string;
+  };
+  layouts: {
+    nodes: Record<string, coord>;
+  };
+}
+
+export interface WsMessage {
+  code: number;
+  data: UiData;
+}

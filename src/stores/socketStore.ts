@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 // @ts-ignore
 import { app } from "../main.js";
 import VueNativeSock from "vue-native-websocket-vue3";
+import { WsMessage } from "../components/types";
 
 // interface SocketStore {
 //   // Connection Status
@@ -26,7 +27,7 @@ export const useSocketStore = defineStore("socket", {
     // Connection Status
     isConnected: false,
     // Message content
-    message: "",
+    message: {} as WsMessage,
     // Reconnect error
     reconnectError: false,
     // Heartbeat message sending time
@@ -74,7 +75,7 @@ export const useSocketStore = defineStore("socket", {
       console.error(event);
     },
     // Receive the message sent by the server
-    SOCKET_ONMESSAGE(message: any) {
+    SOCKET_ONMESSAGE(message: WsMessage) {
       this.message = message;
     },
     // Auto reconnect

@@ -5,6 +5,7 @@ import { MessageApi } from "naive-ui";
 //eslint-disable-next-line
 //import { IMe, Dictionary, Page, Standard } from "@/components/types";
 import { useLocalStorage } from "@vueuse/core";
+import { UiData } from "@/components/types";
 
 // main is the name of the store. It is unique across your application
 // and will appear in devtools
@@ -27,9 +28,9 @@ export const useMainStore = defineStore("main", {
         layout: "grid",
       },
       layouts: {
-        nodes: { CE1: { x: 1, y: 1 } },
+        nodes: {},
       },
-    },
+    } as UiData,
     loading: 0,
     dark: useLocalStorage("dark_mode", false),
   }),

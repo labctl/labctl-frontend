@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, computed } from "vue";
+import { onBeforeMount, computed, watch, toRaw } from "vue";
 import {
   RadarRound,
   ViewListFilled,
@@ -126,6 +126,7 @@ import { useMainStore } from "@/stores/mainStore";
 import { useSocketStore } from "@/stores/socketStore";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
+import { WsMessage } from "@/components/types";
 
 const store = useMainStore();
 const socket = useSocketStore();
@@ -137,7 +138,17 @@ onBeforeMount(() => {
   //console.log("app.vue", app);
 });
 
-const { isConnected } = storeToRefs(socket);
+const { isConnected, message } = storeToRefs(socket);
+
+watch(message, (message: WsMessage) => {
+  const m = toRaw(message);
+  console.log("watchm", m);
+  if (m.code === 100) {
+    console.log(m.code);
+    //if (m.data.layouts) {}
+    store.lab = m.data;
+  }
+});
 
 const route = useRoute();
 const router = useRouter();
