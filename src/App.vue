@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, computed, watch, toRaw } from "vue";
+import { onBeforeMount, computed, watch, toRaw, getCurrentInstance } from "vue";
 import {
   RadarRound,
   ViewListFilled,
@@ -131,10 +131,15 @@ import { WsMessage } from "@/components/types";
 const store = useMainStore();
 const socket = useSocketStore();
 
-//const app = getCurrentInstance().appContext.app;
+const app = getCurrentInstance();
 onBeforeMount(() => {
   store.init();
-  socket.init();
+  if (app) {
+    console.log("init socket");
+    socket.init(app.appContext.app);
+  } else {
+    console.log("no active app");
+  }
   //console.log("app.vue", app);
 });
 
@@ -142,11 +147,11 @@ const { isConnected, message } = storeToRefs(socket);
 
 watch(message, (message: WsMessage) => {
   const m = toRaw(message);
-  console.log("watchm", m);
+  console.log(m);
   if (m.code === 100) {
     console.log(m.code);
-    //if (m.data.layouts) {}
-    store.lab = m.data;
+    store.load(m.data);
+    store.event = 100;
   }
 });
 

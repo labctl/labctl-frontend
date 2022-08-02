@@ -1,4 +1,9 @@
 //import { Component, VNodeChild } from "vue";
+//import { Point } from "v-network-graph/lib/common/types";
+// import { Nodes, Edges } from "v-network-graph/lib/common/types";
+import * as vNG from "v-network-graph";
+
+export type Nodes = vNG.Nodes;
 
 export type Dictionary = Record<string, unknown>;
 
@@ -32,21 +37,48 @@ export interface LabelValue {
   value: string;
 }
 
-interface coord {
-  x: number;
-  y: number;
+// interface coord {
+//   x: number;
+//   y: number;
+// }
+
+export interface vngLayout {
+  nodes: Record<string, vNG.Point>;
+}
+
+export interface Options {
+  layout: string;
+  zoom: number;
+  [x: string]: any;
 }
 
 export interface UiData {
-  options: {
-    layout: string;
-  };
-  layouts: {
-    nodes: Record<string, coord>;
-  };
+  options: Options;
+  layouts: vngLayout;
 }
 
 export interface WsMessage {
   code: number;
   data: UiData;
 }
+
+export interface NodeVar {
+  clab_links: Dictionary[];
+  clab_nodes: Record<string, Dictionary>;
+  [x: string]: any;
+}
+
+export type NodeVars = Record<string, NodeVar>;
+
+export interface LinkVar {
+  source_endpoint: string;
+  target_endpoint: string;
+  clab_far: Dictionary;
+  [x: string]: any;
+}
+
+export interface Link extends vNG.Edge {
+  vars: LinkVar;
+}
+
+export type Links = Record<string, Link>;

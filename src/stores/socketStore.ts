@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
-//import { App } from "vue";
+import { App } from "vue";
 // @ts-ignore
-import { app } from "../main.js";
+//import { app } from "../main.js";
 import VueNativeSock from "vue-native-websocket-vue3";
 import { WsMessage } from "../components/types";
 
@@ -19,7 +19,8 @@ import { WsMessage } from "../components/types";
 // }
 
 export function wsSend(obj: Record<string, any>) {
-  app.config.globalProperties.$socket.sendObj(obj);
+  // app.config.globalProperties.$socket.sendObj(obj);
+  (window as any).$websocket.sendObj(obj);
 }
 
 export const useSocketStore = defineStore("socket", {
@@ -36,7 +37,7 @@ export const useSocketStore = defineStore("socket", {
     heartBeatTimer: 0,
   }),
   actions: {
-    init() {
+    init(app: App) {
       app.use(VueNativeSock, "ws://tes4:8080/ws", {
         store: this,
         format: "json",
@@ -49,7 +50,8 @@ export const useSocketStore = defineStore("socket", {
     // Connection open
     SOCKET_ONOPEN(event: any) {
       console.log("open", event);
-      app.config.globalProperties.$socket = event.currentTarget;
+      // app.config.globalProperties.$socket = event.currentTarget;
+      (window as any).$websocket = event.currentTarget;
       this.isConnected = true;
       // When the connection is successful, start sending heartbeat messages regularly to avoid being disconnected by the server
       this.heartBeatTimer = window.setInterval(() => {

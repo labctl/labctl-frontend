@@ -1,23 +1,26 @@
 <template>
-  <n-modal v-model:show="visible">
-    <n-card
-      title="options"
-      style="width: 400px"
-      closable
-      @close="visible = false"
-    >
-    </n-card>
-  </n-modal>
+  <n-card
+    title="options"
+    style="width: 400px"
+    closable
+    @close="visible = false"
+  >
+  </n-card>
 </template>
 
 <script setup lang="ts">
 // import { computed, defineProps, defineEmits, Component } from "vue";
-import { ref } from "vue";
-import { NCard, NModal } from "naive-ui";
+import { ref, defineProps } from "vue";
+import { NCard } from "naive-ui";
+import { useMainStore } from "@/stores/mainStore";
+
+export interface PropDef {
+  node: string;
+}
+const props = defineProps<PropDef>();
+const store = useMainStore();
 
 const visible = ref(true);
-// import { usemainStore } from "@/stores/mainStore";
-// const store = usemainStore();
 </script>
 
 <style></style>
