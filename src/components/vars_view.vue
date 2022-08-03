@@ -1,28 +1,43 @@
 <template>
   <n-card :title="title" style="width: 400px" closable @close="visible = false">
+    <template #header-extra>
+      <n-popover v-if="!link" trigger="hover">
+        <template #trigger>
+          <n-button
+            text
+            style="font-size: 24px"
+            @click="store.split_vars = !store.split_vars"
+          >
+            <n-icon
+              ><splitscreen-twotone v-if="store.split_vars" />
+              <fit-screen-twotone v-else />
+            </n-icon>
+          </n-button>
+        </template>
+        Toggle split vars
+      </n-popover>
+      <n-popover trigger="hover">
+        <template #trigger>
+          <n-button text style="font-size: 24px" @click="showTemplate">
+            <n-icon><description-outlined /></n-icon>
+          </n-button>
+        </template>
+        Test on a template
+      </n-popover>
+    </template>
     <div v-if="store.split_vars && !link">
       <p>
-        Variables used to render templates. For more info see
-        <n-button
-          text
-          style="font-size: 12px"
-          @click="store.split_vars = false"
-        >
-          <n-icon><splitscreen-twotone /></n-icon>
-        </n-button>
+        Variables used to render templates.
+        <JsonViewer :value="vars" copyable boxed color theme="dark" />
       </p>
-      <JsonViewer :value="vars" copyable boxed color theme="dark" />
     </div>
+
     <div v-else-if="!link">
       <p>
         Variables from the topology file and magic variables added by
-        containerlab. For a combined view of variables used to render templates,
-        see
-        <n-button text style="font-size: 18px" @click="store.split_vars = true">
-          <n-icon><fit-screen-twotone /></n-icon>
-        </n-button>
+        containerlab.
       </p>
-      <JsonViewer
+      <json-viewer
         :value="topovars"
         copyable
         boxed
@@ -30,7 +45,7 @@
         :expand-depth="4"
         theme="dark"
       />
-      <JsonViewer
+      <json-viewer
         :value="newvars"
         copyable
         boxed
@@ -41,7 +56,7 @@
     </div>
     <div v-else>
       <p>Variables in the topo file</p>
-      <JsonViewer
+      <json-viewer
         :value="link.vars"
         copyable
         boxed
@@ -51,7 +66,7 @@
         :expand-depth="3"
       />
       <p>Variables available when you render {{ link.source }}</p>
-      <JsonViewer
+      <json-viewer
         :value="linkSourceVars"
         copyable
         boxed
@@ -61,7 +76,7 @@
         :expand-depth="3"
       />
       <p>Variables available when you render {{ link.target }}</p>
-      <JsonViewer
+      <json-viewer
         :value="linkTargetVars"
         copyable
         boxed
@@ -71,17 +86,26 @@
         :expand-depth="3"
       />
     </div>
+    <template-dialog
+      v-model:visible="templateVisible"
+      :vars="templateVars"
+      :template="link ? 'link' : 'node'"
+    ></template-dialog>
   </n-card>
 </template>
 
 <script setup lang="ts">
 import { ref, defineProps, computed, withDefaults } from "vue";
-import { NCard, NButton, NIcon } from "naive-ui";
+import { NCard, NButton, NIcon, NPopover } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
-// tslint:disable-next-line
 import { JsonViewer } from "vue3-json-viewer";
-import { FitScreenTwotone, SplitscreenTwotone } from "@vicons/material";
+import {
+  FitScreenTwotone,
+  SplitscreenTwotone,
+  DescriptionOutlined,
+} from "@vicons/material";
 import { Dictionary } from "./types";
+import TemplateDialog from "@/components/template_dialog.vue";
 // import { Node } from "v-network-graph";
 
 export interface PropDef {
@@ -168,6 +192,25 @@ function sortDictionary(obj: Dictionary, filterObj?: Dictionary) {
     }
     return accumulator;
   }, {});
+}
+
+const templateVisible = ref(false);
+const templateVars = computed(() => {
+  if (!link.value) {
+    return vars.value;
+  }
+  var res: Dictionary = {};
+  linkSourceVars.value.forEach((o, i) => {
+    res[`source_${i}`] = o;
+  });
+  linkTargetVars.value.forEach((o, i) => {
+    res[`target_${i}`] = o;
+  });
+  return res;
+});
+
+function showTemplate() {
+  templateVisible.value = true;
 }
 </script>
 

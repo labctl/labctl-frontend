@@ -55,11 +55,21 @@ export interface Options {
 export interface UiData {
   options: Options;
   layouts: vngLayout;
+  templates: Record<string, string>;
+}
+
+export interface WebSocketTemplate {
+  name: string;
+  template: string;
+  vars: Dictionary;
+  result: string;
 }
 
 export interface WsMessage {
   code: number;
-  data: UiData;
+  data?: UiData;
+  msg?: string;
+  template?: WebSocketTemplate;
 }
 
 export interface NodeVar {

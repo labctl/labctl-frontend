@@ -79,8 +79,20 @@
                 </template>
               </n-input> -->
               <div class="nav-end">
-                {{ isConnected }}<span v-if="isConnected">yes</span>
-                <span v-else>x</span>
+                <n-icon v-if="status === 'OPEN'" size="24" color="green">
+                  <ContactlessTwotone />
+                </n-icon>
+                <n-icon
+                  v-else-if="status === 'CONNECTING'"
+                  size="24"
+                  color="orange"
+                >
+                  <ChangeCircleTwotone />
+                </n-icon>
+                <n-icon v-else-if="status === 'CLOSED'" size="24" color="red">
+                  <CancelTwotone />
+                </n-icon>
+                <span v-else>{{ status }}</span>
               </div>
             </n-space>
           </n-space>
@@ -100,12 +112,15 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, computed, watch, toRaw, getCurrentInstance } from "vue";
+import { onBeforeMount, computed, watch } from "vue";
 import {
   RadarRound,
   ViewListFilled,
   CheckCircleTwotone,
   FactCheckTwotone,
+  ContactlessTwotone,
+  ChangeCircleTwotone,
+  CancelTwotone,
 } from "@vicons/material";
 import {
   NLayout,
@@ -122,37 +137,44 @@ import {
 
 //import { IMe } from "@/componen ts/types";
 
-import { useMainStore } from "@/stores/mainStore";
-import { useSocketStore } from "@/stores/socketStore";
+import { useMainStore, message } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
-import { WsMessage } from "@/components/types";
+import { useWebSocket } from "@vueuse/core";
+import { WsMessage } from "./components/types.js";
+import { templateBus, wsBus } from "./plugins/eventbus.js";
 
 const store = useMainStore();
-const socket = useSocketStore();
 
-const app = getCurrentInstance();
-onBeforeMount(() => {
-  store.init();
-  if (app) {
-    console.log("init socket");
-    socket.init(app.appContext.app);
-  } else {
-    console.log("no active app");
-  }
-  //console.log("app.vue", app);
+const { status, data, send } = useWebSocket<string>("ws://tes4:8080/ws", {
+  heartbeat: {
+    message: '{"code":1}',
+    interval: 2000,
+  },
+  autoReconnect: true,
 });
 
-const { isConnected, message } = storeToRefs(socket);
+(window as any).$wssend = send;
 
-watch(message, (message: WsMessage) => {
-  const m = toRaw(message);
-  console.log(m);
+watch(data, (msg) => {
+  if (!msg) return;
+  const m: WsMessage = JSON.parse(msg);
   if (m.code === 100) {
-    console.log(m.code);
+    if (!m.data) {
+      console.error("no data in ws message!");
+      return;
+    }
     store.load(m.data);
-    store.event = 100;
+    wsBus.emit({ code: 100 });
+  } else if (m.code == 300) {
+    templateBus.emit(m.template);
+  } else {
+    message().warning(`unknow return ${m.code}`);
+    console.warn(m);
   }
+});
+
+onBeforeMount(() => {
+  store.init();
 });
 
 const route = useRoute();

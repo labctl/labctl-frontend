@@ -1,36 +1,41 @@
 <template>
-  <div class="about">
-    <h1>Labctl</h1>
-    <h3>Server Options</h3>
-    <n-table dense>
-      <tr v-for="(val, key) in store" :key="key">
-        <td valign="top">
-          <b>{{ key }}</b>
-        </td>
-        <td>
-          <pre>{{ pretty(val) }}</pre>
-        </td>
-      </tr>
-    </n-table>
-    <p align="right">Designed 2019 by Johann Kellerman, EMEA</p>
-  </div>
+  <n-divider>websock state</n-divider>
+  <json-viewer
+    :value="store.wsState"
+    copyable
+    boxed
+    color
+    theme="dark"
+    expanded
+    :expand-depth="3"
+  />
+
+  <n-divider>store</n-divider>
+  <json-viewer
+    :value="store"
+    copyable
+    boxed
+    color
+    theme="dark"
+    :expand-depth="3"
+    preview-mode
+  />
+
+  <p align="right">
+    Designed 2022 by Johann Kellerman,
+    <a href="//github.com/kellerza">@kellerza</a>
+  </p>
 </template>
 
 <script setup lang="ts">
 import {} from "vue";
-
-import { NTable } from "naive-ui";
+import { NDivider } from "naive-ui";
+import { JsonViewer } from "vue3-json-viewer";
 
 import { useMainStore } from "@/stores/mainStore";
 const store = useMainStore();
 
-function pretty(json: any) {
-  return JSON.stringify(json, null, 4);
-}
+// function pretty(json: any) {
+//   return JSON.stringify(json, null, 4);
+// }
 </script>
-
-<style>
-tr:nth-child(even) {
-  background: #ddd;
-}
-</style>

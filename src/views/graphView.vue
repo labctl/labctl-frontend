@@ -8,8 +8,6 @@
     </n-grid-item>
   </n-grid>
 
-  <n-divider>{{ store.topo.name }}</n-divider>
-
   <div class="tooltip-wrapper" :style="{ height: `${ttheight}px` }">
     <v-network-graph
       ref="graph"
@@ -34,7 +32,9 @@
       </div>
     </div>
   </div>
-  selected:{{ selectedNodes }} {{ selectedEdges }}
+
+  <n-divider>selected nodes/links</n-divider>
+
   <n-grid :cols="3" :x-gap="4">
     <n-grid-item v-for="nid in selectedNodes" :key="nid">
       <vars-view :id="nid"></vars-view>
@@ -43,6 +43,7 @@
       <vars-view :id="lid" link></vars-view>
     </n-grid-item>
     <n-grid-item>
+      selected:{{ selectedNodes }} {{ selectedEdges }}
       <div class="event-logs">
         <div
           v-for="[timestamp, type, log] in eventLogs"
@@ -68,6 +69,7 @@ import dayjs from "dayjs";
 
 import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
+import { wsBus } from "@/plugins/eventbus.js";
 
 const store = useMainStore();
 
@@ -171,15 +173,13 @@ const configs = reactive(
 
 const graph = ref<vNG.VNetworkGraphInstance>(); // ref="graph"
 
-const { event } = storeToRefs(store);
-
-watch(event, (ev) => {
-  if (ev === 100) {
+wsBus.on((ev) => {
+  if (!ev) return;
+  if (ev.code === 100) {
     console.log(`ex: ${ev}`);
     graph.value?.transitionWhile(() => {
       setBoundingBox();
     });
-    event.value = 0;
   }
 });
 

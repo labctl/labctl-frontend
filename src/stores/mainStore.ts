@@ -6,21 +6,22 @@ import { MessageApi } from "naive-ui";
 //import { IMe, Dictionary, Page, Standard } from "@/components/types";
 import { useLocalStorage } from "@vueuse/core";
 import {
-  Options,
   UiData,
   NodeVars,
   Links,
   Nodes,
   vngLayout,
+  WsMessage,
+  Options,
 } from "@/components/types";
-import { wsSend } from "./socketStore";
+import { wsSend } from "@/plugins/eventbus";
 
-// main is the name of the store. It is unique across your application
-// and will appear in devtools
 export function message(): MessageApi {
   return (window as any).$message;
 }
 
+// main is the name of the store. It is unique across your application
+// and will appear in devtools
 export const useMainStore = defineStore("main", {
   // a function that returns a fresh state
   state: () => ({
@@ -33,11 +34,10 @@ export const useMainStore = defineStore("main", {
     },
     layout: "grid",
     zoom: 1.5,
+    templates: {} as Record<string, string>,
     layouts: {
       nodes: {},
     } as vngLayout,
-    //** fire an event from App.vue for the websocket messages */
-    event: 0, // a
     /** used while loading (?) */
     loading: 0,
     /** split vars or show the merge value! */
@@ -47,14 +47,17 @@ export const useMainStore = defineStore("main", {
   }),
   // optional getters
   getters: {
-    // getters receive the state as first parameter
-    // doubleCount: (state) => state.counter * 2,
-    // // use getters in other getters
-    // doubleCountPlusOne(): number {
-    //   return this.doubleCount + 1
-    // },
+    wsState: (state) => {
+      return {
+        code: 100,
+        data: {
+          options: { layout: state.layout, zoom: state.zoom } as Options,
+          layouts: state.layouts,
+          templates: state.templates,
+        } as UiData,
+      } as WsMessage;
+    },
   },
-  // optional actions
   actions: {
     init() {
       // message();
@@ -72,22 +75,12 @@ export const useMainStore = defineStore("main", {
       console.log("load layouts+", data.options);
       Object.assign(this, data.options);
       this.layouts = data.layouts;
-      this.zoom = 0.5;
+      this.templates = data.templates;
     },
 
     save() {
-      const opt = {
-        layout: this.layout,
-        zoom: this.zoom,
-      } as Options;
-      console.log("save layouts+", opt);
-      wsSend({
-        code: 100,
-        data: {
-          options: opt,
-          layouts: this.layouts,
-        } as UiData,
-      });
+      console.log("save layouts+", this.wsState.data?.options);
+      wsSend(this.wsState);
     },
   },
   debounce: {
