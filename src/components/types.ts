@@ -44,7 +44,10 @@ export interface UiData {
 }
 
 export interface WebSocketTemplate {
+  id: string;
+  /** the template name */
   name: string;
+  /** the template value (optional) */
   template: string;
   vars: Dictionary;
   result: string;

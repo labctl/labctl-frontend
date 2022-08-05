@@ -1,5 +1,5 @@
 <template>
-  <n-card :title="title" style="width: 400px" closable @close="visible = false">
+  <n-card :title="title" closable @close="close">
     <template #header-extra>
       <n-popover v-if="!link" trigger="hover">
         <template #trigger>
@@ -70,7 +70,7 @@
         {{ link.source }}
       </p>
       <json-viewer
-        :value="linkVars.source_vars"
+        :value="vars.source_vars"
         copyable
         boxed
         color
@@ -83,7 +83,7 @@
         {{ link.target }}
       </p>
       <json-viewer
-        :value="linkVars.target_vars"
+        :value="vars.target_vars"
         copyable
         boxed
         color
@@ -94,14 +94,14 @@
     </div>
     <template-dialog
       v-model:visible="templateVisible"
-      :vars="linkVars"
+      :vars="vars"
       :template="link ? 'link' : 'node'"
     ></template-dialog>
   </n-card>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, computed, withDefaults } from "vue";
+import { ref, defineProps, computed, withDefaults, defineEmits } from "vue";
 import { NCard, NButton, NIcon, NPopover } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { JsonViewer } from "vue3-json-viewer";
@@ -119,14 +119,21 @@ export interface PropDef {
   link?: boolean;
 }
 const props = withDefaults(defineProps<PropDef>(), { link: false });
+
+const emit = defineEmits(["update:close"]);
+
 const store = useMainStore();
 
 const visible = ref(true);
+function close() {
+  emit("update:close", false);
+  visible.value = false;
+}
 
 const topovars = computed(() => store.topo.nodes[props.id].vars);
 
 const vars = computed(() => {
-  const v = store.topo.vars[props.id];
+  const v = props.link ? store.linkVars(props.id) : store.topo.vars[props.id];
   return sortDictionary(v, {});
 });
 
@@ -144,8 +151,6 @@ const title = computed(() => {
 });
 
 const link = computed(() => store.topo.links[props.id]);
-
-const linkVars = computed(() => store.linkVars(props.id));
 
 /** A compare function to move large clab vars to the end */
 function compareKeys(a: string, b: string) {

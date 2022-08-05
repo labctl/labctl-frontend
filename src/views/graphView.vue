@@ -1,19 +1,35 @@
 <template>
-  <n-grid :cols="5" :x-gap="4" :y-gap="4">
-    <n-grid-item> . </n-grid-item>
-    <n-grid-item :span="2"> . </n-grid-item>
-    <n-grid-item></n-grid-item>
-    <n-grid-item>
-      <n-select v-model:value="layout" :options="layoutOptions" />
-    </n-grid-item>
-  </n-grid>
+  <teleport to="#mtoolbar">
+    <n-space justify="end">
+      <n-button @click="selectedNodes = Object.keys(store.topo.nodes)">
+        Nodes
+      </n-button>
+      <n-button @click="selectedLinks = Object.keys(store.topo.links)">
+        Links
+      </n-button>
+      <n-button @click="updatelabels">Update labels</n-button>
+      <!-- <n-select
+        v-model:value="layout"
+        :options="layoutOptions"
+        style="width: 160px"
+      /> -->
+      <n-switch
+        :value="layout === 'force'"
+        label="a"
+        @update:value="(v) => (layout = v ? 'force' : 'grid')"
+      >
+        <template #checked> force </template>
+        <template #unchecked> {{ layout }} </template></n-switch
+      >
+    </n-space>
+  </teleport>
 
-  <div class="tooltip-wrapper" :style="{ height: `${ttheight}px` }">
+  <div :style="{ height: `${ttheight}px` }">
     <v-network-graph
       ref="graph"
       v-model:zoom-level="zoom"
       v-model:selected-nodes="selectedNodes"
-      v-model:selected-edges="selectedEdges"
+      v-model:selected-edges="selectedLinks"
       :nodes="store.topo.nodes"
       :edges="store.topo.links"
       :configs="configs"
@@ -24,7 +40,6 @@
         #override-node-label="{
           nodeId,
           scale,
-          text,
           x,
           y,
           config,
@@ -33,36 +48,40 @@
         }"
       >
         <text
+          v-if="nodeId in lblNode && lblNode[nodeId].label"
           x="0"
           y="0"
           :font-size="9 * scale"
           text-anchor="middle"
           dominant-baseline="central"
           fill="#ffffff"
-          >{{ String(store.topo.nodes[nodeId].kind).replace("vr-", "") }}</text
         >
+          {{ lblNode[nodeId].label }}
+        </text>
         <text
+          v-if="nodeId in lblNode && lblNode[nodeId].label_below"
           :x="x"
           :y="y"
           :font-size="config.fontSize * scale"
           :text-anchor="textAnchor"
           :dominant-baseline="dominantBaseline"
           :fill="config.color"
-          >{{ text }}</text
         >
+          {{ lblNode[nodeId].label_below }}
+        </text>
       </template>
       <template #edge-label="{ edgeId, scale, ...slotProps }">
         <v-edge-label
-          v-if="edgeId in link_label && link_label[edgeId].center_below"
-          :text="link_label[edgeId].center_below"
+          v-if="edgeId in lblLink && lblLink[edgeId].center_below"
+          :text="String(lblLink[edgeId].center_below)"
           align="center"
           vertical-align="below"
           v-bind="slotProps"
           :font-size="12 * scale"
         />
         <v-edge-label
-          v-if="edgeId in link_label && link_label[edgeId].source_above"
-          :text="link_label[edgeId].source_above"
+          v-if="edgeId in lblLink && lblLink[edgeId].source_above"
+          :text="String(lblLink[edgeId].source_above)"
           align="source"
           vertical-align="above"
           v-bind="slotProps"
@@ -70,10 +89,28 @@
           :font-size="10 * scale"
         />
         <v-edge-label
-          v-if="edgeId in link_label && link_label[edgeId].target_above"
-          :text="link_label[edgeId].target_above"
+          v-if="edgeId in lblLink && lblLink[edgeId].source_below"
+          :text="String(lblLink[edgeId].source_below)"
+          align="source"
+          vertical-align="below"
+          v-bind="slotProps"
+          fill="#ff5500"
+          :font-size="10 * scale"
+        />
+        <v-edge-label
+          v-if="edgeId in lblLink && lblLink[edgeId].target_above"
+          :text="String(lblLink[edgeId].target_above)"
           align="target"
           vertical-align="above"
+          v-bind="slotProps"
+          fill="#ff5500"
+          :font-size="10 * scale"
+        />
+        <v-edge-label
+          v-if="edgeId in lblLink && lblLink[edgeId].target_below"
+          :text="String(lblLink[edgeId].target_below)"
+          align="target"
+          vertical-align="below"
           v-bind="slotProps"
           fill="#ff5500"
           :font-size="10 * scale"
@@ -98,94 +135,125 @@
       :style="{ ...tooltipPos, opacity: tooltipOpacity }"
     >
       <div>
-        {{ store.topo.nodes[targetNodeId]?.name ?? "" }}
+        {{ store.topo.nodes[tooltipTNode]?.name ?? "" }}
+        {{ lblNode[tooltipTNode]?.label ?? "" }}
+        {{ lblNode[tooltipTNode]?.label_below ?? "" }}
       </div>
     </div>
   </div>
 
   <n-divider>selected nodes/links</n-divider>
 
-  <n-grid :cols="3" :x-gap="4">
+  <n-grid :cols="4" :x-gap="10" :y-gap="10">
     <n-grid-item v-for="nid in selectedNodes" :key="nid">
-      <vars-view :id="nid"></vars-view>
+      <vars-view
+        :id="nid"
+        @close="selectedNodes.splice(selectedNodes.indexOf(nid, 0), 1)"
+      ></vars-view>
     </n-grid-item>
-    <n-grid-item v-for="lid in selectedEdges" :key="lid">
-      <vars-view :id="lid" link></vars-view>
+    <n-grid-item v-for="lid in selectedLinks" :key="lid">
+      <vars-view
+        :id="lid"
+        link
+        @close="selectedLinks.splice(selectedLinks.indexOf(lid, 0), 1)"
+      ></vars-view>
     </n-grid-item>
     <n-grid-item>
-      selected:{{ selectedNodes }} {{ selectedEdges }}
-      <div class="event-logs">
-        <div
-          v-for="[timestamp, type, log] in eventLogs"
-          :key="`${timestamp}/${type}/${log}`"
-        >
-          {{ timestamp }}
-          <span class="event-type">{{ type }}</span>
-          {{ log }}
-        </div>
-      </div>
+      <n-card title="Logs">
+        selected:{{ selectedNodes }} {{ selectedLinks }}
+        <ul class="event-logs">
+          <li
+            v-for="[timestamp, type, log] in eventLogs"
+            :key="`${timestamp}/${type}/${log}`"
+          >
+            {{ timestamp }}
+            <b class="event-type">{{ type }}</b> {{ log }}
+          </li>
+        </ul>
+      </n-card>
     </n-grid-item>
   </n-grid>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref } from "vue";
+import { reactive, computed, watch, ref, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { NDivider, NSelect, NGridItem, NGrid } from "naive-ui";
+import {
+  NDivider,
+  NGridItem,
+  NGrid,
+  NSpace,
+  NButton,
+  NCard,
+  NSwitch,
+} from "naive-ui";
 import * as vNG from "v-network-graph";
 import { ForceLayout } from "v-network-graph/lib/force-layout";
 import dayjs from "dayjs";
 
 import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
-import { templateBus, wsBus, wsSend } from "@/plugins/eventbus";
+import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/plugins/eventbus";
 import { WsMsgCodes } from "@/components/types";
 
 const store = useMainStore();
-
+const selectedNodes = ref<string[]>([]);
+const selectedLinks = ref<string[]>([]);
 const { layout, zoom, layouts } = storeToRefs(store);
 
-// const route = useRoute();
-const layoutOptions = [
-  {
-    label: "Force",
-    value: "force",
-  },
-  {
-    label: "Grid",
-    value: "grid",
-  },
-  {
-    label: "Free layout",
-    value: "free",
-  },
-];
+// const layoutOptions = [
+//   {
+//     label: "Force layout",
+//     value: "force",
+//   },
+//   {
+//     label: "Grid layout",
+//     value: "grid",
+//   },
+//   {
+//     label: "Free layout",
+//     value: "free",
+//   },
+// ];
 
-interface lblLink {
+interface lblLinkT {
   source_above?: string;
   source_below?: string;
   target_above?: string;
   target_below?: string;
   center_above?: string;
   center_below?: string;
+  size: number;
 }
-// interface ndeLink {
-//   name: string;
-//   label: string;
-// }
+interface ndeLinkT {
+  label_below?: string;
+  label?: string;
+  size: number;
+}
 
-const link_label = ref({} as Record<string, lblLink>);
-//const node_label = ref({} as Record<string, ndeLink>);
+const lblLink = ref({} as Record<string, lblLinkT>);
+const lblNode = ref({} as Record<string, ndeLinkT>);
 
-const ttheight = ref(400);
-const EVENTS_COUNT = 6;
+const ttheight = ref(450);
+const EVENTS_COUNT = 12;
 
 const eventLogs = reactive<[string, string, string][]>([]);
 
+function logEvent(msg: string, ev: any) {
+  const timestamp = dayjs().format("HH:mm:ss.SSS");
+  if (eventLogs.length > EVENTS_COUNT) {
+    eventLogs.splice(EVENTS_COUNT, eventLogs.length - EVENTS_COUNT);
+  }
+  if (ev instanceof Object && "event" in ev) {
+    Object.assign(ev, { event: "(...)" });
+  }
+  eventLogs.unshift([timestamp, msg, JSON.stringify(ev)]);
+}
+
 const eventHandlers: vNG.EventHandlers = {
   "node:pointerover": ({ node }) => {
-    targetNodeId.value = node;
+    tooltipTNode.value = node;
     tooltipOpacity.value = 1; // show
   },
   "node:pointerout": () => {
@@ -199,16 +267,7 @@ const eventHandlers: vNG.EventHandlers = {
     }
   },
   // wildcard: capture all events
-  "*": (type, event) => {
-    const timestamp = dayjs().format("HH:mm:ss.SSS");
-    if (eventLogs.length > EVENTS_COUNT) {
-      eventLogs.splice(EVENTS_COUNT, eventLogs.length - EVENTS_COUNT);
-    }
-    if (event instanceof Object && "event" in event) {
-      Object.assign(event, { event: "(...)" });
-    }
-    eventLogs.unshift([timestamp, type, JSON.stringify(event)]);
-  },
+  "*": logEvent,
 };
 
 // watch(layout, store.save);
@@ -238,6 +297,7 @@ const configs = reactive(
       scalingObjects: true,
       minZoomLevel: 0.5, // 0.1,
       maxZoomLevel: 8, // 16
+      autoPanAndZoomOnLoad: false,
     },
     node: {
       normal: { radius: nodeSize / 2 },
@@ -260,58 +320,14 @@ const configs = reactive(
 );
 
 const graph = ref<vNG.VNetworkGraphInstance>(); // ref="graph"
-
-// const pan = computed(() => graph.value.getPan());
-
-wsBus.on((ev) => {
-  if (!ev) return;
-  console.log(`ex: ${ev}`);
-  if (ev.code === 100) {
-    graph.value?.panToCenter();
-    graph.value?.transitionWhile(() => {
-      //graph.value?.fitToContents();
-      //setBoundingBox();
-    });
-  }
-});
-
-// function setBoundingBox() {
-//   const box: Record<string, number | undefined> = {};
-//   Object.keys(store.layouts.nodes).forEach((nodeId: string) => {
-//     // update node position
-//     const { x, y } = store.layouts.nodes[nodeId];
-//     //lLayouts.value.nodes[nodeId] = { x, y };
-
-//     // calculate bounding box size
-//     box.top = box.top ? Math.min(box.top, y) : y;
-//     box.bottom = box.bottom ? Math.max(box.bottom, y) : y;
-//     box.left = box.left ? Math.min(box.left, x) : x;
-//     box.right = box.right ? Math.max(box.right, x) : x;
-//   });
-
-//   const graphMargin = nodeSize * 2;
-//   const viewBox = {
-//     top: (box.top ?? 0) - graphMargin,
-//     bottom: (box.bottom ?? 0) + graphMargin,
-//     left: (box.left ?? 0) - graphMargin,
-//     right: (box.right ?? 0) + graphMargin,
-//   };
-//   console.log(graph.value?.getViewBox());
-//   console.log(box);
-//   graph.value?.setViewBox(viewBox);
-//   ttheight.value = Math.max((box.bottom ?? 0) - (box.top ?? 0), 400);
-//   console.log(`height ${ttheight.value}`);
-// }
-
-const targetNodeId = ref("");
-
 const tooltip = ref<HTMLDivElement>(); // ref="tooltip"
 
+const tooltipTNode = ref("");
 const tooltipPos = computed(() => {
   if (!graph.value || !tooltip.value) return { x: 0, y: 0 };
-  if (!targetNodeId.value) return { x: 0, y: 0 };
+  if (!tooltipTNode.value) return { x: 0, y: 0 };
 
-  const nodePos = store.layouts.nodes[targetNodeId.value];
+  const nodePos = store.layouts.nodes[tooltipTNode.value];
   // translate coordinates: SVG -> DOM
   const domPoint = graph.value.translateFromSvgToDomCoordinates(nodePos);
   // calculates top-left position of the tooltip.
@@ -322,30 +338,75 @@ const tooltipPos = computed(() => {
 });
 const tooltipOpacity = ref(0); // 0 or 1
 
-const selectedNodes = ref<string[]>([]);
-const selectedEdges = ref<string[]>([]);
-
-// onBeforeMount(() =>{
-// });
-templateBus.on((t) => {
-  // save the template
-  console.log(t.name, t.result, t.resulty);
-
-  // link_label.value[t.name]. = t.result;
+onMounted(() => {
+  logEvent("mounted", {});
+  graph.value?.panToCenter();
+  graph.value?.fitToContents();
 });
 
-watch(store.topo.links, () => {
-  // render labels
+wsTxBus.on((ev) => {
+  console.debug("WS Tx", ev);
+  logEvent("WS Tx", ev);
+});
+
+wsRxBus.on((ev) => {
+  console.debug("WS Rx", ev);
+  logEvent("WS Rx", ev);
+  if (ev.code === WsMsgCodes.save) {
+    logEvent("WS load", {});
+    graph.value?.panToCenter();
+    graph.value?.fitToContents();
+    // graph.value?.transitionWhile(() => {
+    //   //
+    //   //setBoundingBox();
+    // });
+  }
+});
+
+wsTemplateBus.on((t) => {
+  console.debug("WS T", t);
+  logEvent("WS T", t);
+
+  // save the template result in the node/link labels
+  if (t.name === "link" && t.resulty && t.id in store.topo.links) {
+    lblLink.value[t.id] = { ...{ size: 12 }, ...t.resulty };
+  }
+  if (t.name === "node" && t.resulty && t.id in store.topo.nodes) {
+    lblNode.value[t.id] = { ...{ size: 12 }, ...t.resulty };
+  }
+});
+
+watch(store.templates, () => {
+  // If the templates changes, update the labels
+  updatelabels();
+});
+
+function updatelabels() {
   Object.keys(store.topo.links).forEach((lid) => {
     wsSend({
       code: WsMsgCodes.render,
       template: {
-        name: lid,
+        id: lid,
+        name: "link",
         template: store.templates["link"],
+        vars: store.linkVars(lid),
+        result: "",
       },
     });
   });
-});
+  Object.keys(store.topo.nodes).forEach((nid) => {
+    wsSend({
+      code: WsMsgCodes.render,
+      template: {
+        id: nid,
+        name: "node",
+        template: store.templates["node"],
+        vars: store.topo.vars[nid],
+        result: "",
+      },
+    });
+  });
+}
 </script>
 
 <style lang="css" scoped>

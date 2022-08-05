@@ -31,16 +31,18 @@
             <n-space justify="end">
               <div id="mtoolbar"></div>
               <n-button
+                v-if="false"
                 :type="v_comply ? 'primary' : undefined"
                 @click="router.push({ path: '/comply' })"
               >
                 <template #icon>
                   <n-icon :size="18"><fact-check-twotone /></n-icon>
                 </template>
-                {{ v_comply ? "Standards" : "" }}
+                {{ v_comply ? "S" : "" }}
               </n-button>
 
               <n-button
+                v-if="false"
                 :type="false ? 'primary' : undefined"
                 @click="router.push({ path: '/' })"
               >
@@ -50,6 +52,7 @@
                 {{ v_comply ? "Search" : "" }}
               </n-button>
               <n-button
+                v-if="false"
                 :type="v_comply ? 'primary' : undefined"
                 @click="
                   router.push({
@@ -62,37 +65,10 @@
                 </template>
                 {{ v_comply ? "RN" : "" }}
               </n-button>
-              <!-- <n-input
-                v-model:value="store.text"
-                :loading="store.loading > 0"
-                placeholder="Search"
-                @focus="search_field_focus = true"
-                @blur="search_field_focus = false"
-                @keyup.enter="search"
-              >
-                <template #prefix>
-                  <n-button text @click="search">
-                    <template #icon>
-                      <n-icon><SearchFilled /></n-icon>
-                    </template>
-                  </n-button>
-                </template>
-              </n-input> -->
               <div class="nav-end">
-                <n-icon v-if="status === 'OPEN'" size="24" color="green">
-                  <ContactlessTwotone />
-                </n-icon>
-                <n-icon
-                  v-else-if="status === 'CONNECTING'"
-                  size="24"
-                  color="orange"
-                >
-                  <ChangeCircleTwotone />
-                </n-icon>
-                <n-icon v-else-if="status === 'CLOSED'" size="24" color="red">
-                  <CancelTwotone />
-                </n-icon>
-                <span v-else>{{ status }}</span>
+                <n-avatar round color="white">
+                  <n-icon :component="wsstatus.icon" :color="wsstatus.color" />
+                </n-avatar>
               </div>
             </n-space>
           </n-space>
@@ -133,6 +109,7 @@ import {
   NMessageProvider,
   darkTheme,
   lightTheme,
+  NAvatar,
 } from "naive-ui";
 
 //import { IMe } from "@/componen ts/types";
@@ -140,42 +117,57 @@ import {
 import { useMainStore, message } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
-import { WsMessage } from "./components/types";
-import { templateBus, wsBus } from "./plugins/eventbus";
+import { WsMessage, WsMsgCodes } from "./components/types";
+import { ws_uri } from "@/components/utils";
+import { wsTemplateBus, wsRxBus, wsTxBus } from "./plugins/eventbus";
 
 const store = useMainStore();
 
-const { status, data, send } = useWebSocket<string>("ws://tes4:8080/ws", {
+/*** websocket to eventbus handlers */
+const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   heartbeat: {
     message: '{"code":1}',
     interval: 2000,
   },
   autoReconnect: true,
+  immediate: false,
 });
 
-(window as any).$wssend = send;
+wsTxBus.on((tx) => {
+  send(JSON.stringify(tx));
+});
 
+// on any data change, trnasmit the message on the Rx bus or the template bus
 watch(data, (msg) => {
   if (!msg) return;
   const m: WsMessage = JSON.parse(msg);
-  if (m.code === 100) {
-    if (!m.data) {
-      console.error("no data in ws message!");
-      return;
-    }
-    store.load(m.data);
-    console.log("100%");
-    wsBus.emit({ code: 100 });
-  } else if (m.code == 300) {
-    templateBus.emit(m.template);
-  } else {
-    message().warning(`unknow return ${m.code}`);
-    console.warn(m);
+  if (m.code === WsMsgCodes.render) {
+    wsTemplateBus.emit(m.template);
+    return;
   }
+  if (m.code === WsMsgCodes.save) {
+    store.load(m.data);
+    wsRxBus.emit(m);
+    return;
+  }
+  message().warning(`unknown message code ${m.code}: ${m}`);
+});
+
+const wsstatus = computed(() => {
+  switch (status.value) {
+    case "OPEN":
+      return { color: "green", icon: ContactlessTwotone };
+    case "CONNECTING":
+      return { color: "orange", icon: ChangeCircleTwotone };
+
+    case "CLOSED":
+  }
+  return { color: "red", icon: CancelTwotone };
 });
 
 onBeforeMount(() => {
   store.init();
+  open();
 });
 
 const route = useRoute();

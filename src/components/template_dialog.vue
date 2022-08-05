@@ -51,12 +51,34 @@
         </n-grid-item>
         <n-grid-item>
           Result
+          <div class="jv-container jv-light boxed">
+            <div
+              v-if="showMd"
+              class="markdown-body jv-code"
+              v-html="md_2_html(template_result)"
+            />
+            <pre
+              v-else
+              class="jv-code"
+              style="white-space: pre-line"
+              v-html="template_result"
+            />
+          </div>
           <div
-            v-if="showMd"
-            class="markdown-body"
-            v-html="md_2_html(comment)"
-          />
-          <pre v-else v-html="comment" />
+            v-if="template_resulty && Object.keys(template_resulty).length > 0"
+          >
+            The result contains the following variables:
+            <json-viewer
+              v-if="template_resulty"
+              :value="template_resulty"
+              copyable
+              boxed
+              color
+              theme="dark"
+              expanded
+              :expand-depth="2"
+            />
+          </div>
         </n-grid-item>
       </n-grid>
 
@@ -101,12 +123,13 @@ import {
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
-import { templateBus, wsSend } from "@/plugins/eventbus";
+import { wsTemplateBus, wsSend } from "@/plugins/eventbus";
 
 const store = useMainStore();
 // const message = useMessage();
 
-const comment = ref("");
+const template_result = ref("");
+const template_resulty = ref({});
 
 interface PropDef {
   /** input variables */
@@ -139,7 +162,8 @@ watchDebounced(
   tempV,
   () => {
     // send socket
-    comment.value = "...";
+    template_result.value = "...";
+    template_resulty.value = {};
     const opt = {
       code: WsMsgCodes.render,
       template: {
@@ -154,12 +178,9 @@ watchDebounced(
   { debounce: 1000 }
 );
 
-watch(comment, () => (dirty.value = true));
-
-templateBus.on((t) => {
-  //console.log("buss", t);
-  comment.value = t.result || "";
-  //console.log("res", t.template);
+wsTemplateBus.on((t) => {
+  template_result.value = t.result || "";
+  template_resulty.value = t.resulty || {};
 });
 
 const visible = computed({

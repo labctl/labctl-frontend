@@ -17,6 +17,7 @@ import {
   WsMsgCodes,
 } from "@/components/types";
 import { wsSend } from "@/plugins/eventbus";
+import { toRaw } from "vue";
 
 export function message(): MessageApi {
   return (window as any).$message;
@@ -62,6 +63,9 @@ export const useMainStore = defineStore("main", {
 
     linkVars: (state) => (linkid: string) => {
       const l = state.topo.links[linkid];
+      if (!l) {
+        return {};
+      }
 
       // get variables on the source node (filtered on far end node)
       let sV = state.topo.vars[l.source].clab_links.filter(
@@ -100,8 +104,9 @@ export const useMainStore = defineStore("main", {
       }
       return {
         ...l,
-        source_vars: sV.length == 0 ? {} : sV[0],
-        target_vars: tV.length == 0 ? {} : tV[0],
+        source_vars: sV.length == 0 ? {} : toRaw(sV[0]),
+        target_vars: tV.length == 0 ? {} : toRaw(tV[0]),
+        vars: toRaw(l.vars),
       };
     },
   },
@@ -109,16 +114,20 @@ export const useMainStore = defineStore("main", {
     init() {
       // message();
       if (this.topo.name === "") {
-        json_fetch("/topo").then((topo) => {
+        json_fetch("/labctl/topo").then((topo) => {
           Object.assign(this.topo, topo);
         });
-        json_fetch("/vars").then((vars) => {
+        json_fetch("/labctl/vars").then((vars) => {
           Object.assign(this.topo.vars, vars);
         });
       }
     },
 
-    load(data: UiData) {
+    load(data?: UiData) {
+      if (!data) {
+        console.log("no data to load");
+        return;
+      }
       console.log("load layouts+", data.options);
       Object.assign(this, data.options);
       this.layouts = data.layouts;

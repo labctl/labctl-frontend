@@ -1,20 +1,23 @@
 //eslint-disable-next-line
-import {  IDictionary } from "./types";
+import { Dictionary } from "./types";
 
-export function api_url(uri: string): string {
-  if (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1"
-  ) {
-    if (!uri.startsWith("/")) {
-      // eslint-disable-next-line
-      alert(`uri need to start with / - ${uri}`);
-    }
-    return `http://138.203.56.51:8080${uri}`;
-    // return `http://localhost:8080${uri}`;
+export const ws_uri = (() => {
+  const loc = window.location;
+  if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
+    return "ws://tes4:8080/labctl/ws";
   }
-  return `https://${window.location.hostname}${uri}`;
-}
+  var new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
+  new_uri += "//" + loc.host + "/labctl/ws";
+  return new_uri;
+})();
+
+export const api_uri = (() => {
+  const loc = window.location;
+  if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
+    return "http://tes4:8080";
+  }
+  return `${loc.protocol}//${loc.host}`;
+})();
 
 export function $set_array(target: any[], source: any[]): void {
   target.splice(source.length);
@@ -42,8 +45,8 @@ export function $set_object(
 
 export function json_fetch(
   url: string,
-  data?: IDictionary
-): Promise<IDictionary> {
+  data?: Dictionary
+): Promise<Dictionary> {
   const opt = data
     ? {
         method: "POST",
@@ -66,12 +69,12 @@ export function json_fetch(
       };
 
   // eslint-disable-next-line no-undef
-  return new Promise<IDictionary>(
+  return new Promise<Dictionary>(
     // eslint-disable-next-line
     async (resolve, reject) => {
       let response;
       try {
-        response = await fetch(api_url(url), opt);
+        response = await fetch(api_uri + url, opt);
       } catch (error) {
         return reject(error);
       }
