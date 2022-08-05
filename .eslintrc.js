@@ -25,6 +25,8 @@ module.exports = {
     "prettier/prettier": ["error"],
     "vue/no-v-html": "off",
     "vue/require-default-prop": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
   },
 
   root: true,

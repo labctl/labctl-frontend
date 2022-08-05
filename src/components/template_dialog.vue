@@ -56,7 +56,7 @@
             class="markdown-body"
             v-html="md_2_html(comment)"
           />
-          <div v-else v-html="comment" />
+          <pre v-else v-html="comment" />
         </n-grid-item>
       </n-grid>
 
@@ -86,7 +86,7 @@ import {
 // eslint-diasble-next-line
 //import { Callable, IDictionary } from "@/components/types";
 import { md_2_html } from "@/components/utils_md";
-import { Dictionary, WsMessage } from "@/components/types";
+import { Dictionary, WsMessage, WsMsgCodes } from "@/components/types";
 // import { json_fetch } from "@/components/utils";
 import {
   //useMessage,
@@ -101,7 +101,7 @@ import {
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
-import { templateBus, wsSend } from "@/plugins/eventbus.js";
+import { templateBus, wsSend } from "@/plugins/eventbus";
 
 const store = useMainStore();
 // const message = useMessage();
@@ -141,7 +141,7 @@ watchDebounced(
     // send socket
     comment.value = "...";
     const opt = {
-      code: 300,
+      code: WsMsgCodes.render,
       template: {
         template: tempV.value,
         name: tempN.value,

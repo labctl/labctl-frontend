@@ -17,9 +17,79 @@
       :nodes="store.topo.nodes"
       :edges="store.topo.links"
       :configs="configs"
-      :layouts="store.layouts"
+      :layouts="layouts"
       :event-handlers="eventHandlers"
     >
+      <template
+        #override-node-label="{
+          nodeId,
+          scale,
+          text,
+          x,
+          y,
+          config,
+          textAnchor,
+          dominantBaseline,
+        }"
+      >
+        <text
+          x="0"
+          y="0"
+          :font-size="9 * scale"
+          text-anchor="middle"
+          dominant-baseline="central"
+          fill="#ffffff"
+          >{{ String(store.topo.nodes[nodeId].kind).replace("vr-", "") }}</text
+        >
+        <text
+          :x="x"
+          :y="y"
+          :font-size="config.fontSize * scale"
+          :text-anchor="textAnchor"
+          :dominant-baseline="dominantBaseline"
+          :fill="config.color"
+          >{{ text }}</text
+        >
+      </template>
+      <template #edge-label="{ edgeId, scale, ...slotProps }">
+        <v-edge-label
+          v-if="edgeId in link_label && link_label[edgeId].center_below"
+          :text="link_label[edgeId].center_below"
+          align="center"
+          vertical-align="below"
+          v-bind="slotProps"
+          :font-size="12 * scale"
+        />
+        <v-edge-label
+          v-if="edgeId in link_label && link_label[edgeId].source_above"
+          :text="link_label[edgeId].source_above"
+          align="source"
+          vertical-align="above"
+          v-bind="slotProps"
+          fill="#ff5500"
+          :font-size="10 * scale"
+        />
+        <v-edge-label
+          v-if="edgeId in link_label && link_label[edgeId].target_above"
+          :text="link_label[edgeId].target_above"
+          align="target"
+          vertical-align="above"
+          v-bind="slotProps"
+          fill="#ff5500"
+          :font-size="10 * scale"
+        />
+      </template>
+      <!-- <template #badge="{ scale }">
+        <circle
+          v-for="(pos, node) in layouts.nodes"
+          :key="node"
+          :cx="pos.x + 9 * scale + pan.x"
+          :cy="pos.y - 9 * scale + pan.y"
+          :r="4 * scale"
+          :fill="'#00cc00'"
+          style="pointer-events: none"
+        />
+      </template> -->
     </v-network-graph>
 
     <div
@@ -69,11 +139,12 @@ import dayjs from "dayjs";
 
 import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
-import { wsBus } from "@/plugins/eventbus.js";
+import { templateBus, wsBus, wsSend } from "@/plugins/eventbus";
+import { WsMsgCodes } from "@/components/types";
 
 const store = useMainStore();
 
-const { layout, zoom } = storeToRefs(store);
+const { layout, zoom, layouts } = storeToRefs(store);
 
 // const route = useRoute();
 const layoutOptions = [
@@ -90,6 +161,22 @@ const layoutOptions = [
     value: "free",
   },
 ];
+
+interface lblLink {
+  source_above?: string;
+  source_below?: string;
+  target_above?: string;
+  target_below?: string;
+  center_above?: string;
+  center_below?: string;
+}
+// interface ndeLink {
+//   name: string;
+//   label: string;
+// }
+
+const link_label = ref({} as Record<string, lblLink>);
+//const node_label = ref({} as Record<string, ndeLink>);
 
 const ttheight = ref(400);
 const EVENTS_COUNT = 6;
@@ -124,7 +211,7 @@ const eventHandlers: vNG.EventHandlers = {
   },
 };
 
-watch(layout, store.save);
+// watch(layout, store.save);
 
 function getLayoutHandler() {
   if (layout.value === "force") {
@@ -136,6 +223,7 @@ function getLayoutHandler() {
 }
 
 watch(layout, () => {
+  store.save();
   if (configs.view) {
     configs.view.layoutHandler = getLayoutHandler();
   }
@@ -173,43 +261,47 @@ const configs = reactive(
 
 const graph = ref<vNG.VNetworkGraphInstance>(); // ref="graph"
 
+// const pan = computed(() => graph.value.getPan());
+
 wsBus.on((ev) => {
   if (!ev) return;
+  console.log(`ex: ${ev}`);
   if (ev.code === 100) {
-    console.log(`ex: ${ev}`);
+    graph.value?.panToCenter();
     graph.value?.transitionWhile(() => {
-      setBoundingBox();
+      //graph.value?.fitToContents();
+      //setBoundingBox();
     });
   }
 });
 
-function setBoundingBox() {
-  const box: Record<string, number | undefined> = {};
-  Object.keys(store.layouts.nodes).forEach((nodeId: string) => {
-    // update node position
-    const { x, y } = store.layouts.nodes[nodeId];
-    //lLayouts.value.nodes[nodeId] = { x, y };
+// function setBoundingBox() {
+//   const box: Record<string, number | undefined> = {};
+//   Object.keys(store.layouts.nodes).forEach((nodeId: string) => {
+//     // update node position
+//     const { x, y } = store.layouts.nodes[nodeId];
+//     //lLayouts.value.nodes[nodeId] = { x, y };
 
-    // calculate bounding box size
-    box.top = box.top ? Math.min(box.top, y) : y;
-    box.bottom = box.bottom ? Math.max(box.bottom, y) : y;
-    box.left = box.left ? Math.min(box.left, x) : x;
-    box.right = box.right ? Math.max(box.right, x) : x;
-  });
+//     // calculate bounding box size
+//     box.top = box.top ? Math.min(box.top, y) : y;
+//     box.bottom = box.bottom ? Math.max(box.bottom, y) : y;
+//     box.left = box.left ? Math.min(box.left, x) : x;
+//     box.right = box.right ? Math.max(box.right, x) : x;
+//   });
 
-  const graphMargin = nodeSize * 2;
-  const viewBox = {
-    top: (box.top ?? 0) - graphMargin,
-    bottom: (box.bottom ?? 0) + graphMargin,
-    left: (box.left ?? 0) - graphMargin,
-    right: (box.right ?? 0) + graphMargin,
-  };
-  console.log(graph.value?.getViewBox());
-  console.log(box);
-  graph.value?.setViewBox(viewBox);
-  ttheight.value = Math.max((box.bottom ?? 0) - (box.top ?? 0), 400);
-  console.log(`height ${ttheight.value}`);
-}
+//   const graphMargin = nodeSize * 2;
+//   const viewBox = {
+//     top: (box.top ?? 0) - graphMargin,
+//     bottom: (box.bottom ?? 0) + graphMargin,
+//     left: (box.left ?? 0) - graphMargin,
+//     right: (box.right ?? 0) + graphMargin,
+//   };
+//   console.log(graph.value?.getViewBox());
+//   console.log(box);
+//   graph.value?.setViewBox(viewBox);
+//   ttheight.value = Math.max((box.bottom ?? 0) - (box.top ?? 0), 400);
+//   console.log(`height ${ttheight.value}`);
+// }
 
 const targetNodeId = ref("");
 
@@ -232,6 +324,28 @@ const tooltipOpacity = ref(0); // 0 or 1
 
 const selectedNodes = ref<string[]>([]);
 const selectedEdges = ref<string[]>([]);
+
+// onBeforeMount(() =>{
+// });
+templateBus.on((t) => {
+  // save the template
+  console.log(t.name, t.result, t.resulty);
+
+  // link_label.value[t.name]. = t.result;
+});
+
+watch(store.topo.links, () => {
+  // render labels
+  Object.keys(store.topo.links).forEach((lid) => {
+    wsSend({
+      code: WsMsgCodes.render,
+      template: {
+        name: lid,
+        template: store.templates["link"],
+      },
+    });
+  });
+});
 </script>
 
 <style lang="css" scoped>

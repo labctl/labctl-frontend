@@ -13,6 +13,8 @@ import {
   vngLayout,
   WsMessage,
   Options,
+  Dictionary,
+  WsMsgCodes,
 } from "@/components/types";
 import { wsSend } from "@/plugins/eventbus";
 
@@ -49,13 +51,58 @@ export const useMainStore = defineStore("main", {
   getters: {
     wsState: (state) => {
       return {
-        code: 100,
+        code: WsMsgCodes.save,
         data: {
           options: { layout: state.layout, zoom: state.zoom } as Options,
           layouts: state.layouts,
           templates: state.templates,
         } as UiData,
       } as WsMessage;
+    },
+
+    linkVars: (state) => (linkid: string) => {
+      const l = state.topo.links[linkid];
+
+      // get variables on the source node (filtered on far end node)
+      let sV = state.topo.vars[l.source].clab_links.filter(
+        fFarEndNode(l.target)
+      );
+      if (sV.length > 1) {
+        sV = sV.filter((v) => {
+          const p1 = l.vars.port;
+          if (p1 && p1.length === 2 && v.port) {
+            return p1[0] === v.port;
+          }
+          return true;
+        });
+      }
+
+      // get variables on the target node (filtered on far end node)
+      let tV = state.topo.vars[l.target].clab_links.filter(
+        fFarEndNode(l.source)
+      );
+      if (tV.length > 1) {
+        console.debug(tV);
+        tV = tV.filter((v) => {
+          const p1 = l.vars.port;
+          if (p1 && p1.length === 2 && v.port) {
+            return p1[1] === v.port;
+          }
+          return true;
+        });
+      }
+
+      if (sV.length !== 1 || tV.length !== 1) {
+        console.error(`error picking a single vars for link # ${linkid}`, [
+          sV,
+          tV,
+        ]);
+      }
+      return {
+        ...l,
+        source_vars: sV.length == 0 ? {} : sV[0],
+        target_vars: tV.length == 0 ? {} : tV[0],
+      };
     },
   },
   actions: {
@@ -87,3 +134,20 @@ export const useMainStore = defineStore("main", {
     save: 1500, // debounce save by 300ms
   },
 });
+
+export function fFarEndNode(far: string) {
+  return (l: Dictionary) => {
+    if (!("clab_far" in l)) {
+      console.log(`clab_far not in dictionary. Filtering on ${far}: ${l}`);
+      return true;
+    }
+    const f = l.clab_far as Dictionary;
+    if (!("clab_node" in f)) {
+      console.log(
+        `clab_far.clab_node not in dictionary. Filtering on ${far}: ${l}`
+      );
+      return true;
+    }
+    return f.clab_node === far;
+  };
+}

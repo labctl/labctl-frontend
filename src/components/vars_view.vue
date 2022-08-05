@@ -65,9 +65,12 @@
         expanded
         :expand-depth="3"
       />
-      <p>Variables available when you render {{ link.source }}</p>
+      <p>
+        Variables available in <code>clab_links[]</code> when you render
+        {{ link.source }}
+      </p>
       <json-viewer
-        :value="linkSourceVars"
+        :value="linkVars.source_vars"
         copyable
         boxed
         color
@@ -75,9 +78,12 @@
         expanded
         :expand-depth="3"
       />
-      <p>Variables available when you render {{ link.target }}</p>
+      <p>
+        Variables available in <code>clab_links[]</code> when you render
+        {{ link.target }}
+      </p>
       <json-viewer
-        :value="linkTargetVars"
+        :value="linkVars.target_vars"
         copyable
         boxed
         color
@@ -88,7 +94,7 @@
     </div>
     <template-dialog
       v-model:visible="templateVisible"
-      :vars="templateVars"
+      :vars="linkVars"
       :template="link ? 'link' : 'node'"
     ></template-dialog>
   </n-card>
@@ -139,35 +145,7 @@ const title = computed(() => {
 
 const link = computed(() => store.topo.links[props.id]);
 
-function farEndNode(far: string) {
-  return (l: Dictionary) => {
-    if (!("clab_far" in l)) {
-      console.log(`clab_far not in dictionary. Filtering on ${far}: ${l}`);
-      return true;
-    }
-    const f = l.clab_far as Dictionary;
-    if (!("clab_node" in f)) {
-      console.log(
-        `clab_far.clab_node not in dictionary. Filtering on ${far}: ${l}`
-      );
-      return true;
-    }
-    return f.clab_node === far;
-  };
-}
-
-const linkSourceVars = computed(() => {
-  const sN = store.topo.vars[link.value.source];
-  return sN.clab_links
-    .filter(farEndNode(link.value.target))
-    .map((d) => sortDictionary(d));
-});
-const linkTargetVars = computed(() => {
-  const tN = store.topo.vars[link.value.target];
-  return tN.clab_links
-    .filter(farEndNode(link.value.source))
-    .map((d) => sortDictionary(d));
-});
+const linkVars = computed(() => store.linkVars(props.id));
 
 /** A compare function to move large clab vars to the end */
 function compareKeys(a: string, b: string) {
@@ -195,19 +173,15 @@ function sortDictionary(obj: Dictionary, filterObj?: Dictionary) {
 }
 
 const templateVisible = ref(false);
-const templateVars = computed(() => {
-  if (!link.value) {
-    return vars.value;
-  }
-  var res: Dictionary = {};
-  linkSourceVars.value.forEach((o, i) => {
-    res[`source_${i}`] = o;
-  });
-  linkTargetVars.value.forEach((o, i) => {
-    res[`target_${i}`] = o;
-  });
-  return res;
-});
+// const templateVars = computed(() => {
+//   if (!link.value) {
+//     return vars.value;
+//   }
+//   const res: Dictionary = {};
+//   res[`source`] = linkVars.value;
+//   res[`target`] = linkVars.value[1];
+//   return res;
+// });
 
 function showTemplate() {
   templateVisible.value = true;

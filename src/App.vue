@@ -140,8 +140,8 @@ import {
 import { useMainStore, message } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
-import { WsMessage } from "./components/types.js";
-import { templateBus, wsBus } from "./plugins/eventbus.js";
+import { WsMessage } from "./components/types";
+import { templateBus, wsBus } from "./plugins/eventbus";
 
 const store = useMainStore();
 
@@ -164,6 +164,7 @@ watch(data, (msg) => {
       return;
     }
     store.load(m.data);
+    console.log("100%");
     wsBus.emit({ code: 100 });
   } else if (m.code == 300) {
     templateBus.emit(m.template);
