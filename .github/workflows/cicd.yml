@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ NODEVER }}
+      - name: Use Node.js ${{ env.NODEVER }}
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ NODEVER }}
+          node-version: ${{ env.NODEVER }}
           cache: "npm"
       - run: npm ci
       - run: npm run build --if-present
