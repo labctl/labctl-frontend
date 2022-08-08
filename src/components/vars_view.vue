@@ -110,8 +110,8 @@ import {
   SplitscreenTwotone,
   DescriptionOutlined,
 } from "@vicons/material";
-import { Dictionary } from "@/utils/types";
 import TemplateDialog from "@/components/template_dialog.vue";
+import { sortDictionary } from "@/utils/utils";
 
 export interface PropDef {
   id: string;
@@ -133,12 +133,12 @@ const topovars = computed(() => store.topo.nodes[props.id].vars);
 
 const vars = computed(() => {
   const v = props.link ? store.linkVars(props.id) : store.topo.vars[props.id];
-  return sortDictionary(v, {});
+  return sortDictionary(v, compareKeys, {});
 });
 
 const newvars = computed(() => {
   const v = store.topo.vars[props.id];
-  return sortDictionary(v, topovars.value);
+  return sortDictionary(v, compareKeys, topovars.value);
 });
 
 const title = computed(() => {
@@ -160,20 +160,6 @@ function compareKeys(a: string, b: string) {
   if (a === "clab_far") return 1;
   if (b === "clab_far") return -1;
   return a.localeCompare(b);
-}
-
-/** Sort a dictionary */
-function sortDictionary(obj: Dictionary, filterObj?: Dictionary) {
-  const f = typeof filterObj === "undefined" ? {} : filterObj;
-  const sortedKeys = Object.keys(obj).sort(compareKeys);
-  // build a new dictionary "accumulator" in the correct order
-  return sortedKeys.reduce((accumulator: Dictionary, k: string) => {
-    const same = k in f && JSON.stringify(f[k]) === JSON.stringify(obj[k]);
-    if (!same) {
-      accumulator[k] = obj[k];
-    }
-    return accumulator;
-  }, {});
 }
 
 const templateVisible = ref(false);

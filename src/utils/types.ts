@@ -11,6 +11,10 @@ export interface Callable<T1, T2> {
   (key: T1): T2; // eslint-disable-line no-unused-vars
 }
 
+export interface Callable2<T1, T2, T3> {
+  (v1: T1, v2: T2): T3;
+}
+
 export interface MainMessage {
   txt: string;
   obj: Record<string, unknown>;
@@ -26,6 +30,8 @@ export interface LabelValue {
   label: string;
   value: string;
 }
+
+export interface Point extends vNG.Point {}
 
 export interface vngLayout {
   nodes: Record<string, vNG.Point>;
@@ -117,3 +123,9 @@ export type Nodes = Record<string, Node>;
 export type NodeVars = Record<string, NodeVar>;
 /** topo file links */
 export type Links = Record<string, Link>;
+
+export interface JsonResponse {
+  ok: boolean;
+  msg?: string;
+  data: Dictionary;
+}

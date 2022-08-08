@@ -15,12 +15,15 @@
       /> -->
       <n-switch
         :value="layout === 'force'"
-        label="a"
         @update:value="(v) => (layout = v ? 'force' : 'grid')"
       >
         <template #checked> force </template>
-        <template #unchecked> {{ layout }} </template></n-switch
-      >
+        <template #unchecked> {{ layout }} </template>
+      </n-switch>
+      <n-switch v-model:value="show_logs">
+        <template #checked> logs </template>
+        <template #unchecked> logs </template>
+      </n-switch>
     </n-space>
   </teleport>
 
@@ -158,8 +161,8 @@
         @close="selectedLinks.splice(selectedLinks.indexOf(lid, 0), 1)"
       ></vars-view>
     </n-grid-item>
-    <n-grid-item>
-      <n-card title="Logs">
+    <n-grid-item v-if="show_logs">
+      <n-card title="Logs" closable @close="show_logs = false">
         selected:{{ selectedNodes }} {{ selectedLinks }}
         <ul class="event-logs">
           <li
@@ -196,6 +199,7 @@ import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
 import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/utils/eventbus";
 import { WsMsgCodes } from "@/utils/types";
+import { useLocalStorage } from "@vueuse/core";
 
 const store = useMainStore();
 const selectedNodes = ref<string[]>([]);
@@ -236,6 +240,7 @@ const lblLink = ref({} as Record<string, lblLinkT>);
 const lblNode = ref({} as Record<string, ndeLinkT>);
 
 const ttheight = ref(450);
+const show_logs = useLocalStorage("showLogs", false);
 const EVENTS_COUNT = 12;
 
 const eventLogs = reactive<[string, string, string][]>([]);

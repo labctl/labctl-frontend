@@ -1,4 +1,4 @@
-import { Dictionary } from "./types";
+import { Callable2, Dictionary, JsonResponse } from "./types";
 
 export const ws_uri = (() => {
   const loc = window.location;
@@ -40,10 +40,28 @@ export function isObject(value: any) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+/** Sort a dictionary */
+export function sortDictionary(
+  obj: Dictionary,
+  compareKeys: Callable2<string, string, number>,
+  filterObj?: Dictionary
+) {
+  const f = typeof filterObj === "undefined" ? {} : filterObj;
+  const sortedKeys = Object.keys(obj).sort(compareKeys);
+  // build a new dictionary "accumulator" in the correct order
+  return sortedKeys.reduce((accumulator: Dictionary, k: string) => {
+    const same = k in f && JSON.stringify(f[k]) === JSON.stringify(obj[k]);
+    if (!same) {
+      accumulator[k] = obj[k];
+    }
+    return accumulator;
+  }, {});
+}
+
 export async function json_fetch(
   url: string,
   data?: Dictionary
-): Promise<Dictionary> {
+): Promise<JsonResponse> {
   const opt = data
     ? {
         method: "POST",

@@ -112,11 +112,11 @@ export const useMainStore = defineStore("main", {
     init() {
       // message();
       if (this.topo.name === "") {
-        json_fetch("/labctl/topo").then((topo) => {
-          Object.assign(this.topo, topo);
+        json_fetch("/labctl/topo").then((resp) => {
+          Object.assign(this.topo, resp.data);
         });
-        json_fetch("/labctl/vars").then((vars) => {
-          Object.assign(this.topo.vars, vars);
+        json_fetch("/labctl/vars").then((resp) => {
+          Object.assign(this.topo.vars, resp.data);
         });
       }
     },
