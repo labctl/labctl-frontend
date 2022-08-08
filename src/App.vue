@@ -177,6 +177,7 @@ const v_comply = computed(() => route.path.startsWith("/comply"));
 </script>
 
 <style>
+/*
 @import "./assets/github-markdown.css";
 
 .markdown-body {
@@ -192,4 +193,5 @@ const v_comply = computed(() => route.path.startsWith("/comply"));
     padding: 15px;
   }
 }
+*/
 </style>
