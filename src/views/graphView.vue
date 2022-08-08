@@ -194,8 +194,8 @@ import dayjs from "dayjs";
 
 import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
-import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/plugins/eventbus";
-import { WsMsgCodes } from "@/components/types";
+import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/utils/eventbus";
+import { WsMsgCodes } from "@/utils/types";
 
 const store = useMainStore();
 const selectedNodes = ref<string[]>([]);

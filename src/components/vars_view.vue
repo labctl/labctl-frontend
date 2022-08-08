@@ -110,9 +110,8 @@ import {
   SplitscreenTwotone,
   DescriptionOutlined,
 } from "@vicons/material";
-import { Dictionary } from "./types";
+import { Dictionary } from "@/utils/types";
 import TemplateDialog from "@/components/template_dialog.vue";
-// import { Node } from "v-network-graph";
 
 export interface PropDef {
   id: string;

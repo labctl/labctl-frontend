@@ -1,5 +1,5 @@
 import { useEventBus } from "@vueuse/core";
-import { WebSocketTemplate, WsMessage } from "@/components/types";
+import { WebSocketTemplate, WsMessage } from "@/utils/types";
 
 // export const templateKey: EventBusKey<WebSocketTemplate> =
 //   Symbol("ws-template-key");

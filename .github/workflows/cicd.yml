@@ -11,6 +11,7 @@ env:
 
 jobs:
   build:
+    name: build & push to labctl repo
     runs-on: ubuntu-22.04
 
     steps:
@@ -22,7 +23,7 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npm run build --if-present
-      - name: Pushes frontend to labctl
+      - name: Push frontend to labctl
         uses: cpina/github-action-push-to-another-repository@main
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LABCTL_SSH_DEPLOY_KEY }}

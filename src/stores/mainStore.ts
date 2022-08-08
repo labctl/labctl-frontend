@@ -1,9 +1,7 @@
 import { defineStore } from "pinia";
-import { json_fetch } from "@/components/utils";
+import { json_fetch } from "@/utils/utils";
 import { MessageApi } from "naive-ui";
 
-//eslint-disable-next-line
-//import { IMe, Dictionary, Page, Standard } from "@/components/types";
 import { useLocalStorage } from "@vueuse/core";
 import {
   UiData,
@@ -13,10 +11,10 @@ import {
   vngLayout,
   WsMessage,
   Options,
-  Dictionary,
   WsMsgCodes,
-} from "@/components/types";
-import { wsSend } from "@/plugins/eventbus";
+} from "@/utils/types";
+import { fFarEndNode } from "@/utils/helpers";
+import { wsSend } from "@/utils/eventbus";
 import { toRaw } from "vue";
 
 export function message(): MessageApi {
@@ -143,20 +141,3 @@ export const useMainStore = defineStore("main", {
     save: 1500, // debounce save by 300ms
   },
 });
-
-export function fFarEndNode(far: string) {
-  return (l: Dictionary) => {
-    if (!("clab_far" in l)) {
-      console.log(`clab_far not in dictionary. Filtering on ${far}: ${l}`);
-      return true;
-    }
-    const f = l.clab_far as Dictionary;
-    if (!("clab_node" in f)) {
-      console.log(
-        `clab_far.clab_node not in dictionary. Filtering on ${far}: ${l}`
-      );
-      return true;
-    }
-    return f.clab_node === far;
-  };
-}

@@ -106,10 +106,8 @@ import {
   withDefaults,
 } from "vue";
 // eslint-diasble-next-line
-//import { Callable, IDictionary } from "@/components/types";
-import { md_2_html } from "@/components/utils_md";
-import { Dictionary, WsMessage, WsMsgCodes } from "@/components/types";
-// import { json_fetch } from "@/components/utils";
+import { md_2_html } from "@/utils/markdown";
+import { Dictionary, WsMessage, WsMsgCodes } from "@/utils/types";
 import {
   //useMessage,
   NCard,
@@ -123,7 +121,7 @@ import {
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
-import { wsTemplateBus, wsSend } from "@/plugins/eventbus";
+import { wsTemplateBus, wsSend } from "@/utils/eventbus";
 
 const store = useMainStore();
 // const message = useMessage();

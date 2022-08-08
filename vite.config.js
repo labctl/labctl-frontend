@@ -23,6 +23,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  test: {},
   /* remove the need to specify .vue files https://vitejs.dev/config/#resolve-extensions
   resolve: {
     extensions: [

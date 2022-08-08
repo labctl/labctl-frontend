@@ -117,9 +117,9 @@ import {
 import { useMainStore, message } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
-import { WsMessage, WsMsgCodes } from "./components/types";
-import { ws_uri } from "@/components/utils";
-import { wsTemplateBus, wsRxBus, wsTxBus } from "./plugins/eventbus";
+import { WsMessage, WsMsgCodes } from "@/utils/types";
+import { ws_uri } from "@/utils/utils";
+import { wsTemplateBus, wsRxBus, wsTxBus } from "@/utils/eventbus";
 
 const store = useMainStore();
 
