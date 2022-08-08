@@ -10,7 +10,7 @@
       "allowSyntheticDefaultImports": true,
       "moduleResolution": "node",
       "sourceMap": true,
-      "baseUrl": "/labctl/",
+      "baseUrl": ".",
       "isolatedModules": true,
 
       "typeRoots": [

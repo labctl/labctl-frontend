@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 export function setupRouter(app: App) {
   const router = createRouter({
-    history: createWebHistory("/labctl/"), // process.env.BASE_URL
+    history: createWebHistory(process.env.BASE_URL),
     routes: [
       {
         path: "/info",

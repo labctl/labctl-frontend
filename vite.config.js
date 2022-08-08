@@ -9,7 +9,7 @@ const path = require("path");
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "", // allow mounting to another path /s2 etc
+  base: "/labctl/", // allow mounting to another path /s2 etc
   plugins: [
     vue(),
     eslintPlugin(),

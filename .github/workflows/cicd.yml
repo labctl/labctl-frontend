@@ -1,0 +1,36 @@
+name: Labctl CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODEVER: 18
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ NODEVER }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ NODEVER }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build --if-present
+      - name: Pushes frontend to labctl
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.LABCTL_SSH_DEPLOY_KEY }}
+        with:
+          source-directory: "dist"
+          destination-github-username: "labctl"
+          destination-repository-name: "labctl"
+          user-email: kellerza@gmail.com
+          target-branch: main
+          target-directory: /helpers/frontend/html
+          commit-message: labctl-js
