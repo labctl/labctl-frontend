@@ -14,11 +14,11 @@
         style="width: 160px"
       /> -->
       <n-switch
-        :value="layout === 'force'"
-        @update:value="(v) => (layout = v ? 'force' : 'grid')"
+        :value="optLayout === 'force'"
+        @update:value="(v) => (optLayout = v ? 'force' : 'grid')"
       >
         <template #checked> force </template>
-        <template #unchecked> {{ layout }} </template>
+        <template #unchecked> {{ optLayout }} </template>
       </n-switch>
       <n-switch v-model:value="show_logs">
         <template #checked> logs </template>
@@ -30,13 +30,13 @@
   <div :style="{ height: `${ttheight}px` }">
     <v-network-graph
       ref="graph"
-      v-model:zoom-level="zoom"
+      v-model:zoom-level="optZoom"
       v-model:selected-nodes="selectedNodes"
       v-model:selected-edges="selectedLinks"
       :nodes="store.topo.nodes"
       :edges="store.topo.links"
       :configs="configs"
-      :layouts="layouts"
+      :layouts="optLayouts"
       :event-handlers="eventHandlers"
     >
       <template
@@ -121,7 +121,7 @@
       </template>
       <!-- <template #badge="{ scale }">
         <circle
-          v-for="(pos, node) in layouts.nodes"
+          v-for="(pos, node) in optLayouts.nodes"
           :key="node"
           :cx="pos.x + 9 * scale + pan.x"
           :cy="pos.y - 9 * scale + pan.y"
@@ -200,26 +200,12 @@ import VarsView from "@/components/vars_view.vue";
 import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/utils/eventbus";
 import { WsMsgCodes } from "@/utils/types";
 import { useLocalStorage } from "@vueuse/core";
+import { labelDirection } from "@/utils/helpers";
 
 const store = useMainStore();
 const selectedNodes = ref<string[]>([]);
 const selectedLinks = ref<string[]>([]);
-const { layout, zoom, layouts } = storeToRefs(store);
-
-// const layoutOptions = [
-//   {
-//     label: "Force layout",
-//     value: "force",
-//   },
-//   {
-//     label: "Grid layout",
-//     value: "grid",
-//   },
-//   {
-//     label: "Free layout",
-//     value: "free",
-//   },
-// ];
+const { optLayout, optZoom, optLayouts } = storeToRefs(store);
 
 interface lblLinkT {
   source_above?: string;
@@ -278,15 +264,15 @@ const eventHandlers: vNG.EventHandlers = {
 // watch(layout, store.save);
 
 function getLayoutHandler() {
-  if (layout.value === "force") {
+  if (optLayout.value === "force") {
     return new ForceLayout();
-  } else if (layout.value === "grid") {
+  } else if (optLayout.value === "grid") {
     return new vNG.GridLayout({ grid: 15 });
   }
   return new vNG.SimpleLayout();
 }
 
-watch(layout, () => {
+watch(optLayout, () => {
   store.save();
   if (configs.view) {
     configs.view.layoutHandler = getLayoutHandler();
@@ -294,6 +280,10 @@ watch(layout, () => {
 });
 
 const nodeSize = 30;
+
+const directions = computed(() => {
+  return labelDirection(optLayouts.value.nodes, store.topo.links);
+});
 
 const configs = reactive(
   vNG.defineConfigs({
@@ -313,7 +303,10 @@ const configs = reactive(
         lineHeight: 1.1,
         color: "#000000",
         margin: 4,
-        direction: "south",
+        direction: (n) =>
+          n.name && n.name in directions.value
+            ? directions.value[n.name]
+            : "south",
         text: "name",
       },
       selectable: true,
@@ -332,7 +325,7 @@ const tooltipPos = computed(() => {
   if (!graph.value || !tooltip.value) return { x: 0, y: 0 };
   if (!tooltipTNode.value) return { x: 0, y: 0 };
 
-  const nodePos = store.layouts.nodes[tooltipTNode.value];
+  const nodePos = store.optLayouts.nodes[tooltipTNode.value];
   // translate coordinates: SVG -> DOM
   const domPoint = graph.value.translateFromSvgToDomCoordinates(nodePos);
   // calculates top-left position of the tooltip.
@@ -381,7 +374,7 @@ wsTemplateBus.on((t) => {
   }
 });
 
-watch(store.templates, () => {
+watch(store.optTemplates, () => {
   // If the templates changes, update the labels
   updatelabels();
 });
@@ -393,7 +386,7 @@ function updatelabels() {
       template: {
         id: lid,
         name: "link",
-        template: store.templates["link"],
+        template: store.optTemplates["link"],
         vars: store.linkVars(lid),
         result: "",
       },
@@ -405,7 +398,7 @@ function updatelabels() {
       template: {
         id: nid,
         name: "node",
-        template: store.templates["node"],
+        template: store.optTemplates["node"],
         vars: store.topo.vars[nid],
         result: "",
       },

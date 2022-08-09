@@ -150,9 +150,9 @@ const tempN = ref("");
 
 const tempV = computed({
   get: () =>
-    tempN.value in store.templates ? store.templates[tempN.value] : "",
+    tempN.value in store.optTemplates ? store.optTemplates[tempN.value] : "",
   set: (v) => {
-    store.templates[tempN.value] = v;
+    store.optTemplates[tempN.value] = v;
   },
 });
 
@@ -196,7 +196,7 @@ watch(visible, (value) => {
 });
 
 const tempOptions = computed(() =>
-  Object.keys(store.templates).map((v) => {
+  Object.keys(store.optTemplates).map((v) => {
     return {
       label: v,
       value: v,

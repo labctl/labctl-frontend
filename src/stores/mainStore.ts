@@ -12,6 +12,7 @@ import {
   WsMessage,
   Options,
   WsMsgCodes,
+  TemplateFiles,
 } from "@/utils/types";
 import { fFarEndNode } from "@/utils/helpers";
 import { wsSend } from "@/utils/eventbus";
@@ -26,6 +27,7 @@ export function message(): MessageApi {
 export const useMainStore = defineStore("main", {
   // a function that returns a fresh state
   state: () => ({
+    /** topo file */
     topo: {
       name: "",
       nodes: {} as Nodes,
@@ -33,12 +35,15 @@ export const useMainStore = defineStore("main", {
       /** compiled vars per NE */
       vars: {} as NodeVars,
     },
-    layout: "grid",
-    zoom: 1.5,
-    templates: {} as Record<string, string>,
-    layouts: {
+    /** *.tmpl files from the template path */
+    templateFiles: {} as TemplateFiles,
+    // option file
+    optLayouts: {
       nodes: {},
     } as vngLayout,
+    optTemplates: {} as Record<string, string>,
+    optLayout: "grid",
+    optZoom: 1.5,
     /** used while loading (?) */
     loading: 0,
     /** split vars or show the merge value! */
@@ -52,9 +57,9 @@ export const useMainStore = defineStore("main", {
       return {
         code: WsMsgCodes.save,
         data: {
-          options: { layout: state.layout, zoom: state.zoom } as Options,
-          layouts: state.layouts,
-          templates: state.templates,
+          options: { layout: state.optLayout, zoom: state.optZoom } as Options,
+          layouts: state.optLayouts,
+          templates: state.optTemplates,
         } as UiData,
       } as WsMessage;
     },
@@ -118,6 +123,9 @@ export const useMainStore = defineStore("main", {
         json_fetch("/labctl/vars").then((resp) => {
           Object.assign(this.topo.vars, resp.data);
         });
+        json_fetch("/labctl/templates").then((resp) => {
+          Object.assign(this.templateFiles, resp.data);
+        });
       }
     },
 
@@ -128,8 +136,8 @@ export const useMainStore = defineStore("main", {
       }
       console.log("load layouts+", data.options);
       Object.assign(this, data.options);
-      this.layouts = data.layouts;
-      this.templates = data.templates;
+      this.optLayouts = data.layouts;
+      this.optTemplates = data.templates;
     },
 
     save() {

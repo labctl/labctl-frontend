@@ -49,7 +49,7 @@ export interface UiData {
   templates: Record<string, string>;
 }
 
-export interface WebSocketTemplate {
+export interface WsTemplate {
   id: string;
   /** the template name */
   name: string;
@@ -70,7 +70,7 @@ export interface WsMessage {
   code: WsMsgCodes;
   data?: UiData;
   msg?: string;
-  template?: WebSocketTemplate;
+  template?: WsTemplate;
 }
 
 interface pLinkVar {
@@ -128,4 +128,12 @@ export interface JsonResponse {
   ok: boolean;
   msg?: string;
   data: Dictionary;
+}
+
+/** labctl Template struct from the server */
+export interface TemplateFiles {
+  name: string;
+  p: string;
+  shadow: string[];
+  value: string;
 }
