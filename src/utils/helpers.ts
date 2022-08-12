@@ -1,5 +1,6 @@
 import { Dictionary, Point, Links, Link } from "./types";
 
+/** filter function for links ensure we match clab_far.clab_node */
 export function fFarEndNode(far: string) {
   return (l: Dictionary) => {
     if (!("clab_far" in l)) {
@@ -17,10 +18,12 @@ export function fFarEndNode(far: string) {
   };
 }
 
+/** Calculate the differences between 2 points */
 function diff(p1: Point, p2: Point): Point {
   return { x: p1.x - p2.x, y: p1.y - p2.y } as Point;
 }
 
+/** Calculate the label.direction for v-network graph */
 export function labelDirection(
   nodes: Record<string, Point>,
   links: Links,
@@ -28,8 +31,8 @@ export function labelDirection(
 ) {
   const res: Record<string, string> = {};
   Object.keys(nodes).forEach((n) => {
+    res[n] = "south";
     const node = {
-      d: "south",
       n: 0,
       s: 0,
       e: 0,
@@ -56,19 +59,29 @@ export function labelDirection(
     let low = node.s;
     if (node.n < low) {
       low = node.n;
-      node.d = "north";
+      res[n] = "north";
     }
     if (node.e < low) {
       low = node.e;
-      node.d = "east";
+      res[n] = "east";
     }
     if (node.w < low) {
-      node.d = "west";
+      res[n] = "west";
     }
 
-    if (debug) console.debug(node);
-    res[n] = node.d;
+    if (debug) console.debug(res[n], node);
   });
 
   return res;
+}
+
+interface name_role {
+  name: string;
+  role: string;
+  ext: string;
+}
+export function ceTemplateName(name: string): name_role {
+  const n = name.split("__");
+  const r = n[1].split(".");
+  return { name: n[0], role: r[0], ext: r[1] };
 }

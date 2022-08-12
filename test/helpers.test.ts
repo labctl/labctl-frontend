@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { labelDirection } from "../src/utils/helpers";
+import { ceTemplateName, labelDirection } from "../src/utils/helpers";
 import { Point, Links, Link } from "../src/utils/types";
 
 test("label position", async () => {
@@ -39,4 +39,10 @@ test("label position", async () => {
   expect(r.b).eq("south");
   expect(r.c).eq("east");
   expect(r.d).eq("south");
+});
+
+test("name role", async () => {
+  const res = ceTemplateName("c7__vr-sros.tmpl");
+  expect(res.name).eq("c7");
+  expect(res.role).eq("vr-sros");
 });

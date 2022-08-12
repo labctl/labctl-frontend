@@ -4,16 +4,6 @@
       :theme-overrides="{ common: { fontWeightStrong: '600' } }"
       :theme="store.dark ? darkTheme : lightTheme"
     >
-      <!-- <n-layout class="root-layout" has-sider>
-        <n-layout-sider
-          bordered
-          show-trigger="arrow-circle"
-          collapse-mode="width"
-          :collapsed-width="120"
-          :width="240"
-          content-style="padding: 24px;"
-          >a</n-layout-sider
-        > -->
       <n-layout position="absolute">
         <n-layout-header
           bordered
@@ -25,8 +15,6 @@
               <n-icon size="24" style="padding-top: 6px"><RadarRound /></n-icon>
               <span style="font-size: 24px">{{ store.topo.name }}</span>
             </n-space>
-            <!-- <n-text tag="div" class="ui-logo" :depth="1"> </n-text> -->
-            <!--v-spacer />-->
 
             <n-space justify="end">
               <div id="mtoolbar"></div>
@@ -74,7 +62,6 @@
           </n-space>
         </n-layout-header>
 
-        <!-- v-if ensures router views only visible after store initialized (options loaded) -->
         <n-layout-content
           native-scrollbar
           position="absolute"
@@ -112,8 +99,6 @@ import {
   NAvatar,
 } from "naive-ui";
 
-//import { IMe } from "@/componen ts/types";
-
 import { useMainStore, message } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
@@ -123,7 +108,7 @@ import { wsTemplateBus, wsRxBus, wsTxBus } from "@/utils/eventbus";
 
 const store = useMainStore();
 
-/*** websocket to eventbus handlers */
+/** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   heartbeat: {
     message: '{"code":1}',
@@ -137,7 +122,7 @@ wsTxBus.on((tx) => {
   send(JSON.stringify(tx));
 });
 
-// on any data change, trnasmit the message on the Rx bus or the template bus
+// on any data change, transmit the message on the Rx bus or the template bus
 watch(data, (msg) => {
   if (!msg) return;
   const m: WsMessage = JSON.parse(msg);

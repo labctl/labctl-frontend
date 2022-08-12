@@ -26,26 +26,17 @@ export interface Dialog {
   close(): void;
 }
 
-export interface LabelValue {
-  label: string;
-  value: string;
-}
-
 export interface Point extends vNG.Point {}
-
-export interface vngLayout {
-  nodes: Record<string, vNG.Point>;
-}
 
 export interface Options {
   layout: string;
-  zoom: number;
-  [x: string]: any;
+  height: number;
+  // [x: string]: any;
 }
 
 export interface UiData {
   options: Options;
-  layouts: vngLayout;
+  layouts: vNG.Layouts;
   templates: Record<string, string>;
 }
 
@@ -64,13 +55,15 @@ export enum WsMsgCodes {
   render = 300,
   save = 100,
   echo = 1,
+  config_commit = 400,
+  config_compare = 401,
 }
 
 export interface WsMessage {
   code: WsMsgCodes;
-  data?: UiData;
-  msg?: string;
-  template?: WsTemplate;
+  data?: UiData; // used by: save
+  msg?: string; // received
+  template?: WsTemplate; // used by: render
 }
 
 interface pLinkVar {
@@ -136,4 +129,20 @@ export interface TemplateFiles {
   p: string;
   shadow: string[];
   value: string;
+}
+
+/** linkLabels */
+export interface LinkLabels {
+  source_above?: string;
+  source_below?: string;
+  target_above?: string;
+  target_below?: string;
+  center_above?: string;
+  center_below?: string;
+  size: number;
+}
+export interface NodeLabels {
+  label_below?: string;
+  label?: string;
+  size: number;
 }

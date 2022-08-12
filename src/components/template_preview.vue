@@ -96,7 +96,6 @@
       v-model:visible="templateVisible"
       :vars="vars"
       :template="link ? 'link' : 'node'"
-      :link="props.link"
     ></template-dialog>
   </n-card>
 </template>

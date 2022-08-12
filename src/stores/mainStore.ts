@@ -8,12 +8,12 @@ import {
   NodeVars,
   Links,
   Nodes,
-  vngLayout,
   WsMessage,
   Options,
   WsMsgCodes,
   TemplateFiles,
 } from "@/utils/types";
+import { Layouts } from "v-network-graph";
 import { fFarEndNode } from "@/utils/helpers";
 import { wsSend } from "@/utils/eventbus";
 import { toRaw } from "vue";
@@ -36,14 +36,15 @@ export const useMainStore = defineStore("main", {
       vars: {} as NodeVars,
     },
     /** *.tmpl files from the template path */
-    templateFiles: {} as TemplateFiles,
+    templateFiles: {} as Record<string, TemplateFiles>,
     // option file
     optLayouts: {
       nodes: {},
-    } as vngLayout,
+    } as Layouts,
     optTemplates: {} as Record<string, string>,
     optLayout: "grid",
-    optZoom: 1.5,
+    /** heigh of the graph */
+    optHeight: 450,
     /** used while loading (?) */
     loading: 0,
     /** split vars or show the merge value! */
@@ -57,7 +58,10 @@ export const useMainStore = defineStore("main", {
       return {
         code: WsMsgCodes.save,
         data: {
-          options: { layout: state.optLayout, zoom: state.optZoom } as Options,
+          options: {
+            layout: state.optLayout,
+            height: state.optHeight,
+          } as Options,
           layouts: state.optLayouts,
           templates: state.optTemplates,
         } as UiData,
@@ -116,6 +120,23 @@ export const useMainStore = defineStore("main", {
   actions: {
     init() {
       // message();
+    },
+
+    load(data?: UiData) {
+      if (!data) {
+        console.log("no data to load");
+        return;
+      }
+      console.log("load layouts+", data.options);
+      this.optHeight = Math.max(400, Math.min(900, data.options.height || 450));
+      this.optLayout = data.options.layout;
+      // Object.keys(data.options).forEach((o) => {
+      //   if (Object.hasOwn(this, `opt`))
+      // })
+      Object.assign(this, data.options);
+      this.optLayouts = data.layouts;
+      this.optTemplates = data.templates;
+
       if (this.topo.name === "") {
         json_fetch("/labctl/topo").then((resp) => {
           Object.assign(this.topo, resp.data);
@@ -127,17 +148,6 @@ export const useMainStore = defineStore("main", {
           Object.assign(this.templateFiles, resp.data);
         });
       }
-    },
-
-    load(data?: UiData) {
-      if (!data) {
-        console.log("no data to load");
-        return;
-      }
-      console.log("load layouts+", data.options);
-      Object.assign(this, data.options);
-      this.optLayouts = data.layouts;
-      this.optTemplates = data.templates;
     },
 
     save() {

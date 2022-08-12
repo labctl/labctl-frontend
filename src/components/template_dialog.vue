@@ -38,7 +38,9 @@
               v-model:value="tempN"
               filterable
               tag
+              style="width: 200px"
               :options="tempOptions"
+              :consistent-menu-width="false"
             />
           </n-space>
 
@@ -118,6 +120,8 @@ import {
   NSpace,
   NSelect,
   NSwitch,
+  SelectOption,
+  SelectGroupOption,
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
@@ -135,9 +139,15 @@ interface PropDef {
   /** the template name */
   template: string;
   visible: boolean;
+
   fixedTemplate?: boolean;
+  /** link is used to filter any node related templates */
+  link?: boolean;
 }
-const props = withDefaults(defineProps<PropDef>(), { fixedTemplate: false });
+const props = withDefaults(defineProps<PropDef>(), {
+  fixedTemplate: false,
+  link: false,
+});
 
 const emit = defineEmits(["update:template", "update:visible"]);
 
@@ -149,9 +159,23 @@ const showMd = ref(false);
 const tempN = ref("");
 
 const tempV = computed({
-  get: () =>
-    tempN.value in store.optTemplates ? store.optTemplates[tempN.value] : "",
+  get: () => {
+    console.log(tempN.value, store.templateFiles[tempN.value]);
+    if (tempN.value in store.templateFiles) {
+      return store.templateFiles[tempN.value].value;
+    }
+    return tempN.value in store.optTemplates
+      ? store.optTemplates[tempN.value]
+      : "";
+  },
   set: (v) => {
+    if (tempN.value in store.templateFiles) {
+      store.templateFiles[tempN.value].value = v;
+      return;
+    }
+    if (!(tempN.value in store.optTemplates)) {
+      tempN.value = (props.link ? "link." : "node.") + tempN.value;
+    }
     store.optTemplates[tempN.value] = v;
   },
 });
@@ -195,14 +219,44 @@ watch(visible, (value) => {
   tempN.value = props.template;
 });
 
-const tempOptions = computed(() =>
-  Object.keys(store.optTemplates).map((v) => {
-    return {
+const tempOptions = computed(() => {
+  const res = [] as Array<SelectGroupOption | SelectOption>;
+  const g = {} as Record<string, SelectGroupOption>;
+
+  function grp(name: string): SelectOption[] {
+    if (name in g) return g[name].children as any;
+    const r = {
+      type: "group",
+      label: name,
+      key: name,
+      children: [] as SelectOption[],
+    } as SelectGroupOption;
+    g[name] = r;
+    res.push(r);
+    return r.children as any;
+  }
+
+  Object.keys(store.optTemplates).forEach((v) => {
+    grp("Graph labels").push({
       label: v,
       value: v,
-    };
-  })
-);
+      disabled: (props.link ? v.indexOf("link") : v.indexOf("node")) < 0,
+    } as SelectOption);
+  });
+  if (props.link) {
+    return res;
+  }
+  const role = props.vars["clab_role"];
+  console.log(role);
+  Object.values(store.templateFiles).forEach((t) => {
+    grp(`/${t.p}/`).push({
+      label: t.name,
+      value: t.name,
+      disabled: role ? t.name.indexOf("__" + String(role)) < 0 : false,
+    } as SelectOption);
+  });
+  return res;
+});
 </script>
 
 <style>
