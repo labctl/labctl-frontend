@@ -265,6 +265,7 @@ import {
   SelectOption,
   NDropdown,
   NIcon,
+  useMessage,
 } from "naive-ui";
 import JSwitch from "@/components/j_switch.vue";
 import { RefreshSharp } from "@vicons/material";
@@ -281,6 +282,7 @@ import { WsMsgCodes, LinkLabels, NodeLabels, WsTemplate } from "@/utils/types";
 import { useLocalStorage, watchDebounced } from "@vueuse/core";
 import { labelDirection } from "@/utils/helpers";
 
+(window as any).$message = useMessage();
 const store = useMainStore();
 const selectedNodes = ref<string[]>([]);
 const selectedLinks = ref<string[]>([]);
@@ -406,9 +408,6 @@ function centerGraph() {
 
 onMounted(() => {
   logEvent("mounted", {});
-  setTimeout(centerGraph, 200);
-  setTimeout(centerGraph, 1000);
-  //nextTick(centerGraph);
 });
 
 wsTxBus.on((ev) => {
@@ -422,6 +421,9 @@ wsRxBus.on((ev) => {
   if (ev.code === WsMsgCodes.save) {
     logEvent("WS load", {});
     nextTick(centerGraph);
+    setTimeout(centerGraph, 200);
+    setTimeout(centerGraph, 1000);
+    //nextTick(centerGraph);
   }
 });
 

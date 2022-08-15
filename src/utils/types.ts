@@ -55,8 +55,7 @@ export enum WsMsgCodes {
   render = 300,
   save = 100,
   echo = 1,
-  config_commit = 400,
-  config_compare = 401,
+  config_cmd = 400,
 }
 
 export interface WsMessage {

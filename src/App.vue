@@ -135,7 +135,9 @@ watch(data, (msg) => {
     wsRxBus.emit(m);
     return;
   }
-  message().warning(`unknown message code ${m.code}: ${m}`);
+  const t = `unknown message code ${m.code}: ${JSON.stringify(m)}`;
+  console.log(t);
+  message().warning(t);
 });
 
 const wsstatus = computed(() => {

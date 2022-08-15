@@ -132,8 +132,8 @@ function getT(name: string, role: string) {
 function exec() {
   console.log("run");
   wsSend({
-    code: WsMsgCodes.config_commit,
-    // payload: { cmd: value.value },
+    code: WsMsgCodes.config_cmd,
+    msg: value.value,
   });
 }
 
