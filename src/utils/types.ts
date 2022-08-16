@@ -28,43 +28,6 @@ export interface Dialog {
 
 export interface Point extends vNG.Point {}
 
-export interface Options {
-  layout: string;
-  height: number;
-  // [x: string]: any;
-}
-
-export interface UiData {
-  options: Options;
-  layouts: vNG.Layouts;
-  templates: Record<string, string>;
-}
-
-export interface WsTemplate {
-  id: string;
-  /** the template name */
-  name: string;
-  /** the template value (optional) */
-  template: string;
-  vars: Dictionary;
-  result: string;
-  resulty?: Record<string, unknown>;
-}
-
-export enum WsMsgCodes {
-  render = 300,
-  save = 100,
-  echo = 1,
-  config_cmd = 400,
-}
-
-export interface WsMessage {
-  code: WsMsgCodes;
-  data?: UiData; // used by: save
-  msg?: string; // received
-  template?: WsTemplate; // used by: render
-}
-
 interface pLinkVar {
   [x: string]: any;
   clab_link_ip?: string;

@@ -109,7 +109,8 @@ import {
 } from "vue";
 // eslint-diasble-next-line
 import { md_2_html } from "@/utils/markdown";
-import { Dictionary, WsMessage, WsMsgCodes } from "@/utils/types";
+import { Dictionary } from "@/utils/types";
+import { WsMessage, WsMsgCodes } from "@/utils/websocket";
 import {
   //useMessage,
   NCard,
@@ -125,7 +126,7 @@ import {
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
-import { wsTemplateBus, wsSend } from "@/utils/eventbus";
+import { wsTemplateBus, wsSend } from "@/utils/websocket";
 
 const store = useMainStore();
 // const message = useMessage();
@@ -187,7 +188,7 @@ watchDebounced(
     template_result.value = "...";
     template_resulty.value = {};
     const opt = {
-      code: WsMsgCodes.render,
+      code: WsMsgCodes.template,
       template: {
         template: tempV.value,
         name: tempN.value,

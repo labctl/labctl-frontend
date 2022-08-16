@@ -277,8 +277,15 @@ import dayjs from "dayjs";
 import { useMainStore } from "@/stores/mainStore";
 import VarsView from "@/components/vars_view.vue";
 import CeControl from "@/components/ce_control.vue";
-import { wsTemplateBus, wsTxBus, wsRxBus, wsSend } from "@/utils/eventbus";
-import { WsMsgCodes, LinkLabels, NodeLabels, WsTemplate } from "@/utils/types";
+import {
+  wsTemplateBus,
+  wsTxBus,
+  wsRxBus,
+  wsSend,
+  WsTemplate,
+  WsMsgCodes,
+} from "@/utils/websocket";
+import { LinkLabels, NodeLabels } from "@/utils/types";
 import { useLocalStorage, watchDebounced } from "@vueuse/core";
 import { labelDirection } from "@/utils/helpers";
 
@@ -465,7 +472,7 @@ function updateLabel(t: WsTemplate) {
 function updatelabels() {
   Object.keys(store.topo.links).forEach((lid) => {
     wsSend({
-      code: WsMsgCodes.render,
+      code: WsMsgCodes.template,
       template: {
         id: lid,
         name: "link",
@@ -477,7 +484,7 @@ function updatelabels() {
   });
   Object.keys(store.topo.nodes).forEach((nid) => {
     wsSend({
-      code: WsMsgCodes.render,
+      code: WsMsgCodes.template,
       template: {
         id: nid,
         name: "node",

@@ -84,13 +84,12 @@ import {
 
 import { ceTemplateName } from "@/utils/helpers";
 import { useLocalStorage } from "@vueuse/core";
-import { wsSend } from "@/utils/eventbus";
-import { WsMsgCodes } from "@/utils/types";
+import { wsSend, WsMsgCodes } from "@/utils/websocket";
 
 const store = useMainStore();
 
 const emit = defineEmits(["update:close"]);
-const value = ref("");
+const value = ref("compare -l bgp -f R1");
 const visible = ref(true);
 const showTemplates = useLocalStorage("showTemplates", true);
 
@@ -132,8 +131,10 @@ function getT(name: string, role: string) {
 function exec() {
   console.log("run");
   wsSend({
-    code: WsMsgCodes.config_cmd,
-    msg: value.value,
+    code: WsMsgCodes.config,
+    config: {
+      cmd: value.value,
+    },
   });
 }
 

@@ -3,19 +3,13 @@ import { json_fetch } from "@/utils/utils";
 import { MessageApi } from "naive-ui";
 
 import { useLocalStorage } from "@vueuse/core";
-import {
-  UiData,
-  NodeVars,
-  Links,
-  Nodes,
-  WsMessage,
-  Options,
-  WsMsgCodes,
-  TemplateFiles,
-} from "@/utils/types";
+import { NodeVars, Links, Nodes, TemplateFiles } from "@/utils/types";
+
+import { WsMessage, WsMsgCodes, Options, UiData } from "@/utils/websocket";
+
 import { Layouts } from "v-network-graph";
 import { fFarEndNode } from "@/utils/helpers";
-import { wsSend } from "@/utils/eventbus";
+import { wsRxBus, wsSend } from "@/utils/websocket";
 import { toRaw } from "vue";
 
 export function message(): MessageApi {
@@ -122,6 +116,19 @@ export const useMainStore = defineStore("main", {
       // message();
     },
 
+    on_ws_message(msg: WsMessage) {
+      if (msg.code === WsMsgCodes.save) {
+        this.load(msg.uidata);
+        wsRxBus.emit(msg);
+        return;
+      }
+      // wsRxBus.emit(m);
+      wsRxBus.emit(msg);
+      const t = `unknown message code ${msg.code}: ${JSON.stringify(msg)}`;
+      console.log(t);
+      message().warning(t);
+    },
+
     load(data?: UiData) {
       if (!data) {
         console.log("no data to load");
@@ -151,7 +158,7 @@ export const useMainStore = defineStore("main", {
     },
 
     save() {
-      console.log("save layouts+", this.wsState.data?.options);
+      console.log("save layouts+", this.wsState.uidata?.options);
       wsSend(this.wsState);
     },
   },

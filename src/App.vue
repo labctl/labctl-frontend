@@ -99,20 +99,24 @@ import {
   NAvatar,
 } from "naive-ui";
 
-import { useMainStore, message } from "@/stores/mainStore";
+import { useMainStore } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
-import { WsMessage, WsMsgCodes } from "@/utils/types";
 import { ws_uri } from "@/utils/utils";
-import { wsTemplateBus, wsRxBus, wsTxBus } from "@/utils/eventbus";
+import {
+  wsTemplateBus,
+  wsTxBus,
+  WsMessage,
+  WsMsgCodes,
+} from "@/utils/websocket";
 
 const store = useMainStore();
 
 /** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   heartbeat: {
-    message: '{"code":1}',
-    interval: 2000,
+    message: '{"code":"."}',
+    interval: 3000,
   },
   autoReconnect: true,
   immediate: false,
@@ -122,22 +126,15 @@ wsTxBus.on((tx) => {
   send(JSON.stringify(tx));
 });
 
-// on any data change, transmit the message on the Rx bus or the template bus
+// on any data change, transmit the message on the template bus or send to store
 watch(data, (msg) => {
   if (!msg) return;
   const m: WsMessage = JSON.parse(msg);
-  if (m.code === WsMsgCodes.render) {
+  if (m.code === WsMsgCodes.template) {
     wsTemplateBus.emit(m.template);
-    return;
+  } else {
+    store.on_ws_message(m);
   }
-  if (m.code === WsMsgCodes.save) {
-    store.load(m.data);
-    wsRxBus.emit(m);
-    return;
-  }
-  const t = `unknown message code ${m.code}: ${JSON.stringify(m)}`;
-  console.log(t);
-  message().warning(t);
 });
 
 const wsstatus = computed(() => {
