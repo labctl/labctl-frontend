@@ -4,8 +4,8 @@
       <n-button
         size="small"
         type="primary"
-        strong
-        :secondary="props.value"
+        :strong="!!props.value"
+        :xsecondary="!!props.value"
         :tertiary="!props.value"
         round
         @click="toggle"
@@ -19,9 +19,11 @@
   <n-button
     v-else
     size="small"
-    :strong="props.value"
-    :secondary="props.value"
-    :dashed="!props.value"
+    type="primary"
+    :strong="!!props.value"
+    :xsecondary="!!props.value"
+    :tertiary="!props.value"
+    round
     @click="toggle"
   >
     <slot />

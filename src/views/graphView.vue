@@ -82,7 +82,13 @@
           Layout {{ optLayout }}
         </n-list-item>
         <n-list-item>
-          Show logs
+          <n-space justify="space-between">
+            Show logs
+            <j-switch v-model:value="show_g_logs">
+              G
+              <template #tooltip>Include graph events in the logs</template>
+            </j-switch>
+          </n-space>
           <template #suffix>
             <j-switch v-model:value="show_logs">
               L
@@ -213,14 +219,26 @@
   </n-layout>
 
   <n-grid :cols="4" :x-gap="10" :y-gap="10">
-    <n-grid-item :span="2"> <ce-control /> </n-grid-item>
-    <template v-if="show_vars">
-      <n-grid-item v-for="nid in selectedNodes" :key="nid">
-        <vars-view
-          :id="nid"
-          @close="selectedNodes.splice(selectedNodes.indexOf(nid, 0), 1)"
-        ></vars-view>
+    <n-grid-item :span="2">
+      <ce-control v-model:selected="selectedNodes" />
+    </n-grid-item>
+
+    <template v-for="nid in selectedNodes" :key="nid">
+      <n-grid-item v-if="nid in store.results">
+        {{ store.results[nid] }}
       </n-grid-item>
+
+      <template v-if="show_vars">
+        <n-grid-item>
+          <vars-view
+            :id="nid"
+            @close="selectedNodes.splice(selectedNodes.indexOf(nid, 0), 1)"
+          ></vars-view>
+        </n-grid-item>
+      </template>
+    </template>
+
+    <template v-if="show_vars">
       <n-grid-item v-for="lid in selectedLinks" :key="lid">
         <vars-view
           :id="lid"
@@ -229,18 +247,19 @@
         ></vars-view>
       </n-grid-item>
     </template>
+
     <n-grid-item v-if="show_logs">
       <n-card title="Logs" closable @close="show_logs = false">
-        selected:{{ selectedNodes }} {{ selectedLinks }}
-        <ul class="event-logs">
-          <li
-            v-for="[timestamp, type, log] in eventLogs"
-            :key="`${timestamp}/${type}/${log}`"
-          >
+        <div
+          v-for="([timestamp, type, log], idx) in eventLogs"
+          :key="`${timestamp}/${type}/${log}`"
+          :style="{ 'background-color': idx % 2 ? 'white' : '#f4f0ec' }"
+        >
+          <n-ellipsis :line-clamp="4">
             {{ timestamp }}
             <b class="event-type">{{ type }}</b> {{ log }}
-          </li>
-        </ul>
+          </n-ellipsis>
+        </div>
       </n-card>
     </n-grid-item>
   </n-grid>
@@ -255,6 +274,7 @@ import {
   NGrid,
   NSpace,
   NButton,
+  NEllipsis,
   NList,
   NListItem,
   NCard,
@@ -299,6 +319,7 @@ const lblLink = ref({} as Record<string, LinkLabels>);
 const lblNode = ref({} as Record<string, NodeLabels>);
 
 const show_logs = useLocalStorage("showLogs", false);
+const show_g_logs = useLocalStorage("showGraphLogs", false);
 const show_sidebar = useLocalStorage("showSiderbar", true);
 const show_vars = useLocalStorage("showVars", true);
 const show_results = useLocalStorage("showResults", true);
@@ -333,7 +354,7 @@ const eventHandlers: vNG.EventHandlers = {
     // }
   },
   // wildcard: capture all events
-  "*": logEvent,
+  "*": (m, ev) => show_g_logs.value && logEvent(m, ev),
 };
 
 function getLayoutHandler() {
@@ -425,7 +446,7 @@ wsTxBus.on((ev) => {
 wsRxBus.on((ev) => {
   console.debug("WS Rx", ev);
   logEvent("WS Rx", ev);
-  if (ev.code === WsMsgCodes.save) {
+  if (ev.code === WsMsgCodes.uidata) {
     logEvent("WS load", {});
     nextTick(centerGraph);
     setTimeout(centerGraph, 200);

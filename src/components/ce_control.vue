@@ -57,9 +57,47 @@
     <!-- <li v-for="(rols, name) in templates" :key="name">
         name:{{ name }}: {{ rols }}
       </li> -->
-    <n-input v-model:value="value" type="text" placeholder="Basic Input">
-    </n-input>
-    <n-button @click="exec"> run </n-button>
+
+    <p>
+      <n-input-group>
+        <n-input-group-label>Run a command</n-input-group-label>
+        <n-input
+          v-model:value="value"
+          placeholder="compare / commit / send"
+          :style="{ width: '100%' }"
+        >
+        </n-input>
+        <n-button @click="exec"> run </n-button>
+      </n-input-group>
+    </p>
+
+    <p v-if="results_all.length > 0">
+      <n-space justify="space-between">
+        Nodes with results
+        <n-space>
+          <j-switch
+            v-for="name in results_all"
+            :key="`k_${name}`"
+            :value="props.selected.includes(name)"
+            @update:value="toggleSN(name)"
+          >
+            {{ name }}
+          </j-switch>
+        </n-space>
+      </n-space>
+    </p>
+
+    <div v-for="name in results_selected" :key="name">
+      <h2>{{ name }}</h2>
+      <div v-for="(res, i) in store.results[name]" :key="`${name}_${i}`">
+        <span>{{ res.source }}</span>
+        <br />
+        {{ res.prompt }} {{ res.command }}
+        <pre>
+        {{ res.response }}
+        </pre>
+      </div>
+    </div>
   </n-card>
 </template>
 
@@ -73,6 +111,9 @@ import {
   NEllipsis,
   NInput,
   NButton,
+  NInputGroup,
+  NInputGroupLabel,
+  NSpace,
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import JSwitch from "@/components/j_switch.vue";
@@ -86,9 +127,13 @@ import { ceTemplateName } from "@/utils/helpers";
 import { useLocalStorage } from "@vueuse/core";
 import { wsSend, WsMsgCodes } from "@/utils/websocket";
 
+export interface PropDef {
+  selected: Array<string>;
+}
+const props = defineProps<PropDef>();
 const store = useMainStore();
 
-const emit = defineEmits(["update:close"]);
+const emit = defineEmits(["update:close", "update:selected"]);
 const value = ref("compare -l bgp -f R1");
 const visible = ref(true);
 const showTemplates = useLocalStorage("showTemplates", true);
@@ -130,12 +175,30 @@ function getT(name: string, role: string) {
 
 function exec() {
   console.log("run");
+  Object.keys(store.results).forEach((key) => delete store.results[key]);
+
   wsSend({
     code: WsMsgCodes.config,
     config: {
       cmd: value.value,
     },
   });
+}
+
+const results_all = computed(() => Object.keys(store.results).sort());
+const results_selected = computed(() =>
+  results_all.value.filter((v) => props.selected.includes(v))
+);
+
+function toggleSN(n: string) {
+  const newp = [...props.selected];
+  if (props.selected.includes(n)) {
+    newp.splice(props.selected.indexOf(n), 1);
+  } else {
+    newp.push(n);
+  }
+  console.log(props.selected, newp);
+  emit("update:selected", newp);
 }
 
 function close() {

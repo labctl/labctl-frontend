@@ -5,7 +5,13 @@ import { MessageApi } from "naive-ui";
 import { useLocalStorage } from "@vueuse/core";
 import { NodeVars, Links, Nodes, TemplateFiles } from "@/utils/types";
 
-import { WsMessage, WsMsgCodes, Options, UiData } from "@/utils/websocket";
+import {
+  WsMessage,
+  WsMsgCodes,
+  Options,
+  UiData,
+  WsTxResponse,
+} from "@/utils/websocket";
 
 import { Layouts } from "v-network-graph";
 import { fFarEndNode } from "@/utils/helpers";
@@ -39,6 +45,8 @@ export const useMainStore = defineStore("main", {
     optLayout: "grid",
     /** heigh of the graph */
     optHeight: 450,
+
+    results: {} as Record<string, Array<WsTxResponse>>,
     /** used while loading (?) */
     loading: 0,
     /** split vars or show the merge value! */
@@ -50,8 +58,8 @@ export const useMainStore = defineStore("main", {
   getters: {
     wsState: (state) => {
       return {
-        code: WsMsgCodes.save,
-        data: {
+        code: WsMsgCodes.uidata,
+        uidata: {
           options: {
             layout: state.optLayout,
             height: state.optHeight,
@@ -117,19 +125,24 @@ export const useMainStore = defineStore("main", {
     },
 
     on_ws_message(msg: WsMessage) {
-      if (msg.code === WsMsgCodes.save) {
-        this.load(msg.uidata);
-        wsRxBus.emit(msg);
-        return;
+      let handled = false;
+      if (msg.code === WsMsgCodes.uidata) {
+        this.load_uidata(msg.uidata);
+        handled = true;
       }
-      // wsRxBus.emit(m);
+      if (msg.code === WsMsgCodes.config) {
+        this.load_config(msg.config?.results);
+        handled = true;
+      }
       wsRxBus.emit(msg);
-      const t = `unknown message code ${msg.code}: ${JSON.stringify(msg)}`;
-      console.log(t);
-      message().warning(t);
+      if (!handled) {
+        const t = `unknown message code ${msg.code}: ${JSON.stringify(msg)}`;
+        console.log(t);
+        message().warning(t);
+      }
     },
 
-    load(data?: UiData) {
+    load_uidata(data?: UiData) {
       if (!data) {
         console.log("no data to load");
         return;
@@ -155,6 +168,17 @@ export const useMainStore = defineStore("main", {
           Object.assign(this.templateFiles, resp.data);
         });
       }
+    },
+
+    load_config(data?: Array<WsTxResponse>) {
+      if (!data) {
+        console.log("no config results to load");
+        return;
+      }
+      data.forEach((e) => {
+        this.results[e.node] ??= [];
+        this.results[e.node].push(e);
+      });
     },
 
     save() {

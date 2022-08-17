@@ -27,7 +27,7 @@ export interface WsTemplate {
 
 export enum WsMsgCodes {
   template = "template",
-  save = "uidata",
+  uidata = "uidata",
   echo = "echo",
   config = "config",
 }
@@ -42,8 +42,6 @@ export interface WsTxResponse {
 }
 export interface WsConfig {
   cmd?: string;
-  node?: string;
-  sresult?: string;
   results?: Array<WsTxResponse>;
 }
 
