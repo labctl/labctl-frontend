@@ -32,6 +32,8 @@ export enum WsMsgCodes {
   echo = "echo",
   config = "config",
   error = "error",
+  warn = "warn",
+  info = "info",
 }
 
 export interface WsTxResponse {
@@ -49,7 +51,7 @@ export interface WsConfig {
 
 export interface WsMessage {
   code: WsMsgCodes;
-  error?: string;
+  msg?: string;
   uidata?: UiData;
   config?: WsConfig;
   template?: WsTemplate;

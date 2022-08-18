@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { json_fetch } from "@/utils/utils";
-import { MessageApi } from "naive-ui";
 
 import { useLocalStorage } from "@vueuse/core";
 import { NodeVars, Links, Nodes, TemplateFiles } from "@/utils/types";
@@ -15,13 +14,9 @@ import {
 
 import { Layouts } from "v-network-graph";
 import { fFarEndNode } from "@/utils/helpers";
-import { renderMessage } from "@/utils/naive";
+import { MsgError, MsgInfo, MsgWarning } from "@/utils/message";
 import { wsRxBus, wsSend } from "@/utils/websocket";
 import { toRaw } from "vue";
-
-export function message(): MessageApi {
-  return (window as any).$message;
-}
 
 // main is the name of the store. It is unique across your application
 // and will appear in devtools
@@ -78,6 +73,9 @@ export const useMainStore = defineStore("main", {
       if (!l) {
         return {};
       }
+      if (!state.topo.vars[l.target]) {
+        MsgWarning(`No variable found for ${l.target}\n\nreload advised`);
+      }
 
       // get variables on the source node (filtered on far end node)
       let sV = state.topo.vars[l.source].clab_links.filter(
@@ -127,35 +125,6 @@ export const useMainStore = defineStore("main", {
       // message();
     },
 
-    async on_ws_message(msg: WsMessage) {
-      let handled = false;
-      if (msg.code === WsMsgCodes.uidata) {
-        await this.load_uidata(msg.uidata);
-        handled = true;
-      }
-      if (msg.code === WsMsgCodes.config) {
-        if (msg.config?.cmd !== "done") {
-          this.load_config(msg.config?.results);
-        }
-        handled = true;
-      }
-      if (msg.code === WsMsgCodes.error) {
-        message().error(msg.error ?? JSON.stringify(msg), {
-          duration: 0,
-          closable: true,
-          render: renderMessage,
-        });
-        return;
-      }
-      wsRxBus.emit(msg);
-
-      if (!handled) {
-        const t = `unknown message code ${msg.code}: ${JSON.stringify(msg)}`;
-        console.log(t);
-        message().warning(t, { duration: 1000, closable: true });
-      }
-    },
-
     async load_uidata(data?: UiData) {
       if (!data) {
         console.warn("no data to load");
@@ -193,7 +162,7 @@ export const useMainStore = defineStore("main", {
 
     load_config(data?: Array<WsTxResponse>) {
       if (!data) {
-        console.log("no config results to load");
+        console.warn("no config results to load");
         return;
       }
       data.forEach((e) => {
@@ -205,6 +174,49 @@ export const useMainStore = defineStore("main", {
     save() {
       console.log("save layouts+", this.wsState.uidata?.options);
       wsSend(this.wsState);
+    },
+
+    /* process a received websock message */
+    async websock_handler(msg: WsMessage) {
+      try {
+        switch (msg.code) {
+          case WsMsgCodes.uidata:
+            // wait until we finished loading
+            // emitting the message n the bus will trigger a center
+            await this.load_uidata(msg.uidata);
+            break;
+
+          case WsMsgCodes.config:
+            if (msg.config?.cmd !== "done") {
+              this.load_config(msg.config?.results);
+            }
+            break;
+
+          case WsMsgCodes.error:
+            MsgError(msg.msg ?? JSON.stringify(msg));
+            return; // don't emit!
+
+          case WsMsgCodes.warn:
+            MsgWarning(msg.msg ?? JSON.stringify(msg));
+            return; // don't emit!
+
+          case WsMsgCodes.info:
+            MsgInfo(msg.msg ?? JSON.stringify(msg));
+            return; // don't emit!
+
+          default:
+            console.debug("unknown msg code", msg);
+            MsgError(`unknown message code\n\n${msg}`, {
+              duration: 0,
+              closable: true,
+            });
+        }
+      } catch (err) {
+        MsgError(String(err));
+      }
+
+      // Pass on the message for updates etc
+      wsRxBus.emit(msg);
     },
   },
   debounce: {

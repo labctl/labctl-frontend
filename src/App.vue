@@ -123,6 +123,7 @@ const { status, data, send, open } = useWebSocket<string>(ws_uri, {
 });
 
 wsTxBus.on((tx) => {
+  console.debug("WS Tx", tx);
   send(JSON.stringify(tx));
 });
 
@@ -133,7 +134,7 @@ watch(data, (msg) => {
   if (m.code === WsMsgCodes.template) {
     wsTemplateBus.emit(m.template);
   } else {
-    store.on_ws_message(m);
+    store.websock_handler(m);
   }
 });
 

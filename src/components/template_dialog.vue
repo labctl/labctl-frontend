@@ -1,5 +1,5 @@
 <template>
-  <n-modal v-if="visible" v-model:show="visible" :mask-closable="!dirty">
+  <n-modal v-if="visible" v-model:show="visible">
     <n-card
       title="Render template"
       style="width: 95%"
@@ -34,6 +34,10 @@
         <n-grid-item>
           <n-space justify="space-between">
             <span>Template</span>
+            <j-switch @update:value="example">
+              ?
+              <template #tooltip>Add an example template</template>
+            </j-switch>
             <n-select
               v-model:value="tempN"
               filterable
@@ -79,17 +83,6 @@
           </div>
         </n-grid-item>
       </n-grid>
-
-      <!-- <template #action>
-        <n-space justify="center">
-          <n-button v-if="dirty" type="primary" @click="save()">
-            Save
-          </n-button>
-          <n-button v-if="dirty" type="error" @click="visible = false">
-            Discard
-          </n-button>
-        </n-space>
-      </template> -->
     </n-card>
   </n-modal>
 </template>
@@ -123,10 +116,10 @@ import {
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";
 import { wsTemplateBus, wsSend } from "@/utils/websocket";
+import JSwitch from "@/components/j_switch.vue";
+import { MsgInfo } from "@/utils/message";
 
 const store = useMainStore();
-// const message = useMessage();
-
 const template_result = ref("");
 const template_resulty = ref({});
 
@@ -147,8 +140,6 @@ const props = withDefaults(defineProps<PropDef>(), {
 });
 
 const emit = defineEmits(["update:template", "update:visible"]);
-
-const dirty = ref(false);
 
 const showVars = ref(true);
 const showMd = ref(false);
@@ -192,7 +183,6 @@ watchDebounced(
       },
     } as WsMessage;
     wsSend(opt);
-    console.log("send", opt);
   },
   { debounce: 1000 }
 );
@@ -244,7 +234,6 @@ const tempOptions = computed(() => {
     return res;
   }
   const role = props.vars["clab_role"];
-  console.log(role);
   Object.values(store.templateFiles).forEach((t) => {
     grp(`/${t.p}/`).push({
       label: t.name,
@@ -254,6 +243,28 @@ const tempOptions = computed(() => {
   });
   return res;
 });
+
+function example() {
+  const v = props.link
+    ? `
+
+source_above: {{ .source_endpoint }}
+source_below: ".{{ .source_vars.clab_link_ip | ip | split "." | index -1 }}"
+target_above: {{ .target_endpoint }}
+target_below: ".{{ .target_vars.clab_link_ip | ip | split "." | index -1 }}"
+center_above:
+center_below: {{ .source_vars.clab_link_ip | split "." | slice 0 3 | join "." }}/{{ .source_vars.clab_link_ip | split "/" | index -1  }}
+`
+    : `
+
+label: {{ .clab_role }}
+label_below: {{ .clab_node }}`;
+  if (!tempV.value.includes(v)) {
+    tempV.value += v;
+  } else {
+    MsgInfo("example already added to the bottom");
+  }
+}
 </script>
 
 <style>

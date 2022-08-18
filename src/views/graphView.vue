@@ -34,9 +34,13 @@
       <n-list>
         <n-list-item>
           Labels
-          <n-dropdown v-model:value="labelLayer" :options="labelLayers">
+          <n-dropdown
+            :options="labelLayers"
+            trigger="hover"
+            @select="selectLayer"
+          >
             <n-button size="small" secondary round>
-              {{ labelLayer === "" ? "base" : labelLayer }} layer
+              {{ labelLayer }} layer
             </n-button>
           </n-dropdown>
           <template #suffix>
@@ -143,6 +147,14 @@
           </text>
         </template>
         <template #edge-label="{ edgeId, scale, ...slotProps }">
+          <v-edge-label
+            v-if="edgeId in lblLink && lblLink[edgeId].center_above"
+            :text="String(lblLink[edgeId].center_above)"
+            align="center"
+            vertical-align="above"
+            v-bind="slotProps"
+            :font-size="12 * scale"
+          />
           <v-edge-label
             v-if="edgeId in lblLink && lblLink[edgeId].center_below"
             :text="String(lblLink[edgeId].center_below)"
@@ -440,7 +452,6 @@ onMounted(() => {
 });
 
 wsTxBus.on((ev) => {
-  console.debug("WS Tx", ev);
   logEvent("WS Tx", ev);
 });
 
@@ -470,9 +481,24 @@ wsTemplateBus.on((t) => {
  */
 
 const labelLayer = ref("");
+function selectLayer(l: string | number) {
+  if (l) {
+    labelLayer.value = String(l);
+  }
+}
 const labelLayers = computed(() => {
-  var res = [{ label: "base", value: "" }] as Array<SelectOption>;
-
+  var res = [{ label: "base", key: "base" }] as Array<SelectOption>;
+  const s = new Set();
+  Object.keys(store.optTemplates).forEach((k) => {
+    const [nl, name] = k.split(".");
+    if (name && (nl === "node" || nl === "link")) {
+      if (s.has(name)) {
+        return;
+      }
+      s.add(name);
+      res.push({ label: name, key: name });
+    }
+  });
   return res;
 });
 
@@ -492,13 +518,15 @@ function updateLabel(t: WsTemplate) {
 
 /** Update all the topology labels */
 function updatelabels() {
+  const l = labelLayer.value === "base" ? "" : "." + labelLayer.value;
+
   Object.keys(store.topo.links).forEach((lid) => {
     wsSend({
       code: WsMsgCodes.template,
       template: {
         id: lid,
         name: "link",
-        template: store.optTemplates["link"],
+        template: store.optTemplates["link" + l] ?? "",
         vars: store.linkVars(lid),
         result: "",
       },
@@ -510,7 +538,7 @@ function updatelabels() {
       template: {
         id: nid,
         name: "node",
-        template: store.optTemplates["node"],
+        template: store.optTemplates["node" + l] ?? "",
         vars: store.topo.vars[nid],
         result: "",
       },

@@ -35,7 +35,7 @@ import { defineProps, withDefaults, defineEmits, useSlots } from "vue";
 import { NButton, NPopover } from "naive-ui";
 
 export interface PropDef {
-  value: boolean;
+  value?: boolean;
 }
 const props = withDefaults(defineProps<PropDef>(), {});
 

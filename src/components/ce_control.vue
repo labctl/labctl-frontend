@@ -39,7 +39,7 @@
         <tbody>
           <tr v-for="(rols, name) in templates" :key="`ce:t:${name}`">
             <td>{{ name }}</td>
-            <td v-for="(r, i) in roles" :key="`${name}_${i}`" class="cen">
+            <td v-for="(r, i) in roles" :key="`td:${name}_${i}`" class="cen">
               <n-popover v-if="rols[r]" trigger="hover">
                 <template #trigger>
                   <n-icon
@@ -85,7 +85,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(node, name) in store.topo.nodes" :key="`nde_${name}`">
+          <tr v-for="(node, name) in store.topo.nodes" :key="`a:nde:${name}`">
             <td>{{ name }}</td>
             <td>{{ store.topo.vars[name].clab_role }}</td>
             <td>{{ node.kind }}</td>
@@ -178,7 +178,7 @@ import {
   NTabs,
   NTab,
 } from "naive-ui";
-import { message, useMainStore } from "@/stores/mainStore";
+import { useMainStore } from "@/stores/mainStore";
 import JSwitch from "@/components/j_switch.vue";
 import {
   LibraryAddCheckOutlined,
@@ -192,6 +192,7 @@ import ConfigResults from "@/components/config_results.vue";
 import { ceTemplateName } from "@/utils/helpers";
 import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
 import { storeToRefs } from "pinia";
+import { MsgWarning } from "@/utils/message";
 
 export interface PropDef {
   selected: Array<string>;
@@ -246,7 +247,7 @@ const last_run = ref("");
 /** Run the config command */
 function run_config() {
   if (loading_config.value) {
-    message().warning("Busy executing config");
+    MsgWarning("Busy executing config");
     return;
   }
   last_run.value = value.value;
