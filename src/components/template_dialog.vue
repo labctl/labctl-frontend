@@ -54,11 +54,7 @@
         <n-grid-item>
           Result
           <div class="jv-container jv-light boxed">
-            <div
-              v-if="showMd"
-              class="markdown-body jv-code"
-              v-html="md_2_html(template_result)"
-            />
+            <div-markdown v-if="showMd" :value="template_result" />
             <pre
               v-else
               class="jv-code"
@@ -108,7 +104,7 @@ import {
   withDefaults,
 } from "vue";
 // eslint-diasble-next-line
-import { md_2_html } from "@/utils/markdown";
+import DivMarkdown from "@/components/div_markdown.vue";
 import { Dictionary } from "@/utils/types";
 import { WsMessage, WsMsgCodes } from "@/utils/websocket";
 import {
@@ -161,7 +157,7 @@ const tempN = ref("");
 
 const tempV = computed({
   get: () => {
-    console.log(tempN.value, store.templateFiles[tempN.value]);
+    // console.log(tempN.value, store.templateFiles[tempN.value]);
     if (tempN.value in store.templateFiles) {
       return store.templateFiles[tempN.value].value;
     }

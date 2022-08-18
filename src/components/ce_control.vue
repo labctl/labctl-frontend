@@ -1,24 +1,43 @@
 <template>
-  <n-card title="Clab Config Engine" closable @close="close">
+  <n-card
+    title="Config Engine"
+    closable
+    :style="{
+      'min-height': '500px',
+    }"
+    @close="close"
+  >
     <template #header-extra>
-      <j-switch v-model:value="showTemplates">
-        <template #tooltip> Show/hide available templates </template>
-        <n-icon :component="DescriptionOutlined" />
-      </j-switch>
+      <n-tabs
+        v-model:value="selected_tab"
+        type="bar"
+        size="large"
+        :style="{ 'margin-right': '20px' }"
+      >
+        <n-tab name="commands">
+          <n-icon :component="HomeOutlined" />
+        </n-tab>
+        <n-tab name="command">
+          <n-icon :component="PlayArrowTwotone" />
+        </n-tab>
+        <n-tab name="templates">
+          <n-icon :component="DescriptionOutlined" />
+        </n-tab>
+      </n-tabs>
     </template>
-    <div v-if="showTemplates">
-      <h4>Available templates</h4>
+    <div v-if="selected_tab === 'templates'">
+      <h3>Available templates</h3>
       <n-table striped size="small">
         <thead>
           <tr>
             <th>Template</th>
-            <th v-for="(n, i) in roles" :key="`r${i}`" class="cen">
-              {{ n }}
+            <th v-for="r in roles" :key="`ce:th:${r}`" class="cen">
+              {{ r }}
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(rols, name) in templates" :key="name">
+          <tr v-for="(rols, name) in templates" :key="`ce:t:${name}`">
             <td>{{ name }}</td>
             <td v-for="(r, i) in roles" :key="`${name}_${i}`" class="cen">
               <n-popover v-if="rols[r]" trigger="hover">
@@ -53,51 +72,92 @@
           </tr>
         </tbody>
       </n-table>
+
+      <h3>Available nodes</h3>
+      <n-table striped size="small">
+        <thead>
+          <tr>
+            <th>Node</th>
+            <th>Role</th>
+            <th>Kind</th>
+            <th>system_ip</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(node, name) in store.topo.nodes" :key="`nde_${name}`">
+            <td>{{ name }}</td>
+            <td>{{ store.topo.vars[name].clab_role }}</td>
+            <td>{{ node.kind }}</td>
+            <td>{{ store.topo.vars[name].clab_system_ip }}</td>
+            <td>{{ node.image }}</td>
+          </tr>
+        </tbody>
+      </n-table>
     </div>
-    <!-- <li v-for="(rols, name) in templates" :key="name">
-        name:{{ name }}: {{ rols }}
-      </li> -->
 
-    <p>
-      <n-input-group>
-        <n-input-group-label>Run a command</n-input-group-label>
-        <n-input
-          v-model:value="value"
-          placeholder="compare / commit / send"
-          :style="{ width: '100%' }"
-        >
-        </n-input>
-        <n-button @click="exec"> run </n-button>
-      </n-input-group>
-    </p>
+    <div v-else-if="selected_tab === 'commands'">
+      {{ optCommands }}
+    </div>
 
-    <p v-if="results_all.length > 0">
-      <n-space justify="space-between">
-        Nodes with results
-        <n-space>
-          <j-switch
-            v-for="name in results_all"
-            :key="`k_${name}`"
-            :value="props.selected.includes(name)"
-            @update:value="toggleSN(name)"
+    <div v-else-if="selected_tab === 'command'">
+      <p>
+        <n-input-group>
+          <n-input-group-label>Run a command</n-input-group-label>
+          <n-input
+            v-model:value="value"
+            placeholder="compare / commit / send"
+            :style="{ width: '100%' }"
+            @keyup.ctrl.enter="run_config"
           >
-            {{ name }}
-          </j-switch>
-        </n-space>
-      </n-space>
-    </p>
+          </n-input>
+          <n-button :loading="loading_config" @click="run_config">
+            <template #icon>
+              <n-icon><play-arrow-twotone /> </n-icon>
+            </template>
+          </n-button>
+        </n-input-group>
+      </p>
 
-    <div v-for="name in results_selected" :key="name">
-      <h2>{{ name }}</h2>
-      <div v-for="(res, i) in store.results[name]" :key="`${name}_${i}`">
-        <span>{{ res.source }}</span>
-        <br />
-        {{ res.prompt }} {{ res.command }}
-        <pre>
-        {{ res.response }}
-        </pre>
-      </div>
+      <p v-if="results_all.length > 0">
+        <n-space justify="space-between">
+          Nodes with results
+          <n-space>
+            <j-switch
+              v-for="name in results_all"
+              :key="`ce:nres:${name}`"
+              :value="props.selected.includes(name)"
+              @update:value="toggleSN(name)"
+            >
+              {{ name }}
+            </j-switch>
+          </n-space>
+        </n-space>
+      </p>
+
+      <n-tabs type="card" tab-style="min-width: 80px;">
+        <n-tab-pane tab="Info" name="info">
+          <template #prefix>
+            <n-icon><play-arrow-twotone /> </n-icon>
+          </template>
+          The current results were obtained by running "{{ last_run }}".
+        </n-tab-pane>
+
+        <n-tab-pane
+          v-for="name in results_all"
+          :key="`ce:tabs:${name}`"
+          :tab="name"
+          :name="name"
+        >
+          <config-results :node="name"></config-results>
+        </n-tab-pane>
+      </n-tabs>
     </div>
+
+    <div v-else>unknown tab ?? {{ selected_tab }}</div>
+    <!-- <div v-for="name in results_selected" :key="name">
+
+    </div> -->
   </n-card>
 </template>
 
@@ -114,29 +174,38 @@ import {
   NInputGroup,
   NInputGroupLabel,
   NSpace,
+  NTabPane,
+  NTabs,
+  NTab,
 } from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
+import { message, useMainStore } from "@/stores/mainStore";
 import JSwitch from "@/components/j_switch.vue";
 import {
   LibraryAddCheckOutlined,
   CheckBoxOutlined,
   DescriptionOutlined,
+  PlayArrowTwotone,
+  HomeOutlined,
 } from "@vicons/material";
+import ConfigResults from "@/components/config_results.vue";
 
 import { ceTemplateName } from "@/utils/helpers";
-import { useLocalStorage } from "@vueuse/core";
-import { wsSend, WsMsgCodes } from "@/utils/websocket";
+import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
+import { storeToRefs } from "pinia";
 
 export interface PropDef {
   selected: Array<string>;
 }
 const props = defineProps<PropDef>();
 const store = useMainStore();
+const loading_config = ref(false);
+
+const { optCommands } = storeToRefs(store);
 
 const emit = defineEmits(["update:close", "update:selected"]);
-const value = ref("compare -l bgp -f R1");
+const value = ref("compare -l ports -f R1,R2");
 const visible = ref(true);
-const showTemplates = useLocalStorage("showTemplates", true);
+const selected_tab = ref("command");
 
 const templates = computed(() => {
   const roles = {} as Record<string, Record<string, boolean>>;
@@ -173,9 +242,17 @@ function getT(name: string, role: string) {
       };
 }
 
-function exec() {
-  console.log("run");
+const last_run = ref("");
+/** Run the config command */
+function run_config() {
+  if (loading_config.value) {
+    message().warning("Busy executing config");
+    return;
+  }
+  last_run.value = value.value;
+  optCommands.value[0] = value.value;
   Object.keys(store.results).forEach((key) => delete store.results[key]);
+  loading_config.value = true;
 
   wsSend({
     code: WsMsgCodes.config,
@@ -186,9 +263,26 @@ function exec() {
 }
 
 const results_all = computed(() => Object.keys(store.results).sort());
-const results_selected = computed(() =>
-  results_all.value.filter((v) => props.selected.includes(v))
-);
+// const results_selected = computed(() =>
+//   results_all.value.filter((v) => props.selected.includes(v))
+// );
+
+wsRxBus.on((msg) => {
+  if (msg.code === WsMsgCodes.config && msg.config && msg.config.results) {
+    // add this node to selected
+    const n = msg.config.results[0].node;
+    if (!(n in props.selected)) {
+      toggleSN(n);
+    }
+  }
+
+  if (msg.code === WsMsgCodes.config && msg.config?.cmd) {
+    // wait for 1second before allowing more commands
+    setTimeout(() => {
+      loading_config.value = false;
+    }, 100);
+  }
+});
 
 function toggleSN(n: string) {
   const newp = [...props.selected];
@@ -197,7 +291,6 @@ function toggleSN(n: string) {
   } else {
     newp.push(n);
   }
-  console.log(props.selected, newp);
   emit("update:selected", newp);
 }
 

@@ -93,6 +93,7 @@
       />
     </div>
     <template-dialog
+      v-if="templateVisible"
       v-model:visible="templateVisible"
       :vars="vars"
       :template="link ? 'link' : 'node'"

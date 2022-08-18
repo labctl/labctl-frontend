@@ -1,26 +1,23 @@
 <template>
   <teleport to="#mtoolbar">
     <n-space justify="end">
-      <n-button round size="small" @click="centerGraph"> Center </n-button>
+      <n-button secondary round size="small" @click="centerGraph">
+        <n-icon><center-focus-weak-sharp /></n-icon>
+      </n-button>
       <n-button-group>
-        <n-button
-          round
-          type="primary"
-          size="small"
-          :tertiary="!show_vars"
-          @click="show_vars = !show_vars"
-        >
+        <j-switch v-model:value="show_vars">
           Variables
-        </n-button>
-        <n-button
-          round
-          size="small"
-          :tertiary="show_results"
-          type="primary"
-          @click="show_results = !show_results"
-        >
+          <template #tooltip>
+            Show variables from the topology files.
+          </template>
+        </j-switch>
+        <j-switch v-model:value="show_results">
           Results
-        </n-button>
+          <template #tooltip>
+            Show results in seperate tiles. You need to select one or more nodes
+            with results
+          </template>
+        </j-switch>
       </n-button-group>
     </n-space>
   </teleport>
@@ -63,7 +60,7 @@
               size="small"
               secondary
               round
-              @click="selectedLinks = Object.keys(store.topo.nodes)"
+              @click="selectedNodes = Object.keys(store.topo.nodes)"
             >
               Nodes
             </n-button>
@@ -194,7 +191,7 @@
         <!-- <template #badge="{ scale }">
         <circle
           v-for="(pos, node) in optLayouts.nodes"
-          :key="node"
+          :key="xx"
           :cx="pos.x + 9 * scale + pan.x"
           :cy="pos.y - 9 * scale + pan.y"
           :r="4 * scale"
@@ -218,14 +215,16 @@
     </n-layout-content>
   </n-layout>
 
-  <n-grid :cols="4" :x-gap="10" :y-gap="10">
+  <n-grid cols="2 1210:4 2420:6" :x-gap="10" :y-gap="10">
     <n-grid-item :span="2">
       <ce-control v-model:selected="selectedNodes" />
     </n-grid-item>
 
-    <template v-for="nid in selectedNodes" :key="nid">
-      <n-grid-item v-if="nid in store.results">
-        {{ store.results[nid] }}
+    <template v-for="nid in selectedNodes" :key="`gnode:${nid}`">
+      <n-grid-item v-if="show_results && nid in store.results" :span="2">
+        <n-card :title="`Results ${nid}`">
+          <config-results :node="nid"></config-results>
+        </n-card>
       </n-grid-item>
 
       <template v-if="show_vars">
@@ -239,7 +238,7 @@
     </template>
 
     <template v-if="show_vars">
-      <n-grid-item v-for="lid in selectedLinks" :key="lid">
+      <n-grid-item v-for="lid in selectedLinks" :key="`glink:${lid}`">
         <vars-view
           :id="lid"
           link
@@ -288,7 +287,8 @@ import {
   useMessage,
 } from "naive-ui";
 import JSwitch from "@/components/j_switch.vue";
-import { RefreshSharp } from "@vicons/material";
+import ConfigResults from "@/components/config_results.vue";
+import { RefreshSharp, CenterFocusWeakSharp } from "@vicons/material";
 // import { ArrowExpand20Regular } from "@vicons/fluent";
 import * as vNG from "v-network-graph";
 import { ForceLayout } from "v-network-graph/lib/force-layout";
@@ -429,6 +429,7 @@ const tooltipPos = computed(() => {
 const tooltipOpacity = ref(0); // 0 or 1
 
 function centerGraph() {
+  console.debug("center");
   graph.value?.fitToContents();
   // graph.value?.panToCenter();
   // graph.value?.transitionWhile(() => {});
@@ -449,8 +450,8 @@ wsRxBus.on((ev) => {
   if (ev.code === WsMsgCodes.uidata) {
     logEvent("WS load", {});
     nextTick(centerGraph);
-    setTimeout(centerGraph, 200);
-    setTimeout(centerGraph, 1000);
+    //setTimeout(centerGraph, 400);
+    //setTimeout(centerGraph, 2000);
     //nextTick(centerGraph);
   }
 });

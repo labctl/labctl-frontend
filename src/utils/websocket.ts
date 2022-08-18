@@ -5,6 +5,7 @@ import { Dictionary } from "@/utils/types";
 export interface Options {
   layout: string;
   height: number;
+  commands: string[];
   // [x: string]: any;
 }
 
@@ -30,6 +31,7 @@ export enum WsMsgCodes {
   uidata = "uidata",
   echo = "echo",
   config = "config",
+  error = "error",
 }
 
 export interface WsTxResponse {

@@ -15,6 +15,7 @@ import {
 
 import { Layouts } from "v-network-graph";
 import { fFarEndNode } from "@/utils/helpers";
+import { renderMessage } from "@/utils/naive";
 import { wsRxBus, wsSend } from "@/utils/websocket";
 import { toRaw } from "vue";
 
@@ -43,6 +44,7 @@ export const useMainStore = defineStore("main", {
     } as Layouts,
     optTemplates: {} as Record<string, string>,
     optLayout: "grid",
+    optCommands: ["compare -l ports -f R1,R2"],
     /** heigh of the graph */
     optHeight: 450,
 
@@ -63,6 +65,7 @@ export const useMainStore = defineStore("main", {
           options: {
             layout: state.optLayout,
             height: state.optHeight,
+            commands: toRaw(state.optCommands),
           } as Options,
           layouts: state.optLayouts,
           templates: state.optTemplates,
@@ -124,32 +127,49 @@ export const useMainStore = defineStore("main", {
       // message();
     },
 
-    on_ws_message(msg: WsMessage) {
+    async on_ws_message(msg: WsMessage) {
       let handled = false;
       if (msg.code === WsMsgCodes.uidata) {
-        this.load_uidata(msg.uidata);
+        await this.load_uidata(msg.uidata);
         handled = true;
       }
       if (msg.code === WsMsgCodes.config) {
-        this.load_config(msg.config?.results);
+        if (msg.config?.cmd !== "done") {
+          this.load_config(msg.config?.results);
+        }
         handled = true;
       }
+      if (msg.code === WsMsgCodes.error) {
+        message().error(msg.error ?? JSON.stringify(msg), {
+          duration: 0,
+          closable: true,
+          render: renderMessage,
+        });
+        return;
+      }
       wsRxBus.emit(msg);
+
       if (!handled) {
         const t = `unknown message code ${msg.code}: ${JSON.stringify(msg)}`;
         console.log(t);
-        message().warning(t);
+        message().warning(t, { duration: 1000, closable: true });
       }
     },
 
-    load_uidata(data?: UiData) {
+    async load_uidata(data?: UiData) {
       if (!data) {
-        console.log("no data to load");
+        console.warn("no data to load");
         return;
       }
-      console.log("load layouts+", data.options);
+      console.debug("load layouts+", data.options);
       this.optHeight = Math.max(400, Math.min(900, data.options.height || 450));
       this.optLayout = data.options.layout;
+
+      this.optCommands = data.options.commands;
+      if (!Array.isArray(this.optCommands)) {
+        this.optCommands = [""];
+      }
+
       // Object.keys(data.options).forEach((o) => {
       //   if (Object.hasOwn(this, `opt`))
       // })
@@ -158,15 +178,16 @@ export const useMainStore = defineStore("main", {
       this.optTemplates = data.templates;
 
       if (this.topo.name === "") {
-        json_fetch("/labctl/topo").then((resp) => {
-          Object.assign(this.topo, resp.data);
-        });
         json_fetch("/labctl/vars").then((resp) => {
           Object.assign(this.topo.vars, resp.data);
         });
         json_fetch("/labctl/templates").then((resp) => {
           Object.assign(this.templateFiles, resp.data);
         });
+        console.debug("req topo");
+        const resp = await json_fetch("/labctl/topo");
+        console.debug("got topo");
+        Object.assign(this.topo, resp.data);
       }
     },
 
