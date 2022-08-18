@@ -14,7 +14,7 @@
         <j-switch v-model:value="show_results">
           Results
           <template #tooltip>
-            Show results in seperate tiles. You need to select one or more nodes
+            Show results in separate tiles. You need to select one or more nodes
             with results
           </template>
         </j-switch>

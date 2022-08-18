@@ -1,0 +1,11 @@
+repos:
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args:
+          - -L
+          - ASend,asend
+          - --skip
+          - "package-lock.json,*.mod"
+        #exclude: ^helpers/frontend/html

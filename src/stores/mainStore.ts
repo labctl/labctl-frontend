@@ -45,7 +45,7 @@ export const useMainStore = defineStore("main", {
     optTemplates: {} as Record<string, string>,
     optLayout: "grid",
     optCommands: ["compare -l ports -f R1,R2"],
-    /** heigh of the graph */
+    /** height of the graph */
     optHeight: 450,
 
     results: {} as Record<string, Array<WsTxResponse>>,
