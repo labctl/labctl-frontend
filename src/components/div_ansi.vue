@@ -1,13 +1,28 @@
 <template>
-  <div
-    :style="{ 'white-space': 'pre-wrap' }"
-    class="jv-container boxed jv-code jv-dark"
-    v-html="value"
-  ></div>
+  <div class="jv-container boxed jv-dark">
+    <!--
+    <div class="jv-tooltip right">
+      <span class="jv-button" @click="copy">copy</span>
+    </div>
+    -->
+    <div
+      :style="{
+        'white-space': 'pre-wrap',
+        'font-family':
+          'v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace',
+      }"
+      :class="{ boxed: true, 'jv-code': true, open: open }"
+      v-html="value"
+    ></div>
+
+    <div class="jv-more" @click="toggleOpen">
+      <span :class="{ 'jv-toggle': true, open: open }"></span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import AnsiUp from "ansi_up";
 import DOMPurify from "dompurify";
 
@@ -15,6 +30,14 @@ export interface PropDef {
   value: string;
 }
 const props = defineProps<PropDef>();
+const open = ref(false);
+function toggleOpen() {
+  open.value = !open.value;
+}
+
+// function copy() {
+//   console.log("copy");
+// }
 
 const value = computed(() => {
   const ansiup = new AnsiUp();
