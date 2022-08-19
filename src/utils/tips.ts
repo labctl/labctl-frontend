@@ -9,9 +9,9 @@ export function TipsInit(n: NotificationApiInjection) {
 
 export function TipsShow() {
   ((window as any).$labctl_notify as NotificationApiInjection).info({
-    title: "tip",
-    content: "Use SHIFT-click to select multiple nodes",
-
+    title: "Select multiple nodes/links",
+    content:
+      "SHIFT + Click allows you to select more than one node or link.\n\nHold CTRL to select a rectangle with nodes.",
     duration: 5000,
   });
 }

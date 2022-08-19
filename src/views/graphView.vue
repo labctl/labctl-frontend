@@ -411,7 +411,16 @@ const configs = reactive(
       scalingObjects: true,
       minZoomLevel: 0.5, // 0.1,
       maxZoomLevel: 8, // 16
-      autoPanAndZoomOnLoad: false,
+      //autoPanAndZoomOnLoad: false,
+      boxSelectionEnabled: true,
+      selection: {
+        box: {
+          color: "#0000ff20",
+          strokeWidth: 1,
+          strokeColor: "#aaaaff",
+          strokeDasharray: "0",
+        },
+      },
     },
     node: {
       normal: { radius: nodeSize / 2 },
@@ -462,7 +471,10 @@ function centerGraph() {
 
 onMounted(() => {
   logEvent("mounted", {});
-  TipsShow();
+  nextTick(() => {
+    TipsShow();
+    centerGraph();
+  });
 });
 
 wsTxBus.on((ev) => {
