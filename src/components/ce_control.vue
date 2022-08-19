@@ -14,18 +14,18 @@
         size="large"
         :style="{ 'margin-right': '20px' }"
       >
-        <n-tab name="commands">
+        <n-tab :name="tab.home">
           <n-icon :component="HomeOutlined" />
         </n-tab>
-        <n-tab name="command">
+        <n-tab :name="tab.run">
           <n-icon :component="PlayArrowTwotone" />
         </n-tab>
-        <n-tab name="templates">
+        <n-tab :name="tab.templates">
           <n-icon :component="DescriptionOutlined" />
         </n-tab>
       </n-tabs>
     </template>
-    <div v-if="selected_tab === 'templates'">
+    <div v-if="selected_tab === tab.templates">
       <h3>Available templates</h3>
       <n-table striped size="small">
         <thead>
@@ -96,16 +96,35 @@
       </n-table>
     </div>
 
-    <div v-else-if="selected_tab === 'commands'">
-      {{ optCommands }}
+    <div v-else-if="selected_tab === tab.home">
+      <p>Recommended commands for this lab</p>
+      <n-table striped size="small">
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(cmd, idx) in optCommands" :key="`cmd:labf:${idx}`">
+            <td>
+              <pre>{{ cmd }}</pre>
+            </td>
+            <td>
+              <n-button size="small" @click="newCmd(cmd)">use</n-button>
+            </td>
+          </tr>
+        </tbody>
+      </n-table>
     </div>
 
-    <div v-else-if="selected_tab === 'command'">
+    <div v-else-if="selected_tab === tab.run">
       <p>
         <n-input-group>
           <n-input-group-label>Run a command</n-input-group-label>
           <n-input
-            v-model:value="value"
+            v-model:value="cmd_active"
+            autofocus
             placeholder="compare / commit / send"
             :style="{ width: '100%' }"
             @keyup.ctrl.enter="run_config"
@@ -140,7 +159,7 @@
           <template #prefix>
             <n-icon><play-arrow-twotone /> </n-icon>
           </template>
-          The current results were obtained by running "{{ last_run }}".
+          The current results were obtained by running "{{ cmd_lastrun }}".
         </n-tab-pane>
 
         <n-tab-pane
@@ -155,9 +174,6 @@
     </div>
 
     <div v-else>unknown tab ?? {{ selected_tab }}</div>
-    <!-- <div v-for="name in results_selected" :key="name">
-
-    </div> -->
   </n-card>
 </template>
 
@@ -203,10 +219,16 @@ const loading_config = ref(false);
 
 const { optCommands } = storeToRefs(store);
 
+enum tab {
+  home = "home",
+  run = "run",
+  templates = "templates",
+}
+
 const emit = defineEmits(["update:close", "update:selected"]);
-const value = ref("compare -l ports -f R1,R2");
+const cmd_active = ref("compare -l ports -f R1,R2");
 const visible = ref(true);
-const selected_tab = ref("command");
+const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run);
 
 const templates = computed(() => {
   const roles = {} as Record<string, Record<string, boolean>>;
@@ -243,22 +265,22 @@ function getT(name: string, role: string) {
       };
 }
 
-const last_run = ref("");
+const cmd_lastrun = ref("");
 /** Run the config command */
 function run_config() {
   if (loading_config.value) {
     MsgWarning("Busy executing config");
     return;
   }
-  last_run.value = value.value;
-  optCommands.value[0] = value.value;
+  cmd_lastrun.value = cmd_active.value;
+  optCommands.value[0] = cmd_active.value;
   Object.keys(store.results).forEach((key) => delete store.results[key]);
   loading_config.value = true;
 
   wsSend({
     code: WsMsgCodes.config,
     config: {
-      cmd: value.value,
+      cmd: cmd_active.value,
     },
   });
 }
@@ -293,6 +315,12 @@ function toggleSN(n: string) {
     newp.push(n);
   }
   emit("update:selected", newp);
+}
+
+function newCmd(cmd: string) {
+  console.log("old command", cmd_active.value);
+  cmd_active.value = cmd;
+  selected_tab.value = tab.run;
 }
 
 function close() {

@@ -71,6 +71,14 @@
           </n-space>
         </n-list-item>
         <n-list-item>
+          <n-space justify="space-between">
+            Layout {{ optLayout }}
+            <j-switch @update:value="centerGraph">
+              <n-icon><center-focus-weak-sharp /></n-icon>
+              <template #tooltip>Center the graph</template>
+            </j-switch>
+          </n-space>
+
           <template #suffix>
             <j-switch
               :value="optLayout === 'force'"
@@ -80,7 +88,6 @@
               <template #tooltip>Toggle force layout</template>
             </j-switch>
           </template>
-          Layout {{ optLayout }}
         </n-list-item>
         <n-list-item>
           <n-space justify="space-between">
@@ -297,6 +304,7 @@ import {
   NDropdown,
   NIcon,
   useMessage,
+  useNotification,
 } from "naive-ui";
 import JSwitch from "@/components/j_switch.vue";
 import ConfigResults from "@/components/config_results.vue";
@@ -321,7 +329,12 @@ import { LinkLabels, NodeLabels } from "@/utils/types";
 import { useLocalStorage, watchDebounced } from "@vueuse/core";
 import { labelDirection } from "@/utils/helpers";
 
-(window as any).$message = useMessage();
+import { MsgInit } from "@/utils/message";
+import { TipsInit, TipsShow } from "@/utils/tips";
+
+MsgInit(useMessage());
+TipsInit(useNotification());
+
 const store = useMainStore();
 const selectedNodes = ref<string[]>([]);
 const selectedLinks = ref<string[]>([]);
@@ -449,6 +462,7 @@ function centerGraph() {
 
 onMounted(() => {
   logEvent("mounted", {});
+  TipsShow();
 });
 
 wsTxBus.on((ev) => {
@@ -480,7 +494,7 @@ wsTemplateBus.on((t) => {
  * Graphs Labels
  */
 
-const labelLayer = ref("");
+const labelLayer = ref("base");
 function selectLayer(l: string | number) {
   if (l) {
     labelLayer.value = String(l);

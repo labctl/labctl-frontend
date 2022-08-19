@@ -1,83 +1,87 @@
 <template>
-  <n-message-provider>
-    <n-config-provider
-      :theme-overrides="{ common: { fontWeightStrong: '600' } }"
-      :theme="store.dark ? darkTheme : lightTheme"
-    >
-      <n-layout position="absolute">
-        <n-layout-header
-          bordered
-          position="absolute"
-          style="padding: 24px; padding-top: 15px; height: 64px"
-        >
-          <n-space justify="space-between" size="large" :wrap="false">
-            <n-space justify="space-around" :wrap="false">
-              <n-icon size="24" style="padding-top: 6px"><RadarRound /></n-icon>
-              <span style="font-size: 24px">{{ store.topo.name }}</span>
+  <n-config-provider
+    :theme-overrides="{ common: { fontWeightStrong: '600' } }"
+    :theme="store.dark ? darkTheme : lightTheme"
+  >
+    <n-message-provider>
+      <n-notification-provider placement="bottom-right">
+        <n-layout position="absolute">
+          <n-layout-header
+            bordered
+            position="absolute"
+            style="padding: 24px; padding-top: 15px; height: 64px"
+          >
+            <n-space justify="space-between" size="large" :wrap="false">
+              <n-space justify="space-around" :wrap="false">
+                <n-image :src="logoUrl" :height="32" preview-disabled></n-image>
+                <span style="font-size: 24px">{{ store.topo.name }}</span>
+              </n-space>
+
+              <n-space justify="end">
+                <div id="mtoolbar"></div>
+                <n-button
+                  v-if="false"
+                  :type="v_comply ? 'primary' : undefined"
+                  @click="router.push({ path: '/comply' })"
+                >
+                  <template #icon>
+                    <n-icon :size="18"><fact-check-twotone /></n-icon>
+                  </template>
+                  {{ v_comply ? "S" : "" }}
+                </n-button>
+
+                <n-button
+                  v-if="false"
+                  :type="false ? 'primary' : undefined"
+                  @click="router.push({ path: '/' })"
+                >
+                  <template #icon>
+                    <n-icon><CheckCircleTwotone /></n-icon>
+                  </template>
+                  {{ v_comply ? "Search" : "" }}
+                </n-button>
+                <n-button
+                  v-if="false"
+                  :type="v_comply ? 'primary' : undefined"
+                  @click="
+                    router.push({
+                      path: '',
+                    })
+                  "
+                >
+                  <template #icon>
+                    <n-icon><view-list-filled /></n-icon>
+                  </template>
+                  {{ v_comply ? "RN" : "" }}
+                </n-button>
+                <div class="nav-end">
+                  <n-avatar round color="white">
+                    <n-icon
+                      :component="wsstatus.icon"
+                      :color="wsstatus.color"
+                    />
+                  </n-avatar>
+                </div>
+              </n-space>
             </n-space>
+          </n-layout-header>
 
-            <n-space justify="end">
-              <div id="mtoolbar"></div>
-              <n-button
-                v-if="false"
-                :type="v_comply ? 'primary' : undefined"
-                @click="router.push({ path: '/comply' })"
-              >
-                <template #icon>
-                  <n-icon :size="18"><fact-check-twotone /></n-icon>
-                </template>
-                {{ v_comply ? "S" : "" }}
-              </n-button>
-
-              <n-button
-                v-if="false"
-                :type="false ? 'primary' : undefined"
-                @click="router.push({ path: '/' })"
-              >
-                <template #icon>
-                  <n-icon><CheckCircleTwotone /></n-icon>
-                </template>
-                {{ v_comply ? "Search" : "" }}
-              </n-button>
-              <n-button
-                v-if="false"
-                :type="v_comply ? 'primary' : undefined"
-                @click="
-                  router.push({
-                    path: '',
-                  })
-                "
-              >
-                <template #icon>
-                  <n-icon><view-list-filled /></n-icon>
-                </template>
-                {{ v_comply ? "RN" : "" }}
-              </n-button>
-              <div class="nav-end">
-                <n-avatar round color="white">
-                  <n-icon :component="wsstatus.icon" :color="wsstatus.color" />
-                </n-avatar>
-              </div>
-            </n-space>
-          </n-space>
-        </n-layout-header>
-
-        <n-layout-content
-          native-scrollbar
-          position="absolute"
-          style="top: 64px"
-        >
-          <router-view />
-        </n-layout-content>
-      </n-layout>
-    </n-config-provider>
-  </n-message-provider>
+          <n-layout-content
+            native-scrollbar
+            position="absolute"
+            style="top: 64px"
+          >
+            <router-view />
+          </n-layout-content>
+        </n-layout>
+      </n-notification-provider>
+    </n-message-provider>
+  </n-config-provider>
 </template>
 
 <script setup lang="ts">
 import { onBeforeMount, computed, watch } from "vue";
 import {
-  RadarRound,
   ViewListFilled,
   CheckCircleTwotone,
   FactCheckTwotone,
@@ -87,6 +91,8 @@ import {
 } from "@vicons/material";
 import {
   NLayout,
+  NImage,
+  NNotificationProvider,
   NLayoutHeader,
   NLayoutContent,
   NButton,
@@ -109,6 +115,7 @@ import {
   WsMessage,
   WsMsgCodes,
 } from "@/utils/websocket";
+import logoUrl from "@/assets/labctl.png";
 
 const store = useMainStore();
 

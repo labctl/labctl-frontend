@@ -12,6 +12,10 @@ export function message(): MessageApi {
   return (window as any).$message;
 }
 
+export function MsgInit(m: MessageApi) {
+  (window as any).$message = m;
+}
+
 export function MsgInfo(msg: ContentType, options?: MessageOptions) {
   ((window as any).$message as MessageApi).info(msg, {
     duration: 3000,
