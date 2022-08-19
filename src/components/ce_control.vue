@@ -273,7 +273,6 @@ function run_config() {
     return;
   }
   cmd_lastrun.value = cmd_active.value;
-  optCommands.value[0] = cmd_active.value;
   Object.keys(store.results).forEach((key) => delete store.results[key]);
   loading_config.value = true;
 
