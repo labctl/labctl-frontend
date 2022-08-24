@@ -146,17 +146,18 @@ export const useMainStore = defineStore("main", {
       this.optLayouts = data.layouts;
       this.optTemplates = data.templates;
 
-      if (this.topo.name === "") {
+      console.debug("req topo");
+      const resp = await json_fetch("/labctl/topo");
+      console.debug("got topo");
+
+      if (this.topo.name !== resp.data.name) {
+        Object.assign(this.topo, resp.data);
         json_fetch("/labctl/vars").then((resp) => {
           Object.assign(this.topo.vars, resp.data);
         });
         json_fetch("/labctl/templates").then((resp) => {
           Object.assign(this.templateFiles, resp.data);
         });
-        console.debug("req topo");
-        const resp = await json_fetch("/labctl/topo");
-        console.debug("got topo");
-        Object.assign(this.topo, resp.data);
       }
     },
 
