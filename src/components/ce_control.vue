@@ -42,14 +42,16 @@
             <td v-for="(r, i) in roles" :key="`td:${name}_${i}`" class="cen">
               <n-popover v-if="rols[r]" trigger="hover">
                 <template #trigger>
-                  <n-icon
-                    :component="
-                      getT(name, r).shadow.length
-                        ? LibraryAddCheckOutlined
-                        : CheckBoxOutlined
-                    "
-                    size="18px"
-                  />
+                  <n-button circle @click="templateView = getT(name, r).name">
+                    <n-icon
+                      :component="
+                        getT(name, r).shadow.length
+                          ? LibraryAddCheckOutlined
+                          : CheckBoxOutlined
+                      "
+                      size="18px"
+                    />
+                  </n-button>
                 </template>
 
                 <p>
@@ -64,8 +66,8 @@
                     &hellip;/{{ getT(name, r).shadow.join(", ") }}/
                   </span>
                 </p>
-                <n-ellipsis :line-clamp="5">
-                  <pre>{{ getT(name, r).value }}</pre>
+                <n-ellipsis :line-clamp="5" :tooltip="false">
+                  <pre><code>{{ getT(name, r).value }}</code></pre>
                 </n-ellipsis>
               </n-popover>
             </td>
@@ -175,6 +177,12 @@
 
     <div v-else>unknown tab ?? {{ selected_tab }}</div>
   </n-card>
+  <template-preview-dialog
+    v-if="templateView !== ''"
+    visible
+    :template="templateView"
+    @close="templateView = ''"
+  ></template-preview-dialog>
 </template>
 
 <script setup lang="ts">
@@ -205,10 +213,11 @@ import {
 } from "@vicons/material";
 import ConfigResults from "@/components/config_results.vue";
 
-import { ceTemplateName } from "@/utils/helpers";
+import { parseTemplateFN } from "@/utils/helpers";
 import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
 import { storeToRefs } from "pinia";
 import { MsgWarning } from "@/utils/message";
+import TemplatePreviewDialog from "@/components/template_preview_dialog.vue";
 
 export interface PropDef {
   selected: Array<string>;
@@ -230,29 +239,31 @@ const cmd_active = ref("compare -l ports -f R1,R2");
 const visible = ref(true);
 const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run);
 
+/** Dict of all templates, values includes all roles */
 const templates = computed(() => {
-  const roles = {} as Record<string, Record<string, boolean>>;
+  const temps = {} as Record<string, Record<string, boolean>>;
   Object.keys(store.templateFiles)
     .sort()
     .forEach((fn) => {
-      const tn = ceTemplateName(fn);
-      if (!(tn.name in roles)) {
-        roles[tn.name] = {} as Record<string, boolean>;
+      const tn = parseTemplateFN(fn);
+      if (!(tn.name in temps)) {
+        temps[tn.name] = {} as Record<string, boolean>;
       }
-      roles[tn.name][tn.role] = true;
+      temps[tn.name][tn.role] = true;
     });
-  return roles;
+  return temps;
 });
 
+/** List available roles/kinds from the templateFiles */
 const roles = computed(() => {
-  const r = new Set<string>();
-  Object.keys(store.templateFiles).forEach((fn) => {
-    const tn = ceTemplateName(fn);
-    r.add(tn.role);
-  });
-  return [...r].sort();
+  const ra = Object.keys(store.templateFiles).map(
+    (fn) => parseTemplateFN(fn).role
+  );
+  const rs = new Set<string>(ra);
+  return [...rs].sort();
 });
 
+/** Get the templateFile from the store using name & role */
 function getT(name: string, role: string) {
   const n = `${name}__${role}.tmpl`;
   return n in store.templateFiles
@@ -285,9 +296,6 @@ function run_config() {
 }
 
 const results_all = computed(() => Object.keys(store.results).sort());
-// const results_selected = computed(() =>
-//   results_all.value.filter((v) => props.selected.includes(v))
-// );
 
 wsRxBus.on((msg) => {
   if (msg.code === WsMsgCodes.config && msg.config && msg.config.results) {
@@ -326,13 +334,17 @@ function close() {
   emit("update:close", false);
   visible.value = false;
 }
+
+const templateView = ref("");
 </script>
 
 <style>
 span.fn {
   /*border: 1px solid black;*/
   background-color: aliceblue;
-  padding: 4px;
+  padding: 5px;
+  margin-left: 3px;
+  margin-right: 3px;
 }
 td.cen,
 th.cen {

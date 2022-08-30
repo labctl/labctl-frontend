@@ -92,12 +92,14 @@
         :expand-depth="3"
       />
     </div>
-    <template-dialog
+    <vars-template-dialog
+      v-if="templateVisible"
       v-model:visible="templateVisible"
       :vars="vars"
       :template="link ? 'link' : 'node'"
-      :link="props.link"
-    ></template-dialog>
+      :is-link="props.link"
+      :is-node="!props.link"
+    ></vars-template-dialog>
   </n-card>
 </template>
 
@@ -111,7 +113,7 @@ import {
   SplitscreenTwotone,
   DescriptionOutlined,
 } from "@vicons/material";
-import TemplateDialog from "@/components/template_dialog.vue";
+import VarsTemplateDialog from "@/components/vars_template_dialog.vue";
 import { sortDictionary } from "@/utils/utils";
 
 export interface PropDef {

@@ -75,12 +75,14 @@ export function labelDirection(
   return res;
 }
 
-interface name_role {
+interface TTemplateFN {
   name: string;
   role: string;
   ext: string;
 }
-export function ceTemplateName(name: string): name_role {
+
+/** Parse the template filename into parts */
+export function parseTemplateFN(name: string): TTemplateFN {
   const n = name.split("__");
   const r = n[1].split(".");
   return { name: n[0], role: r[0], ext: r[1] };

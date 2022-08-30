@@ -86,7 +86,7 @@ export interface JsonResponse {
 }
 
 /** labctl Template struct from the server */
-export interface TemplateFiles {
+export interface TemplateFile {
   name: string;
   p: string;
   shadow: string[];

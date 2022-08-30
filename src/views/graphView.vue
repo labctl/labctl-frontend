@@ -472,7 +472,7 @@ function centerGraph() {
 onMounted(() => {
   logEvent("mounted", {});
   nextTick(() => {
-    TipsShow();
+    TipsShow("select");
     centerGraph();
   });
 });

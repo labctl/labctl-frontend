@@ -1,7 +1,7 @@
 <template>
   <n-modal v-if="visible" v-model:show="visible">
     <n-card
-      title="Render template"
+      :title="props.isLink ? 'Render link template' : 'Render node template'"
       style="width: 95%"
       closable
       @close="visible = false"
@@ -51,7 +51,7 @@
           <n-input
             v-model:value="tempV"
             type="textarea"
-            :autosize="{ minRows: 3, maxRows: 10 }"
+            :autosize="{ minRows: 10, maxRows: 80 }"
             autofocus
           />
         </n-grid-item>
@@ -91,10 +91,10 @@
 import {
   ref,
   computed,
-  watch,
   defineProps,
   defineEmits,
   withDefaults,
+  onMounted,
 } from "vue";
 // eslint-diasble-next-line
 import DivMarkdown from "@/components/div_markdown.vue";
@@ -131,21 +131,21 @@ interface PropDef {
   visible: boolean;
 
   fixedTemplate?: boolean;
-  /** link is used to filter any node related templates */
-  link?: boolean;
+  /** link/node is used to filter any node related templates */
+  isLink?: boolean;
 }
 const props = withDefaults(defineProps<PropDef>(), {
   fixedTemplate: false,
-  link: false,
+  isLink: false,
 });
 
-const emit = defineEmits(["update:template", "update:visible"]);
+const emit = defineEmits(["update:template", "update:visible", "close"]);
 
 const showVars = ref(true);
 const showMd = ref(false);
-
 const tempN = ref("");
 
+/** the value of the active template */
 const tempV = computed({
   get: () => {
     // console.log(tempN.value, store.templateFiles[tempN.value]);
@@ -162,12 +162,13 @@ const tempV = computed({
       return;
     }
     if (!(tempN.value in store.optTemplates)) {
-      tempN.value = (props.link ? "link." : "node.") + tempN.value;
+      tempN.value = (props.isLink ? "link." : "node.") + tempN.value;
     }
     store.optTemplates[tempN.value] = v;
   },
 });
 
+/** Send the new template to the server so that it can be rendered */
 watchDebounced(
   tempV,
   () => {
@@ -187,24 +188,31 @@ watchDebounced(
   { debounce: 1000 }
 );
 
+/** save the return value from the server when we've rendered the template */
 wsTemplateBus.on((t) => {
   template_result.value = t.result || "";
   template_resulty.value = t.resulty || {};
 });
 
+/** is this dialog visible */
 const visible = computed({
   get: () => props.visible,
   set: (vis) => {
     if (!vis) {
       emit("update:visible", false);
+      emit("close");
     }
   },
 });
 
-watch(visible, (value) => {
-  if (!value) return;
+onMounted(() => {
   tempN.value = props.template;
 });
+
+// watch(visible, (value) => {
+//   if (!value) return;
+//   tempN.value = props.template;
+// });
 
 const tempOptions = computed(() => {
   const res = [] as Array<SelectGroupOption | SelectOption>;
@@ -227,12 +235,18 @@ const tempOptions = computed(() => {
     grp("Graph labels").push({
       label: v,
       value: v,
-      disabled: (props.link ? v.indexOf("link") : v.indexOf("node")) < 0,
+      disabled: (props.isLink ? v.indexOf("link") : v.indexOf("node")) < 0,
     } as SelectOption);
   });
-  if (props.link) {
+
+  if (props.isLink) {
+    grp(`Template files`).push({
+      label: "only shown for nodes",
+      disabled: true,
+    });
     return res;
   }
+
   const role = props.vars["clab_role"];
   Object.values(store.templateFiles).forEach((t) => {
     grp(`/${t.p}/`).push({
@@ -245,7 +259,7 @@ const tempOptions = computed(() => {
 });
 
 function example() {
-  const v = props.link
+  const v = props.isLink
     ? `
 
 source_above: {{ .source_endpoint }}

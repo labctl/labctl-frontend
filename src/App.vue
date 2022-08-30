@@ -13,7 +13,16 @@
           >
             <n-space justify="space-between" size="large" :wrap="false">
               <n-space justify="space-around" :wrap="false">
-                <n-image :src="logoUrl" :height="32" preview-disabled></n-image>
+                <a
+                  href="https://labctl.net/guide/config-engine-ui"
+                  target="_blank"
+                >
+                  <n-image
+                    :src="logoUrl"
+                    :height="32"
+                    preview-disabled
+                  ></n-image
+                ></a>
                 <span style="font-size: 24px">{{ store.topo.name }}</span>
               </n-space>
 
@@ -115,7 +124,7 @@ import {
   WsMessage,
   WsMsgCodes,
 } from "@/utils/websocket";
-import logoUrl from "@/assets/labctl.png";
+import logoUrl from "@/assets/labctl1.svg";
 
 const store = useMainStore();
 

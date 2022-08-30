@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { json_fetch } from "@/utils/utils";
 
 import { useLocalStorage } from "@vueuse/core";
-import { NodeVars, Links, Nodes, TemplateFiles } from "@/utils/types";
+import { NodeVars, Links, Nodes, TemplateFile } from "@/utils/types";
 
 import {
   WsMessage,
@@ -32,7 +32,7 @@ export const useMainStore = defineStore("main", {
       vars: {} as NodeVars,
     },
     /** *.tmpl files from the template path */
-    templateFiles: {} as Record<string, TemplateFiles>,
+    templateFiles: {} as Record<string, TemplateFile>,
     // option file
     optLayouts: {
       nodes: {},
