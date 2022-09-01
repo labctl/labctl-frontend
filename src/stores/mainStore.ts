@@ -13,7 +13,7 @@ import {
 } from "@/utils/websocket";
 
 import { Layouts } from "v-network-graph";
-import { fFarEndNode } from "@/utils/helpers";
+import { defaultGraphTemplates, fFarEndNode } from "@/utils/helpers";
 import { MsgError, MsgInfo, MsgWarning } from "@/utils/message";
 import { wsRxBus, wsSend } from "@/utils/websocket";
 import { toRaw } from "vue";
@@ -145,6 +145,13 @@ export const useMainStore = defineStore("main", {
       Object.assign(this, data.options);
       this.optLayouts = data.layouts;
       this.optTemplates = data.templates;
+
+      if (!("link" in this.optTemplates)) {
+        this.optTemplates["link"] = defaultGraphTemplates(true);
+      }
+      if (!("node" in this.optTemplates)) {
+        this.optTemplates["node"] = defaultGraphTemplates(false);
+      }
 
       console.debug("req topo");
       const resp = await json_fetch("/labctl/topo");

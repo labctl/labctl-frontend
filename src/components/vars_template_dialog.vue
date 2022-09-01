@@ -53,6 +53,7 @@
             type="textarea"
             :autosize="{ minRows: 10, maxRows: 80 }"
             autofocus
+            style="font-family: monospace"
           />
         </n-grid-item>
         <n-grid-item>
@@ -118,6 +119,7 @@ import { watchDebounced } from "@vueuse/core";
 import { wsTemplateBus, wsSend } from "@/utils/websocket";
 import JSwitch from "@/components/j_switch.vue";
 import { MsgInfo } from "@/utils/message";
+import { defaultGraphTemplates } from "@/utils/helpers";
 
 const store = useMainStore();
 const template_result = ref("");
@@ -259,20 +261,7 @@ const tempOptions = computed(() => {
 });
 
 function example() {
-  const v = props.isLink
-    ? `
-
-source_above: {{ .source_endpoint }}
-source_below: ".{{ .source_vars.clab_link_ip | ip | split "." | index -1 }}"
-target_above: {{ .target_endpoint }}
-target_below: ".{{ .target_vars.clab_link_ip | ip | split "." | index -1 }}"
-center_above:
-center_below: {{ .source_vars.clab_link_ip | split "." | slice 0 3 | join "." }}/{{ .source_vars.clab_link_ip | split "/" | index -1  }}
-`
-    : `
-
-label: {{ .clab_role }}
-label_below: {{ .clab_node }}`;
+  const v = defaultGraphTemplates(props.isLink);
   if (!tempV.value.includes(v)) {
     tempV.value += v;
   } else {

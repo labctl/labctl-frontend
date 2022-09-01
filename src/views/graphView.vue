@@ -5,19 +5,20 @@
         <n-icon><center-focus-weak-sharp /></n-icon>
       </n-button>
       <n-button-group>
-        <j-switch v-model:value="show_vars">
-          Variables
-          <template #tooltip>
-            Show variables from the topology files.
-          </template>
+        <j-switch
+          :value="ce_visible > 0"
+          @update:value="ce_visible = ce_visible < -2 ? 2 : -ce_visible"
+        >
+          Config Engine
+          <template #tooltip> Show the Config Engine. </template>
         </j-switch>
-        <j-switch v-model:value="show_results">
+        <!-- <j-switch v-model:value="show_results">
           Results
           <template #tooltip>
             Show results in separate tiles. You need to select one or more nodes
             with results
           </template>
-        </j-switch>
+        </j-switch> -->
       </n-button-group>
     </n-space>
   </teleport>
@@ -235,36 +236,13 @@
   </n-layout>
 
   <n-grid cols="2 1210:4 2420:6" :x-gap="10" :y-gap="10">
-    <n-grid-item :span="2">
-      <ce-control v-model:selected="selectedNodes" />
+    <n-grid-item v-if="ce_visible > 0" :span="ce_visible * 2">
+      <ce-control
+        v-model:visible="ce_visible"
+        v-model:selected="selectedNodes"
+        v-model:selectedLinks="selectedLinks"
+      />
     </n-grid-item>
-
-    <template v-for="nid in selectedNodes" :key="`gnode:${nid}`">
-      <n-grid-item v-if="show_results && nid in store.results" :span="2">
-        <n-card :title="`Results ${nid}`">
-          <config-results :node="nid"></config-results>
-        </n-card>
-      </n-grid-item>
-
-      <template v-if="show_vars">
-        <n-grid-item>
-          <vars-view
-            :id="nid"
-            @close="selectedNodes.splice(selectedNodes.indexOf(nid, 0), 1)"
-          ></vars-view>
-        </n-grid-item>
-      </template>
-    </template>
-
-    <template v-if="show_vars">
-      <n-grid-item v-for="lid in selectedLinks" :key="`glink:${lid}`">
-        <vars-view
-          :id="lid"
-          link
-          @close="selectedLinks.splice(selectedLinks.indexOf(lid, 0), 1)"
-        ></vars-view>
-      </n-grid-item>
-    </template>
 
     <n-grid-item v-if="show_logs">
       <n-card title="Logs" closable @close="show_logs = false">
@@ -306,17 +284,18 @@ import {
   useMessage,
   useNotification,
 } from "naive-ui";
+
 import JSwitch from "@/components/j_switch.vue";
-import ConfigResults from "@/components/config_results.vue";
+import CeControl from "@/components/ce_control.vue";
+// import ConfigResults from "@/components/config_results.vue";
+// import VarsView from "@/components/vars_view.vue";
+
 import { RefreshSharp, CenterFocusWeakSharp } from "@vicons/material";
-// import { ArrowExpand20Regular } from "@vicons/fluent";
 import * as vNG from "v-network-graph";
 import { ForceLayout } from "v-network-graph/lib/force-layout";
 import dayjs from "dayjs";
 
 import { useMainStore } from "@/stores/mainStore";
-import VarsView from "@/components/vars_view.vue";
-import CeControl from "@/components/ce_control.vue";
 import {
   wsTemplateBus,
   wsTxBus,
@@ -343,11 +322,10 @@ const { optLayout, optLayouts } = storeToRefs(store);
 const lblLink = ref({} as Record<string, LinkLabels>);
 const lblNode = ref({} as Record<string, NodeLabels>);
 
+const ce_visible = useLocalStorage("ceVisible", 2);
 const show_logs = useLocalStorage("showLogs", false);
 const show_g_logs = useLocalStorage("showGraphLogs", false);
 const show_sidebar = useLocalStorage("showSiderbar", true);
-const show_vars = useLocalStorage("showVars", true);
-const show_results = useLocalStorage("showResults", true);
 const EVENTS_COUNT = 12;
 
 const eventLogs = reactive<[string, string, string][]>([]);

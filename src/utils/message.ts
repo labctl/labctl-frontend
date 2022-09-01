@@ -26,6 +26,10 @@ export function MsgInfo(msg: ContentType, options?: MessageOptions) {
 }
 
 export function MsgWarning(msg: ContentType, options?: MessageOptions) {
+  if (typeof (window as any).$message == "undefined") {
+    console.error("$message init", msg);
+    return;
+  }
   ((window as any).$message as MessageApi).warning(msg, {
     duration: 4000,
     closable: true,

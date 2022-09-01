@@ -87,3 +87,19 @@ export function parseTemplateFN(name: string): TTemplateFN {
   const r = n[1].split(".");
   return { name: n[0], role: r[0], ext: r[1] };
 }
+
+/** Return example graph templates */
+export function defaultGraphTemplates(isLink: boolean): string {
+  return isLink
+    ? `
+source_above: {{ .source_endpoint }}
+source_below: ".{{ .source_vars.clab_link_ip | ip | split "." | index -1 }}"
+target_above: {{ .target_endpoint }}
+target_below: ".{{ .target_vars.clab_link_ip | ip | split "." | index -1 }}"
+center_above:
+center_below: {{ .source_vars.clab_link_ip | split "." | slice 0 3 | join "." }}/{{ .source_vars.clab_link_ip | split "/" | index -1  }}
+`
+    : `
+label: {{ .clab_role }}
+label_below: {{ .clab_node }}`;
+}

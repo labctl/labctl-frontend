@@ -23,7 +23,7 @@ const tips = [
   {
     title: "Edit templates",
     content:
-      "You can edit templates from the variables view. Ensure VARIABLES are visible and select a node.",
+      "You can edit templates from the variables view under 'Config Engine', vars tab.\n\nSelect nodes/links and test&edit the templates.",
     shown: 0,
   },
 ] as Array<Tip>;

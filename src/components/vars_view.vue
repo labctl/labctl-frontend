@@ -1,5 +1,14 @@
 <template>
-  <n-card :title="title" closable @close="close">
+  <n-card closable @close="close">
+    <template #header>
+      <template v-if="props.link">
+        Link {{ props.id }}:
+        <span class="fn">{{ link.source }}:{{ link.source_endpoint }}</span> to
+        <span class="fn">{{ link.target }}:{{ link.target_endpoint }}</span>
+      </template>
+      <template v-else> Node {{ props.id }} </template>
+    </template>
+
     <template #header-extra>
       <n-popover v-if="!link" trigger="hover">
         <template #trigger>
@@ -37,6 +46,7 @@
         Variables from the topology file and magic variables added by
         containerlab.
       </p>
+      <p>Variables from the topology file:</p>
       <json-viewer
         :value="topovars"
         copyable
@@ -45,6 +55,7 @@
         :expand-depth="4"
         theme="dark"
       />
+      <p>Variables added by containerlab</p>
       <json-viewer
         :value="newvars"
         copyable
@@ -144,13 +155,13 @@ const newvars = computed(() => {
   return sortDictionary(v, compareKeys, topovars.value);
 });
 
-const title = computed(() => {
-  if (!props.link) {
-    return props.id;
-  }
-  // const l = store.topo.links[props.id];
-  return `Link ${props.id}: ${link.value.source}:${link.value.source_endpoint} to ${link.value.target}:${link.value.target_endpoint}`;
-});
+// const title = computed(() => {
+//   if (!props.link) {
+//     return props.id;
+//   }
+//   // const l = store.topo.links[props.id];
+//   return `Link ${props.id}: ${link.value.source}:${link.value.source_endpoint} to ${link.value.target}:${link.value.target_endpoint}`;
+// });
 
 const link = computed(() => store.topo.links[props.id]);
 
