@@ -376,9 +376,7 @@ wsRxBus.on((msg) => {
   if (msg.code === WsMsgCodes.config && msg.config && msg.config.results) {
     // add this node to selected
     const n = msg.config.results[0].node;
-    if (!(n in props.selected)) {
-      toggleSelected(n);
-    }
+    toggleSelected(n, true);
   }
 
   if (msg.code === WsMsgCodes.config && msg.config?.cmd) {

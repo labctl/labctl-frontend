@@ -3,9 +3,8 @@
     <template #trigger>
       <n-button
         size="small"
-        type="primary"
+        color="#4466cc"
         :strong="!!props.value"
-        :xsecondary="!!props.value"
         :tertiary="!props.value"
         round
         @click="toggle"
@@ -19,9 +18,8 @@
   <n-button
     v-else
     size="small"
-    type="primary"
+    color="#4466cc"
     :strong="!!props.value"
-    :xsecondary="!!props.value"
     :tertiary="!props.value"
     round
     @click="toggle"

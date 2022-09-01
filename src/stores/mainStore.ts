@@ -170,7 +170,7 @@ export const useMainStore = defineStore("main", {
 
     load_config(data?: Array<WsTxResponse>) {
       if (!data) {
-        console.warn("no config results to load");
+        MsgError("No config results");
         return;
       }
       data.forEach((e) => {

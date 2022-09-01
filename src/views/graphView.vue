@@ -12,13 +12,6 @@
           Config Engine
           <template #tooltip> Show the Config Engine. </template>
         </j-switch>
-        <!-- <j-switch v-model:value="show_results">
-          Results
-          <template #tooltip>
-            Show results in separate tiles. You need to select one or more nodes
-            with results
-          </template>
-        </j-switch> -->
       </n-button-group>
     </n-space>
   </teleport>
