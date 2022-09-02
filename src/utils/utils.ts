@@ -3,17 +3,16 @@ import { Callable2, Dictionary, JsonResponse } from "./types";
 export const ws_uri = (() => {
   const loc = window.location;
   if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
-    return "ws://tes4:8080/labctl/ws";
+    return `ws://tes4:${loc.port}/labctl/ws`;
   }
-  var new_uri = loc.protocol === "https:" ? "wss:" : "ws:";
-  new_uri += "//" + loc.host + "/labctl/ws";
-  return new_uri;
+  const ws = loc.protocol === "https:" ? "wss" : "ws";
+  return `${ws}://${loc.host}/labctl/ws`;
 })();
 
 export const api_uri = (() => {
   const loc = window.location;
   if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
-    return "http://tes4:8080";
+    return `http://tes4:${loc.port}`;
   }
   return `${loc.protocol}//${loc.host}`;
 })();

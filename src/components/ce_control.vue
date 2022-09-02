@@ -177,58 +177,7 @@
     </div>
 
     <div v-else-if="selected_tab === tab.templates">
-      <h3>Available templates</h3>
-      <n-table striped size="small">
-        <thead>
-          <tr>
-            <th>Template</th>
-            <th v-for="r in roles" :key="`ce:th:${r}`" class="cen">
-              {{ r }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(rols, name) in templates" :key="`ce:t:${name}`">
-            <td>{{ name }}</td>
-            <td v-for="(r, i) in roles" :key="`td:${name}_${i}`" class="cen">
-              <n-popover v-if="rols[r]" trigger="hover">
-                <template #trigger>
-                  <n-button
-                    quaternary
-                    small
-                    @click="templateView = getT(name, r).name"
-                  >
-                    <n-icon
-                      :component="
-                        getT(name, r).shadow.length
-                          ? LibraryAddCheckOutlined
-                          : CheckBoxOutlined
-                      "
-                      size="18px"
-                    />
-                  </n-button>
-                </template>
-
-                <p>
-                  Template file:
-                  <span class="fn">
-                    &hellip;/{{ getT(name, r).p }}/{{ getT(name, r).name }}
-                  </span>
-                </p>
-                <p v-if="getT(name, r).shadow.length">
-                  Shadows
-                  <span class="fn">
-                    &hellip;/{{ getT(name, r).shadow.join(", ") }}/
-                  </span>
-                </p>
-                <n-ellipsis :line-clamp="5" :tooltip="false">
-                  <pre><code>{{ getT(name, r).value }}</code></pre>
-                </n-ellipsis>
-              </n-popover>
-            </td>
-          </tr>
-        </tbody>
-      </n-table>
+      <CeTemplates />
     </div>
 
     <div v-else>unknown tab ?? {{ selected_tab }}</div>
@@ -247,14 +196,12 @@ import {
   NBadge,
   NButton,
   NCard,
-  NEllipsis,
   NGrid,
   NGridItem,
   NIcon,
   NInput,
   NInputGroup,
   NInputGroupLabel,
-  NPopover,
   NSpace,
   NTab,
   NTable,
@@ -263,11 +210,10 @@ import {
 import { useMainStore } from "@/stores/mainStore";
 import JSwitch from "@/components/j_switch.vue";
 import VarsView from "@/components/vars_view.vue";
+import CeTemplates from "@/components/ce_templates.vue";
 import {
-  CheckBoxOutlined,
   DescriptionOutlined,
   HomeOutlined,
-  LibraryAddCheckOutlined,
   PlayArrowTwotone,
   SettingsEthernetOutlined,
 } from "@vicons/material";
@@ -277,7 +223,6 @@ import {
 } from "@vicons/fluent";
 import ConfigResults from "@/components/config_results.vue";
 
-import { parseTemplateFN } from "@/utils/helpers";
 import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
 import { storeToRefs } from "pinia";
 import { MsgWarning } from "@/utils/message";
@@ -308,43 +253,6 @@ const emit = defineEmits([
 ]);
 const cmd_active = ref("");
 const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run);
-
-/** Dict of all templates, values includes all roles */
-const templates = computed(() => {
-  const temps = {} as Record<string, Record<string, boolean>>;
-  Object.keys(store.templateFiles)
-    .sort()
-    .forEach((fn) => {
-      const tn = parseTemplateFN(fn);
-      if (!(tn.name in temps)) {
-        temps[tn.name] = {} as Record<string, boolean>;
-      }
-      temps[tn.name][tn.role] = true;
-    });
-  return temps;
-});
-
-/** List available roles/kinds from the templateFiles */
-const roles = computed(() => {
-  const ra = Object.keys(store.templateFiles).map(
-    (fn) => parseTemplateFN(fn).role
-  );
-  const rs = new Set<string>(ra);
-  return [...rs].sort();
-});
-
-/** Get the templateFile from the store using name & role */
-function getT(name: string, role: string) {
-  const n = `${name}__${role}.tmpl`;
-  return n in store.templateFiles
-    ? store.templateFiles[n]
-    : {
-        name: n,
-        p: "",
-        value: "",
-        shadow: [],
-      };
-}
 
 const cmd_lastrun = ref("");
 /** Run the config command */

@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, withDefaults, defineEmits, useSlots } from "vue";
+import { defineEmits, useSlots } from "vue";
 import { NButton, NPopover } from "naive-ui";
 
 export interface PropDef {

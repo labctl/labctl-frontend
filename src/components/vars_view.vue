@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps, computed, withDefaults, defineEmits } from "vue";
+import { ref, computed, defineEmits } from "vue";
 import { NCard, NButton, NIcon, NPopover } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { JsonViewer } from "vue3-json-viewer";
