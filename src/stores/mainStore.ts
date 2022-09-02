@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { json_fetch } from "@/utils/utils";
+import { $set_array, json_fetch } from "@/utils/utils";
 
 import { useLocalStorage } from "@vueuse/core";
 import { NodeVars, Links, Nodes, TemplateFile } from "@/utils/types";
@@ -134,14 +134,15 @@ export const useMainStore = defineStore("main", {
       this.optHeight = Math.max(400, Math.min(900, data.options.height || 450));
       this.optLayout = data.options.layout;
 
-      this.optCommands = data.options.commands;
-      if (!Array.isArray(this.optCommands)) {
-        this.optCommands = [""];
+      if (Array.isArray(data.options.commands)) {
+        $set_array(this.optCommands, data.options.commands);
+      } else {
+        this.optCommands = [
+          "Run a show [send -l show](run:)",
+          "Check config [compare -l ports](run:)",
+        ];
       }
 
-      // Object.keys(data.options).forEach((o) => {
-      //   if (Object.hasOwn(this, `opt`))
-      // })
       Object.assign(this, data.options);
       this.optLayouts = data.layouts;
       this.optTemplates = data.templates;

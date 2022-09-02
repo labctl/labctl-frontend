@@ -89,30 +89,22 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  computed,
-  defineProps,
-  defineEmits,
-  withDefaults,
-  onMounted,
-} from "vue";
+import { ref, computed, onMounted } from "vue";
 // eslint-diasble-next-line
 import DivMarkdown from "@/components/div_markdown.vue";
 import { Dictionary } from "@/utils/types";
 import { WsMessage, WsMsgCodes } from "@/utils/websocket";
 import {
-  //useMessage,
   NCard,
   NGrid,
   NGridItem,
-  NModal,
   NInput,
-  NSpace,
+  NModal,
   NSelect,
+  NSpace,
   NSwitch,
-  SelectOption,
   SelectGroupOption,
+  SelectOption,
 } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { watchDebounced } from "@vueuse/core";

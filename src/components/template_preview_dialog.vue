@@ -45,13 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  computed,
-  defineProps,
-  defineEmits,
-  withDefaults,
-  onMounted,
-} from "vue";
+import { computed, withDefaults, onMounted } from "vue";
 import { NButton, NCard, NGrid, NGridItem, NModal, NInput } from "naive-ui";
 import { useMainStore } from "@/stores/mainStore";
 import { TemplateFile } from "@/utils/types";

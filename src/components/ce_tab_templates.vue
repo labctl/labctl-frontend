@@ -3,8 +3,8 @@
   <n-table striped size="small">
     <thead>
       <tr>
-        <th>Template</th>
         <th>Folder(s)</th>
+        <th>Template</th>
         <th v-for="r in roles" :key="`ce:th:${r}`" class="cen">
           {{ r }}
         </th>
@@ -12,7 +12,6 @@
     </thead>
     <tbody>
       <tr v-for="(rols, name) in templates" :key="`ce:t:${name}`">
-        <td>{{ name }}</td>
         <td>
           {{
             [
@@ -22,6 +21,7 @@
             ].join(",")
           }}
         </td>
+        <td>{{ name }}</td>
         <td v-for="(r, i) in roles" :key="`td:${name}_${i}`" class="cen">
           <n-popover v-if="rols[r]" trigger="hover">
             <template #trigger>

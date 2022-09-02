@@ -52,27 +52,8 @@
       /></n-button>
     </template>
 
-    <div v-if="selected_tab === tab.home">
-      <p>Recommended commands for this lab</p>
-      <n-table striped size="small">
-        <thead>
-          <tr>
-            <th>Command</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(cmd, idx) in optCommands" :key="`cmd:labf:${idx}`">
-            <td>
-              <pre>{{ cmd }}</pre>
-            </td>
-            <td>
-              <n-button x-small @click="newCmd(cmd)">use</n-button>
-            </td>
-          </tr>
-        </tbody>
-      </n-table>
-    </div>
+    <CeTabHome v-if="selected_tab === tab.home" @run="runCmd" />
+    <CeTabTemplates v-else-if="selected_tab === tab.templates" />
 
     <div v-else-if="selected_tab === tab.run">
       <p>
@@ -176,11 +157,7 @@
       </template>
     </div>
 
-    <div v-else-if="selected_tab === tab.templates">
-      <CeTemplates />
-    </div>
-
-    <div v-else>unknown tab ?? {{ selected_tab }}</div>
+    <div v-else>Unknown tab: {{ selected_tab }}</div>
   </n-card>
   <template-preview-dialog
     v-if="templateView !== ''"
@@ -191,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, computed } from "vue";
+import { ref, computed } from "vue";
 import {
   NBadge,
   NButton,
@@ -210,7 +187,8 @@ import {
 import { useMainStore } from "@/stores/mainStore";
 import JSwitch from "@/components/j_switch.vue";
 import VarsView from "@/components/vars_view.vue";
-import CeTemplates from "@/components/ce_templates.vue";
+import CeTabHome from "@/components/ce_tab_home.vue";
+import CeTabTemplates from "@/components/ce_tab_templates.vue";
 import {
   DescriptionOutlined,
   HomeOutlined,
@@ -320,7 +298,7 @@ function popLink(linkId: string) {
   emit("update:selectedLinks", newL);
 }
 
-function newCmd(cmd: string) {
+function runCmd(cmd: string) {
   console.log("old command", cmd_active.value);
   cmd_active.value = cmd;
   selected_tab.value = tab.run;
@@ -333,16 +311,4 @@ function close() {
 const templateView = ref("");
 </script>
 
-<style>
-span.fn {
-  /*border: 1px solid black;*/
-  background-color: aliceblue;
-  padding: 5px;
-  margin-left: 3px;
-  margin-right: 3px;
-}
-td.cen,
-th.cen {
-  text-align: center;
-}
-</style>
+<style></style>
