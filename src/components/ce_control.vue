@@ -52,7 +52,7 @@
       /></n-button>
     </template>
 
-    <CeTabHome v-if="selected_tab === tab.home" @run="runCmd" />
+    <CeTabHome v-if="selected_tab === tab.home" @action="clickAction" />
     <CeTabTemplates v-else-if="selected_tab === tab.templates" />
 
     <div v-else-if="selected_tab === tab.run">
@@ -205,6 +205,7 @@ import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
 import { storeToRefs } from "pinia";
 import { MsgWarning } from "@/utils/message";
 import TemplatePreviewDialog from "@/components/template_preview_dialog.vue";
+import { ActionEvent } from "@/utils/types";
 
 export interface PropDef {
   visible: number;
@@ -225,6 +226,7 @@ enum tab {
 }
 
 const emit = defineEmits([
+  "path",
   "update:visible",
   "update:selected",
   "update:selectedLinks",
@@ -298,10 +300,16 @@ function popLink(linkId: string) {
   emit("update:selectedLinks", newL);
 }
 
-function runCmd(cmd: string) {
-  console.log("old command", cmd_active.value);
-  cmd_active.value = cmd;
-  selected_tab.value = tab.run;
+/** Received a click action event */
+function clickAction(action: ActionEvent) {
+  if (action.action === "config") {
+    cmd_active.value = action.command;
+    selected_tab.value = tab.run;
+  } else if (action.action === "path") {
+    emit("path", action.command);
+  } else {
+    console.log(action);
+  }
 }
 
 function close() {

@@ -12,6 +12,7 @@ import { computed } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { MsgInfo } from "@/utils/message";
+import { ActionEvent } from "@/utils/types";
 
 export interface PropDef {
   value: string;
@@ -20,7 +21,11 @@ export interface PropDef {
 const props = withDefaults(defineProps<PropDef>(), {
   showMsg: false,
 });
-const emit = defineEmits(["run", "path"]);
+
+//const emit = defineEmits(["action"]);
+const emit = defineEmits<{
+  (e: "action", action: ActionEvent): void;
+}>();
 
 const value = computed(() => {
   const default_text = "---";
@@ -39,7 +44,7 @@ const value = computed(() => {
   try {
     return DOMPurify.sanitize(result, {
       ALLOWED_URI_REGEXP:
-        /^(?:(?:(?:f|ht)tps?|mailto|es|path|run):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+        /^(?:(?:(?:f|ht)tps?|mailto|es|path|run|config|gnmic|containerlab|clab):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
     });
   } catch (error) {
     const value = props.value;
@@ -60,14 +65,27 @@ function uriHandler(e: Event) {
   }
   const href = target.getAttribute("href") ?? "";
   const [proto, url] = href.split(":", 2);
-  const param = url.replaceAll("/", " ").trim() || target.textContent || "";
-  console.log(url);
-  if (proto == "path" || proto == "run") {
-    if (props.showMsg) {
-      MsgInfo(`Clicked on\n${proto}\n${param}`);
-    }
-    emit(proto, param);
-    e.preventDefault();
+
+  const action = {
+    action: proto,
+    command: url.replaceAll("/", " ").trim() || target.textContent || "",
+  } as ActionEvent;
+  switch (proto) {
+    case "run":
+      action.action = "config";
+      break;
+    case "containerlab":
+      action.action = "clab";
+      break;
+  }
+
+  e.preventDefault();
+  if (props.showMsg) {
+    MsgInfo(
+      `Clicked on (proto:${proto})\n\n${action.action}\n${action.command}`
+    );
+  } else {
+    emit("action", action);
   }
 }
 </script>

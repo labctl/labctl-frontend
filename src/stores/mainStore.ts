@@ -138,8 +138,8 @@ export const useMainStore = defineStore("main", {
         $set_array(this.optCommands, data.options.commands);
       } else {
         this.optCommands = [
-          "Run a show [send -l show](run:)",
-          "Check config [compare -l ports](run:)",
+          "Run a show [send -l show](config:)",
+          "Check config [compare -l ports](config:)",
         ];
       }
 

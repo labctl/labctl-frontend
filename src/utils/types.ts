@@ -108,3 +108,8 @@ export interface NodeLabels {
   label?: string;
   size: number;
 }
+
+export interface ActionEvent {
+  action: string;
+  command: string;
+}

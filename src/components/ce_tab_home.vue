@@ -7,11 +7,7 @@
     <tbody>
       <tr v-for="(cmd, idx) in optCommands" :key="`cmd:labf:${idx}`">
         <td class="rel">
-          <DivMarkdown
-            :value="cmd"
-            @run="$emit('run', $event)"
-            @path="$emit('path', $event)"
-          />
+          <DivMarkdown :value="cmd" @action="$emit('action', $event)" />
           <n-button-group v-if="edit" class="topright">
             <n-button x-small quaternary @click="editItem(idx)">
               <n-icon :component="ModeEditOutlineTwotone" />
@@ -46,7 +42,7 @@
         <n-button quaternary @click="insertLink('[{}](path:)')">
           <n-icon :component="RouteFilled" />
         </n-button>
-        <n-button quaternary @click="insertLink('[{}](run:)')">
+        <n-button quaternary @click="insertLink('[{}](config:)')">
           <n-icon :component="PlayArrowTwotone" />
         </n-button>
       </template>
@@ -94,12 +90,15 @@ import {
   ArrowUpwardTwotone,
   AddTwotone,
 } from "@vicons/material";
+import { ActionEvent } from "@/utils/types";
 
 import { useMainStore } from "@/stores/mainStore";
 const store = useMainStore();
 const optCommands = reactive(store.optCommands);
 
-defineEmits(["run", "path"]);
+defineEmits<{
+  (e: "action", action: ActionEvent): void;
+}>();
 
 const text1 = ref<InputInst | null>(null);
 
@@ -137,11 +136,11 @@ function insertLink(text: string) {
   // get the action & default if no selection
   let action = value.slice(p0, p1);
   if (action == "") {
-    if (text.includes("run")) {
+    if (text.includes("config")) {
       action = "send -l show";
     }
     if (text.includes("path")) {
-      action = Object.keys(store.topo.nodes).join(" ");
+      action = Object.keys(store.topo.links).join(",");
     }
   }
 

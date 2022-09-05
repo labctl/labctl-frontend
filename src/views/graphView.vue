@@ -109,6 +109,7 @@
         :style="{ height: `${store.optHeight}px` }"
         :nodes="store.topo.nodes"
         :edges="store.topo.links"
+        :paths="paths"
         :configs="configs"
         :layouts="optLayouts"
         :event-handlers="eventHandlers"
@@ -234,6 +235,7 @@
         v-model:visible="ce_visible"
         v-model:selected="selectedNodes"
         v-model:selectedLinks="selectedLinks"
+        @path="togglePath"
       />
     </n-grid-item>
 
@@ -411,6 +413,12 @@ const configs = reactive(
     edge: {
       selectable: true,
     },
+    path: {
+      visible: true,
+      path: {
+        width: 10,
+      },
+    },
   } as vNG.UserConfigs)
 );
 
@@ -541,6 +549,19 @@ function updatelabels() {
       },
     });
   });
+}
+
+const paths = reactive<vNG.Paths>({
+  //path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
+  //path2: { edges: ["edge2", "edge4", "edge6", "edge10"] },
+});
+
+function togglePath(path: string) {
+  if (Object.keys(paths).includes(path)) {
+    delete paths[path];
+  } else {
+    paths[path] = { edges: path.split(",") };
+  }
 }
 </script>
 

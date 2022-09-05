@@ -8,8 +8,9 @@
     <div
       :style="{
         'white-space': 'pre-wrap',
-        'font-family':
-          'v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace',
+        // 'font-family': 'var(--n-font-family-mono)',
+        // 'font-size': 'var(--n-font-size-tiny)',
+        padding: '10px',
       }"
       :class="{ boxed: true, 'jv-code': true, open: open }"
       v-html="value"
@@ -26,7 +27,7 @@ import { computed, ref } from "vue";
 import AnsiUp from "ansi_up";
 import DOMPurify from "dompurify";
 
-export interface PropDef {
+interface PropDef {
   value: string;
 }
 const props = defineProps<PropDef>();

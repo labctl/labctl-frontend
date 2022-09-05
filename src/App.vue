@@ -1,7 +1,7 @@
 <template>
   <n-config-provider
     :theme-overrides="{ common: { fontWeightStrong: '600' } }"
-    :theme="store.dark ? darkTheme : lightTheme"
+    :theme="theme"
   >
     <n-message-provider>
       <n-notification-provider placement="bottom-right">
@@ -78,7 +78,12 @@
           <n-layout-content
             native-scrollbar
             position="absolute"
-            style="top: 64px"
+            :style="{
+              top: '64px',
+              '--n-font-family': theme.common.fontFamily,
+              '--n-font-family-mono': theme.common.fontFamilyMono,
+              '--n-font-size-tiny': theme.common.fontSizeTiny,
+            }"
           >
             <router-view />
           </n-layout-content>
@@ -127,6 +132,8 @@ import {
 import logoUrl from "@/assets/labctl1.svg";
 
 const store = useMainStore();
+
+const theme = computed(() => (store.dark ? darkTheme : lightTheme));
 
 /** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
@@ -178,8 +185,12 @@ const v_comply = computed(() => route.path.startsWith("/comply"));
 </script>
 
 <style>
-/*
-
-
-*/
+div.jv-container,
+.jv-container.jv-dark {
+  font-family: var(--n-font-family-mono);
+  font-size: var(--n-font-size-tiny);
+}
+.jv-container .jv-code {
+  padding: 10px;
+}
 </style>
