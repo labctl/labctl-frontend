@@ -5,10 +5,7 @@
         <n-icon><center-focus-weak-sharp /></n-icon>
       </n-button>
       <n-button-group>
-        <j-switch
-          :value="ce_visible > 0"
-          @update:value="ce_visible = ce_visible < -2 ? 2 : -ce_visible"
-        >
+        <j-switch :value="ce_visible > 0" @update:value="toggleCeVisible">
           Config Engine
           <template #tooltip> Show the Config Engine. </template>
         </j-switch>
@@ -562,6 +559,11 @@ function togglePath(path: string) {
   } else {
     paths[path] = { edges: path.split(",") };
   }
+}
+
+function toggleCeVisible() {
+  const v = ce_visible.value;
+  ce_visible.value = v < -2 || v === 0 ? 2 : -v;
 }
 </script>
 
