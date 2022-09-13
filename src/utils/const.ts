@@ -1,4 +1,8 @@
-export const base_uri = "/labctl/";
+export const base_uri = (() => {
+  if (typeof window === "undefined") return "/labctl/";
+  const p = window.location.pathname.split("/", 2);
+  return `/${p[1] || "labctl"}/`;
+})();
 
 /** If localhost, get localhost+port from local storage, else null */
 const localhost = (() => {
