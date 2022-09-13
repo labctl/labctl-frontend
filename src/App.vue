@@ -167,7 +167,6 @@ const wsstatus = computed(() => {
       return { color: "green", icon: ContactlessTwotone };
     case "CONNECTING":
       return { color: "orange", icon: ChangeCircleTwotone };
-
     case "CLOSED":
   }
   return { color: "red", icon: CancelTwotone };
