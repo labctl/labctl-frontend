@@ -1,37 +1,5 @@
 import { Callable2, Dictionary, JsonResponse } from "./types";
-
-function localhostServer() {
-  const key = "localhostServer";
-  let s = localStorage.getItem(key);
-  if (s === null) {
-    s = "tes4:8080";
-    localStorage.setItem(key, s);
-  }
-  if (!(window as any).localhostServer) {
-    console.warn(
-      `Using upstream server ${key}=${s}. Change in Dev Tools --> Application --> Local Storage & refresh.`
-    );
-    (window as any).localhostServer = "s";
-  }
-  return s;
-}
-
-export const ws_uri = (() => {
-  const loc = window.location;
-  if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
-    return `ws://${localhostServer()}/labctl/ws`;
-  }
-  const ws = loc.protocol === "https:" ? "wss" : "ws";
-  return `${ws}://${loc.host}/labctl/ws`;
-})();
-
-export const api_uri = (() => {
-  const loc = window.location;
-  if (loc.hostname === "localhost" || loc.hostname === "127.0.0.1") {
-    return `http://${localhostServer()}`;
-  }
-  return `${loc.protocol}//${loc.host}`;
-})();
+import { api_uri } from "./const";
 
 export function $set_array(target: any[], source: any[]): void {
   target.splice(source.length);

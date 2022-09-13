@@ -2,12 +2,13 @@ import { defineConfig } from "vite";
 
 import eslintPlugin from "vite-plugin-eslint";
 import vue from "@vitejs/plugin-vue";
+import { base_uri } from "./src/utils/const";
 
 const path = require("path");
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "/labctl/", // allow mounting to another path /s2 etc
+  base: base_uri,
   plugins: [vue(), eslintPlugin()],
   define: { "process.env": {} },
   resolve: {
@@ -15,7 +16,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
-  test: {},
+  // test: {},
   build: {
     rollupOptions: {
       maxParallelFileReads: 5,

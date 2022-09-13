@@ -122,7 +122,7 @@ import {
 import { useMainStore } from "@/stores/mainStore";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
-import { ws_uri } from "@/utils/utils";
+import { ws_uri } from "@/utils/const";
 import {
   wsTemplateBus,
   wsTxBus,

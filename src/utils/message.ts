@@ -8,42 +8,68 @@ import {
 
 declare type ContentType = string | (() => VNodeChild);
 
-export function message(): MessageApi {
-  return (window as any).$message;
+interface Msg {
+  type: "info" | "error" | "warning";
+  msg: ContentType;
+  opt: MessageOptions;
+}
+
+function show(m: Msg) {
+  if (typeof (window as any).$message !== "undefined") {
+    (window as any).$message[m.type](m.msg, m.opt);
+  }
+  if (typeof (window as any).$backlog === "undefined") {
+    (window as any).$backlog = [];
+  }
+  (window as any).$backlog.push(m);
 }
 
 export function MsgInit(m: MessageApi) {
   (window as any).$message = m;
+  if (typeof (window as any).$backlog !== "undefined") {
+    (window as any).$backlog.forEach((m: Msg) =>
+      (window as any).$message[m.type](m.msg, m.opt)
+    );
+    delete (window as any).$backlog;
+  }
 }
 
 export function MsgInfo(msg: ContentType, options?: MessageOptions) {
-  ((window as any).$message as MessageApi).info(msg, {
-    duration: 3000,
-    closable: true,
-    render: renderMessage,
-    ...options,
+  show({
+    type: "info",
+    msg,
+    opt: {
+      duration: 3000,
+      closable: true,
+      render: renderMessage,
+      ...options,
+    },
   });
 }
 
 export function MsgWarning(msg: ContentType, options?: MessageOptions) {
-  if (typeof (window as any).$message == "undefined") {
-    console.error("$message init", msg);
-    return;
-  }
-  ((window as any).$message as MessageApi).warning(msg, {
-    duration: 4000,
-    closable: true,
-    render: renderMessage,
-    ...options,
+  show({
+    type: "warning",
+    msg,
+    opt: {
+      duration: 4000,
+      closable: true,
+      render: renderMessage,
+      ...options,
+    },
   });
 }
 
 export function MsgError(msg: ContentType, options?: MessageOptions) {
-  ((window as any).$message as MessageApi).error(msg, {
-    duration: 0,
-    closable: true,
-    render: renderMessage,
-    ...options,
+  show({
+    type: "error",
+    msg,
+    opt: {
+      duration: 0,
+      closable: true,
+      render: renderMessage,
+      ...options,
+    },
   });
 }
 

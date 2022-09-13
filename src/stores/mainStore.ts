@@ -121,9 +121,7 @@ export const useMainStore = defineStore("main", {
     },
   },
   actions: {
-    init() {
-      // message();
-    },
+    init() {},
 
     async load_uidata(data?: UiData) {
       if (!data) {
