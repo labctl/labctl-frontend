@@ -2,7 +2,7 @@
   <div v-for="(res, i) in results" :key="`${id}${i}`">
     <n-space justify="space-between">
       <n-text code>
-        {{ res.prompt }} <b>{{ res.command }}</b>
+        {{ res.prompt || res.node }} <b>{{ res.command }}</b>
       </n-text>
       <n-tag>{{ res.source }}</n-tag>
     </n-space>

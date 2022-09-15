@@ -17,6 +17,7 @@ import { defaultGraphTemplates, fFarEndNode } from "@/utils/helpers";
 import { MsgError, MsgInfo, MsgWarning } from "@/utils/message";
 import { wsRxBus, wsSend } from "@/utils/websocket";
 import { toRaw } from "vue";
+import { base_uri } from "@/utils/const";
 
 // main is the name of the store. It is unique across your application
 // and will appear in devtools
@@ -153,15 +154,15 @@ export const useMainStore = defineStore("main", {
       }
 
       console.debug("req topo");
-      const resp = await json_fetch("/labctl/topo");
+      const resp = await json_fetch(base_uri + "topo");
       console.debug("got topo");
 
       if (this.topo.name !== resp.data.name) {
         Object.assign(this.topo, resp.data);
-        json_fetch("/labctl/vars").then((resp) => {
+        json_fetch(base_uri + "vars").then((resp) => {
           Object.assign(this.topo.vars, resp.data);
         });
-        json_fetch("/labctl/templates").then((resp) => {
+        json_fetch(base_uri + "templates").then((resp) => {
           Object.assign(this.templateFiles, resp.data);
         });
       }
@@ -187,6 +188,9 @@ export const useMainStore = defineStore("main", {
     async websock_handler(msg: WsMessage) {
       try {
         switch (msg.code) {
+          case WsMsgCodes.heartbeat:
+            break;
+
           case WsMsgCodes.uidata:
             // wait until we finished loading
             // emitting the message n the bus will trigger a center
@@ -213,7 +217,7 @@ export const useMainStore = defineStore("main", {
 
           default:
             console.debug("unknown msg code", msg);
-            MsgError(`unknown message code\n\n${msg}`, {
+            MsgError(`unknown message code\n\n${JSON.stringify(msg)}`, {
               duration: 0,
               closable: true,
             });

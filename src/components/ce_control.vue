@@ -102,7 +102,9 @@
           :tab="name"
           :name="name"
         >
-          <config-results :node="name"></config-results>
+          <n-card :title="name" closable @close="toggleSelected(name)">
+            <config-results :node="name"></config-results>
+          </n-card>
         </n-grid-item>
       </n-grid>
     </div>
