@@ -138,8 +138,9 @@ const theme = computed(() => (store.dark ? darkTheme : lightTheme));
 /** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   heartbeat: {
-    message: '{"code":"."}',
+    message: "ping",
     interval: 3000,
+    pongTimeout: 10000,
   },
   autoReconnect: true,
   immediate: false,

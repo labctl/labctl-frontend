@@ -27,7 +27,6 @@ export interface WsTemplate {
 }
 
 export enum WsMsgCodes {
-  heartbeat = ".",
   template = "template",
   uidata = "uidata",
   echo = "echo",

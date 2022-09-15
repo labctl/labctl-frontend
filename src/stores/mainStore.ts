@@ -188,9 +188,6 @@ export const useMainStore = defineStore("main", {
     async websock_handler(msg: WsMessage) {
       try {
         switch (msg.code) {
-          case WsMsgCodes.heartbeat:
-            break;
-
           case WsMsgCodes.uidata:
             // wait until we finished loading
             // emitting the message n the bus will trigger a center
