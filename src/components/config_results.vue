@@ -6,7 +6,7 @@
       </n-text>
       <n-tag>{{ res.source }}</n-tag>
     </n-space>
-    <div-ansi :value="res.response" />
+    <div-ansi :value="res.response" open />
   </div>
 </template>
 

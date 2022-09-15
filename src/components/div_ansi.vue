@@ -29,9 +29,10 @@ import DOMPurify from "dompurify";
 
 interface PropDef {
   value: string;
+  open?: boolean;
 }
-const props = defineProps<PropDef>();
-const open = ref(false);
+const props = withDefaults(defineProps<PropDef>(), { open: false });
+const open = ref(props.open);
 function toggleOpen() {
   open.value = !open.value;
 }

@@ -28,43 +28,8 @@
 
               <n-space justify="end">
                 <div id="mtoolbar"></div>
-                <n-button
-                  v-if="false"
-                  :type="v_comply ? 'primary' : undefined"
-                  @click="router.push({ path: '/comply' })"
-                >
-                  <template #icon>
-                    <n-icon :size="18"><fact-check-twotone /></n-icon>
-                  </template>
-                  {{ v_comply ? "S" : "" }}
-                </n-button>
-
-                <n-button
-                  v-if="false"
-                  :type="false ? 'primary' : undefined"
-                  @click="router.push({ path: '/' })"
-                >
-                  <template #icon>
-                    <n-icon><CheckCircleTwotone /></n-icon>
-                  </template>
-                  {{ v_comply ? "Search" : "" }}
-                </n-button>
-                <n-button
-                  v-if="false"
-                  :type="v_comply ? 'primary' : undefined"
-                  @click="
-                    router.push({
-                      path: '',
-                    })
-                  "
-                >
-                  <template #icon>
-                    <n-icon><view-list-filled /></n-icon>
-                  </template>
-                  {{ v_comply ? "RN" : "" }}
-                </n-button>
                 <div class="nav-end">
-                  <n-avatar round color="white">
+                  <n-avatar round color="white" @click="open_if_closed">
                     <n-icon
                       :component="wsstatus.icon"
                       :color="wsstatus.color"
@@ -96,9 +61,6 @@
 <script setup lang="ts">
 import { onBeforeMount, computed, watch } from "vue";
 import {
-  ViewListFilled,
-  CheckCircleTwotone,
-  FactCheckTwotone,
   ContactlessTwotone,
   ChangeCircleTwotone,
   CancelTwotone,
@@ -109,7 +71,6 @@ import {
   NNotificationProvider,
   NLayoutHeader,
   NLayoutContent,
-  NButton,
   NSpace,
   NIcon,
   NConfigProvider,
@@ -120,7 +81,6 @@ import {
 } from "naive-ui";
 
 import { useMainStore } from "@/stores/mainStore";
-import { useRoute, useRouter } from "vue-router";
 import { useWebSocket } from "@vueuse/core";
 import { ws_uri } from "@/utils/const";
 import {
@@ -138,11 +98,11 @@ const theme = computed(() => (store.dark ? darkTheme : lightTheme));
 /** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   heartbeat: {
-    message: "ping",
-    interval: 3000,
-    pongTimeout: 10000,
+    message: "%",
+    interval: 5000,
+    pongTimeout: 15000,
   },
-  autoReconnect: true,
+  // autoReconnect: true,
   immediate: false,
 });
 
@@ -162,6 +122,12 @@ watch(data, (msg) => {
   }
 });
 
+watch(status, (s) => {
+  if (s === "CLOSED") {
+    setTimeout(open_if_closed, 2000);
+  }
+});
+
 const wsstatus = computed(() => {
   switch (status.value) {
     case "OPEN":
@@ -178,10 +144,11 @@ onBeforeMount(() => {
   open();
 });
 
-const route = useRoute();
-const router = useRouter();
-
-const v_comply = computed(() => route.path.startsWith("/comply"));
+function open_if_closed() {
+  if (status.value !== "OPEN") {
+    open();
+  }
+}
 </script>
 
 <style>
