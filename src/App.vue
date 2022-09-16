@@ -59,12 +59,12 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, computed, watch } from "vue";
+import { onBeforeMount, computed, watch } from "vue"
 import {
   ContactlessTwotone,
   ChangeCircleTwotone,
   CancelTwotone,
-} from "@vicons/material";
+} from "@vicons/material"
 import {
   NLayout,
   NImage,
@@ -78,22 +78,22 @@ import {
   darkTheme,
   lightTheme,
   NAvatar,
-} from "naive-ui";
+} from "naive-ui"
 
-import { useMainStore } from "@/stores/mainStore";
-import { useWebSocket } from "@vueuse/core";
-import { ws_uri } from "@/utils/const";
+import { useMainStore } from "@/stores/mainStore"
+import { useWebSocket } from "@vueuse/core"
+import { ws_uri } from "@/utils/const"
 import {
   wsTemplateBus,
   wsTxBus,
   WsMessage,
   WsMsgCodes,
-} from "@/utils/websocket";
-import logoUrl from "@/assets/labctl1.svg";
+} from "@/utils/websocket"
+import logoUrl from "@/assets/labctl1.svg"
 
-const store = useMainStore();
+const store = useMainStore()
 
-const theme = computed(() => (store.dark ? darkTheme : lightTheme));
+const theme = computed(() => (store.dark ? darkTheme : lightTheme))
 
 /** websocket to eventbus handlers */
 const { status, data, send, open } = useWebSocket<string>(ws_uri, {
@@ -104,49 +104,49 @@ const { status, data, send, open } = useWebSocket<string>(ws_uri, {
   },
   // autoReconnect: true,
   immediate: false,
-});
+})
 
 wsTxBus.on((tx) => {
-  console.debug("WS Tx", tx);
-  send(JSON.stringify(tx));
-});
+  console.debug("WS Tx", tx)
+  send(JSON.stringify(tx))
+})
 
 // on any data change, transmit the message on the template bus or send to store
 watch(data, (msg) => {
-  if (!msg) return;
-  const m: WsMessage = JSON.parse(msg);
+  if (!msg) return
+  const m: WsMessage = JSON.parse(msg)
   if (m.code === WsMsgCodes.template) {
-    wsTemplateBus.emit(m.template);
+    wsTemplateBus.emit(m.template)
   } else {
-    store.websock_handler(m);
+    store.websock_handler(m)
   }
-});
+})
 
 watch(status, (s) => {
   if (s === "CLOSED") {
-    setTimeout(open_if_closed, 2000);
+    setTimeout(open_if_closed, 2000)
   }
-});
+})
 
 const wsstatus = computed(() => {
   switch (status.value) {
     case "OPEN":
-      return { color: "green", icon: ContactlessTwotone };
+      return { color: "green", icon: ContactlessTwotone }
     case "CONNECTING":
-      return { color: "orange", icon: ChangeCircleTwotone };
+      return { color: "orange", icon: ChangeCircleTwotone }
     case "CLOSED":
   }
-  return { color: "red", icon: CancelTwotone };
-});
+  return { color: "red", icon: CancelTwotone }
+})
 
 onBeforeMount(() => {
-  store.init();
-  open();
-});
+  store.init()
+  open()
+})
 
 function open_if_closed() {
   if (status.value !== "OPEN") {
-    open();
+    open()
   }
 }
 </script>

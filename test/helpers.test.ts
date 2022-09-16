@@ -1,6 +1,6 @@
-import { test, expect } from "vitest";
-import { ceTemplateName, labelDirection } from "../src/utils/helpers";
-import { Point, Links, Link } from "../src/utils/types";
+import { test, expect } from "vitest"
+import { parseTemplateFN, labelDirection } from "../src/utils/helpers"
+import { Point, Links, Link } from "../src/utils/types"
 
 test("label position", async () => {
   const nodes = {
@@ -8,9 +8,9 @@ test("label position", async () => {
     b: { x: -1, y: 2 },
     c: { x: 1, y: 1 },
     d: { x: 1, y: 3 },
-  } as Record<string, Point>;
+  } as Record<string, Point>
 
-  const links: Links = {};
+  const links: Links = {}
 
   const larr = [
     {
@@ -29,20 +29,20 @@ test("label position", async () => {
       source: "c",
       target: "d",
     },
-  ] as Link[];
-  larr.forEach((l, i) => (links[i] = l));
+  ] as Link[]
+  larr.forEach((l, i) => (links[i] = l))
 
-  const r = labelDirection(nodes, links, true);
+  const r = labelDirection(nodes, links, true)
 
-  console.log(r);
-  expect(r.a).eq("north");
-  expect(r.b).eq("south");
-  expect(r.c).eq("east");
-  expect(r.d).eq("south");
-});
+  console.log(r)
+  expect(r.a).eq("north")
+  expect(r.b).eq("south")
+  expect(r.c).eq("east")
+  expect(r.d).eq("south")
+})
 
 test("name role", async () => {
-  const res = ceTemplateName("c7__vr-sros.tmpl");
-  expect(res.name).eq("c7");
-  expect(res.role).eq("vr-sros");
-});
+  const res = parseTemplateFN("c7__vr-sros.tmpl")
+  expect(res.name).eq("c7")
+  expect(res.role).eq("vr-sros")
+})

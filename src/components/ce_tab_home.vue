@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, nextTick } from "vue";
+import { ref, watch, reactive, nextTick } from "vue"
 import {
   InputInst,
   NButton,
@@ -80,100 +80,100 @@ import {
   NInput,
   NModal,
   NTable,
-} from "naive-ui";
-import DivMarkdown from "@/components/div_markdown.vue";
-import JSwitch from "@/components/j_switch.vue";
+} from "naive-ui"
+import DivMarkdown from "@/components/div_markdown.vue"
+import JSwitch from "@/components/j_switch.vue"
 import {
   ModeEditOutlineTwotone,
   RouteFilled,
   PlayArrowTwotone,
   ArrowUpwardTwotone,
   AddTwotone,
-} from "@vicons/material";
-import { ActionEvent } from "@/utils/types";
+} from "@vicons/material"
+import { ActionEvent } from "@/utils/types"
 
-import { useMainStore } from "@/stores/mainStore";
-const store = useMainStore();
-const optCommands = reactive(store.optCommands);
+import { useMainStore } from "@/stores/mainStore"
+const store = useMainStore()
+const optCommands = reactive(store.optCommands)
 
 defineEmits<{
-  (e: "action", action: ActionEvent): void;
-}>();
+  (e: "action", action: ActionEvent): void
+}>()
 
-const text1 = ref<InputInst | null>(null);
+const text1 = ref<InputInst | null>(null)
 
-let dirty = false;
-watch(optCommands, () => (dirty = true));
+let dirty = false
+watch(optCommands, () => (dirty = true))
 
-const editv = ref(-1);
+const editv = ref(-1)
 watch(editv, () => {
   if (editv.value < 0 && dirty) {
-    dirty = false;
+    dirty = false
     // drop empties
     for (let i = optCommands.length; i--; i > 0) {
       if (optCommands[i] === "") {
-        optCommands.splice(i, 1);
-        console.log("remove", i);
+        optCommands.splice(i, 1)
+        console.log("remove", i)
       }
     }
-    store.save();
+    store.save()
   }
-});
+})
 
-const edit = ref(false);
+const edit = ref(false)
 
 /** Insert a markdown link */
 function insertLink(text: string) {
   if (!text1.value?.textareaElRef) {
-    console.log("no reference to text1");
-    return;
+    console.log("no reference to text1")
+    return
   }
-  const target = text1.value.textareaElRef;
-  const p0 = target.selectionStart;
-  const p1 = target.selectionEnd;
-  const value = optCommands[editv.value];
+  const target = text1.value.textareaElRef
+  const p0 = target.selectionStart
+  const p1 = target.selectionEnd
+  const value = optCommands[editv.value]
 
   // get the action & default if no selection
-  let action = value.slice(p0, p1);
+  let action = value.slice(p0, p1)
   if (action == "") {
     if (text.includes("config")) {
-      action = "send -l show";
+      action = "send -l show"
     }
     if (text.includes("path")) {
-      action = Object.keys(store.topo.links).join(",");
+      action = Object.keys(store.topo.links).join(",")
     }
   }
 
   // set the new value. {} = action
   optCommands[editv.value] =
-    value.slice(0, p0) + text.replaceAll("{}", action) + value.slice(p1);
+    value.slice(0, p0) + text.replaceAll("{}", action) + value.slice(p1)
 
   // set the selection
   nextTick(() => {
-    target.selectionStart = p0;
-    target.selectionEnd = p0 + text.length;
-  });
+    target.selectionStart = p0
+    target.selectionEnd = p0 + text.length
+  })
 }
 
 function addItem(idx: number) {
-  optCommands.splice(idx + 1, 0, "");
-  editv.value = idx + 1;
+  optCommands.splice(idx + 1, 0, "")
+  editv.value = idx + 1
 }
 
 function editItem(idx: number) {
   if (idx < 0) {
-    optCommands.push("");
-    idx = optCommands.length - 1;
+    optCommands.push("")
+    idx = optCommands.length - 1
   }
-  editv.value = idx;
-  nextTick(() => text1.value?.focus());
+  editv.value = idx
+  nextTick(() => text1.value?.focus())
 }
 
 function moveUp(idx: number) {
-  const save = optCommands[idx];
-  optCommands[idx] = optCommands[idx - 1];
-  optCommands[idx - 1] = save;
-  editv.value--;
+  const save = optCommands[idx]
+  optCommands[idx] = optCommands[idx - 1]
+  optCommands[idx - 1] = save
+  editv.value--
 }
 </script>
 

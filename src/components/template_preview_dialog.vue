@@ -45,55 +45,55 @@
 </template>
 
 <script setup lang="ts">
-import { computed, withDefaults, onMounted } from "vue";
-import { NButton, NCard, NGrid, NGridItem, NModal, NInput } from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import { TemplateFile } from "@/utils/types";
-import { TipsShow } from "@/utils/tips";
-import { parseTemplateFN } from "@/utils/helpers";
+import { computed, withDefaults, onMounted } from "vue"
+import { NButton, NCard, NGrid, NGridItem, NModal, NInput } from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import { TemplateFile } from "@/utils/types"
+import { TipsShow } from "@/utils/tips"
+import { parseTemplateFN } from "@/utils/helpers"
 
-const store = useMainStore();
+const store = useMainStore()
 
 interface PropDef {
   /** the template name */
-  template: string;
+  template: string
 
-  visible: boolean;
+  visible: boolean
 }
-const props = withDefaults(defineProps<PropDef>(), {});
+const props = withDefaults(defineProps<PropDef>(), {})
 
-const emit = defineEmits(["update:visible", "close"]);
+const emit = defineEmits(["update:visible", "close"])
 
 /** the value of the active template */
 const template = computed(() => {
-  const tn = props.template;
+  const tn = props.template
   if (tn in store.templateFiles) {
-    return store.templateFiles[tn];
+    return store.templateFiles[tn]
   }
   return {
     name: tn,
     p: "",
     shadow: [],
     value: `Template ${tn} not found...`,
-  } as TemplateFile;
-});
+  } as TemplateFile
+})
 
 onMounted(() => {
-  TipsShow("edit template");
-});
+  TipsShow("edit template")
+})
 
 /** is this dialog visible */
 const visible = computed({
   get: () => props.visible,
   set: (vis) => {
     if (!vis) {
-      emit("update:visible", false);
-      emit("close");
+      emit("update:visible", false)
+      emit("close")
     }
   },
-});
+})
 
-const tempFN = computed(() => parseTemplateFN(props.template));
+const tempFN = computed(() => parseTemplateFN(props.template))
 </script>
 
 <style>

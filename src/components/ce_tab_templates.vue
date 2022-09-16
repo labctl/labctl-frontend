@@ -71,43 +71,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { NButton, NEllipsis, NIcon, NPopover, NTable } from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import { CheckBoxOutlined, LibraryAddCheckOutlined } from "@vicons/material";
+import { ref, computed } from "vue"
+import { NButton, NEllipsis, NIcon, NPopover, NTable } from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import { CheckBoxOutlined, LibraryAddCheckOutlined } from "@vicons/material"
 
-import { parseTemplateFN } from "@/utils/helpers";
-import TemplatePreviewDialog from "@/components/template_preview_dialog.vue";
+import { parseTemplateFN } from "@/utils/helpers"
+import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
 
-const store = useMainStore();
+const store = useMainStore()
 
 /** Dict of all templates, values includes all roles */
 const templates = computed(() => {
-  const temps = {} as Record<string, Record<string, boolean>>;
+  const temps = {} as Record<string, Record<string, boolean>>
   Object.keys(store.templateFiles)
     .sort()
     .forEach((fn) => {
-      const tn = parseTemplateFN(fn);
+      const tn = parseTemplateFN(fn)
       if (!(tn.name in temps)) {
-        temps[tn.name] = {} as Record<string, boolean>;
+        temps[tn.name] = {} as Record<string, boolean>
       }
-      temps[tn.name][tn.role] = true;
-    });
-  return temps;
-});
+      temps[tn.name][tn.role] = true
+    })
+  return temps
+})
 
 /** List available roles/kinds from the templateFiles */
 const roles = computed(() => {
   const ra = Object.keys(store.templateFiles).map(
     (fn) => parseTemplateFN(fn).role
-  );
-  const rs = new Set<string>(ra);
-  return [...rs].sort();
-});
+  )
+  const rs = new Set<string>(ra)
+  return [...rs].sort()
+})
 
 /** Get the templateFile from the store using name & role */
 function getT(name: string, role: string) {
-  const n = `${name}__${role}.tmpl`;
+  const n = `${name}__${role}.tmpl`
   return n in store.templateFiles
     ? store.templateFiles[n]
     : {
@@ -115,10 +115,10 @@ function getT(name: string, role: string) {
         p: "",
         value: "",
         shadow: [],
-      };
+      }
 }
 
-const templateView = ref("");
+const templateView = ref("")
 </script>
 
 <style>

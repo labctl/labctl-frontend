@@ -1,36 +1,36 @@
-import { h, VNodeChild } from "vue";
+import { h, VNodeChild } from "vue"
 import {
   MessageApi,
   MessageOptions,
   MessageRenderMessage,
   NAlert,
-} from "naive-ui";
+} from "naive-ui"
 
-declare type ContentType = string | (() => VNodeChild);
+declare type ContentType = string | (() => VNodeChild)
 
 interface Msg {
-  type: "info" | "error" | "warning";
-  msg: ContentType;
-  opt: MessageOptions;
+  type: "info" | "error" | "warning"
+  msg: ContentType
+  opt: MessageOptions
 }
 
 function show(m: Msg) {
   if (typeof (window as any).$message !== "undefined") {
-    (window as any).$message[m.type](m.msg, m.opt);
+    ;(window as any).$message[m.type](m.msg, m.opt)
   }
   if (typeof (window as any).$backlog === "undefined") {
-    (window as any).$backlog = [];
+    ;(window as any).$backlog = []
   }
-  (window as any).$backlog.push(m);
+  ;(window as any).$backlog.push(m)
 }
 
 export function MsgInit(m: MessageApi) {
-  (window as any).$message = m;
+  ;(window as any).$message = m
   if (typeof (window as any).$backlog !== "undefined") {
-    (window as any).$backlog.forEach((m: Msg) =>
+    ;(window as any).$backlog.forEach((m: Msg) =>
       (window as any).$message[m.type](m.msg, m.opt)
-    );
-    delete (window as any).$backlog;
+    )
+    delete (window as any).$backlog
   }
 }
 
@@ -44,7 +44,7 @@ export function MsgInfo(msg: ContentType, options?: MessageOptions) {
       render: renderMessage,
       ...options,
     },
-  });
+  })
 }
 
 export function MsgWarning(msg: ContentType, options?: MessageOptions) {
@@ -57,7 +57,7 @@ export function MsgWarning(msg: ContentType, options?: MessageOptions) {
       render: renderMessage,
       ...options,
     },
-  });
+  })
 }
 
 export function MsgError(msg: ContentType, options?: MessageOptions) {
@@ -70,11 +70,11 @@ export function MsgError(msg: ContentType, options?: MessageOptions) {
       render: renderMessage,
       ...options,
     },
-  });
+  })
 }
 
 const renderMessage: MessageRenderMessage = (props) => {
-  const { type } = props;
+  const { type } = props
   return h(
     NAlert,
     {
@@ -91,5 +91,5 @@ const renderMessage: MessageRenderMessage = (props) => {
       default: () =>
         h("div", { style: { "white-space": "pre-wrap" } }, props.content),
     }
-  );
-};
+  )
+}

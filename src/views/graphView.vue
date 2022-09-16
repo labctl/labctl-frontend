@@ -254,8 +254,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref, onMounted, nextTick } from "vue";
-import { storeToRefs } from "pinia";
+import { reactive, computed, watch, ref, onMounted, nextTick } from "vue"
+import { storeToRefs } from "pinia"
 
 import {
   NGridItem,
@@ -275,19 +275,19 @@ import {
   NIcon,
   useMessage,
   useNotification,
-} from "naive-ui";
+} from "naive-ui"
 
-import JSwitch from "@/components/j_switch.vue";
-import CeControl from "@/components/ce_control.vue";
+import JSwitch from "@/components/j_switch.vue"
+import CeControl from "@/components/ce_control.vue"
 // import ConfigResults from "@/components/config_results.vue";
 // import VarsView from "@/components/vars_view.vue";
 
-import { RefreshSharp, CenterFocusWeakSharp } from "@vicons/material";
-import * as vNG from "v-network-graph";
-import { ForceLayout } from "v-network-graph/lib/force-layout";
-import dayjs from "dayjs";
+import { RefreshSharp, CenterFocusWeakSharp } from "@vicons/material"
+import * as vNG from "v-network-graph"
+import { ForceLayout } from "v-network-graph/lib/force-layout"
+import dayjs from "dayjs"
 
-import { useMainStore } from "@/stores/mainStore";
+import { useMainStore } from "@/stores/mainStore"
 import {
   wsTemplateBus,
   wsTxBus,
@@ -295,51 +295,51 @@ import {
   wsSend,
   WsTemplate,
   WsMsgCodes,
-} from "@/utils/websocket";
-import { LinkLabels, NodeLabels } from "@/utils/types";
-import { useLocalStorage, watchDebounced } from "@vueuse/core";
-import { labelDirection } from "@/utils/helpers";
+} from "@/utils/websocket"
+import { LinkLabels, NodeLabels } from "@/utils/types"
+import { useLocalStorage, watchDebounced } from "@vueuse/core"
+import { labelDirection } from "@/utils/helpers"
 
-import { MsgInit } from "@/utils/message";
-import { TipsInit, TipsShow } from "@/utils/tips";
+import { MsgInit } from "@/utils/message"
+import { TipsInit, TipsShow } from "@/utils/tips"
 
-MsgInit(useMessage());
-TipsInit(useNotification());
+MsgInit(useMessage())
+TipsInit(useNotification())
 
-const store = useMainStore();
-const selectedNodes = ref<string[]>([]);
-const selectedLinks = ref<string[]>([]);
-const { optLayout, optLayouts } = storeToRefs(store);
+const store = useMainStore()
+const selectedNodes = ref<string[]>([])
+const selectedLinks = ref<string[]>([])
+const { optLayout, optLayouts } = storeToRefs(store)
 
-const lblLink = ref({} as Record<string, LinkLabels>);
-const lblNode = ref({} as Record<string, NodeLabels>);
+const lblLink = ref({} as Record<string, LinkLabels>)
+const lblNode = ref({} as Record<string, NodeLabels>)
 
-const ce_visible = useLocalStorage("ceVisible", 2);
-const show_logs = useLocalStorage("showLogs", false);
-const show_g_logs = useLocalStorage("showGraphLogs", false);
-const show_sidebar = useLocalStorage("showSiderbar", true);
-const EVENTS_COUNT = 12;
+const ce_visible = useLocalStorage("ceVisible", 2)
+const show_logs = useLocalStorage("showLogs", false)
+const show_g_logs = useLocalStorage("showGraphLogs", false)
+const show_sidebar = useLocalStorage("showSiderbar", true)
+const EVENTS_COUNT = 12
 
-const eventLogs = reactive<[string, string, string][]>([]);
+const eventLogs = reactive<[string, string, string][]>([])
 
 function logEvent(msg: string, ev: any) {
-  const timestamp = dayjs().format("HH:mm:ss.SSS");
+  const timestamp = dayjs().format("HH:mm:ss.SSS")
   if (eventLogs.length > EVENTS_COUNT) {
-    eventLogs.splice(EVENTS_COUNT, eventLogs.length - EVENTS_COUNT);
+    eventLogs.splice(EVENTS_COUNT, eventLogs.length - EVENTS_COUNT)
   }
   if (ev instanceof Object && "event" in ev) {
-    Object.assign(ev, { event: "(...)" });
+    Object.assign(ev, { event: "(...)" })
   }
-  eventLogs.unshift([timestamp, msg, JSON.stringify(ev)]);
+  eventLogs.unshift([timestamp, msg, JSON.stringify(ev)])
 }
 
 const eventHandlers: vNG.EventHandlers = {
   "node:pointerover": ({ node }) => {
-    tooltipTNode.value = node;
-    tooltipOpacity.value = 1; // show
+    tooltipTNode.value = node
+    tooltipOpacity.value = 1 // show
   },
   "node:pointerout": () => {
-    tooltipOpacity.value = 0; // hide
+    tooltipOpacity.value = 0 // hide
   },
   "node:pointermove": store.save,
   "view:zoom": () => {
@@ -350,29 +350,29 @@ const eventHandlers: vNG.EventHandlers = {
   },
   // wildcard: capture all events
   "*": (m, ev) => show_g_logs.value && logEvent(m, ev),
-};
+}
 
 function getLayoutHandler() {
   if (optLayout.value === "force") {
-    return new ForceLayout();
+    return new ForceLayout()
   } else if (optLayout.value === "grid") {
-    return new vNG.GridLayout({ grid: 15 });
+    return new vNG.GridLayout({ grid: 15 })
   }
-  return new vNG.SimpleLayout();
+  return new vNG.SimpleLayout()
 }
 
 watch(optLayout, () => {
-  store.save();
+  store.save()
   if (configs.view) {
-    configs.view.layoutHandler = getLayoutHandler();
+    configs.view.layoutHandler = getLayoutHandler()
   }
-});
+})
 
-const nodeSize = 30;
+const nodeSize = 30
 
 const directions = computed(() =>
   labelDirection(optLayouts.value.nodes, store.topo.links)
-);
+)
 
 const configs = reactive(
   vNG.defineConfigs({
@@ -417,110 +417,110 @@ const configs = reactive(
       },
     },
   } as vNG.UserConfigs)
-);
+)
 
-const graph = ref<vNG.VNetworkGraphInstance>(); // ref="graph"
-const tooltip = ref<HTMLDivElement>(); // ref="tooltip"
+const graph = ref<vNG.VNetworkGraphInstance>() // ref="graph"
+const tooltip = ref<HTMLDivElement>() // ref="tooltip"
 
-const tooltipTNode = ref("");
+const tooltipTNode = ref("")
 const tooltipPos = computed(() => {
-  if (!graph.value || !tooltip.value) return { x: 0, y: 0 };
-  if (!tooltipTNode.value) return { x: 0, y: 0 };
+  if (!graph.value || !tooltip.value) return { x: 0, y: 0 }
+  if (!tooltipTNode.value) return { x: 0, y: 0 }
 
-  const nodePos = store.optLayouts.nodes[tooltipTNode.value];
+  const nodePos = store.optLayouts.nodes[tooltipTNode.value]
   // translate coordinates: SVG -> DOM
-  const domPoint = graph.value.translateFromSvgToDomCoordinates(nodePos);
+  const domPoint = graph.value.translateFromSvgToDomCoordinates(nodePos)
   // calculates top-left position of the tooltip.
   return {
     left: domPoint.x - tooltip.value.offsetWidth / 2 + "px",
     top: domPoint.y - nodeSize / 2 - tooltip.value.offsetHeight - 10 + "px",
-  };
-});
-const tooltipOpacity = ref(0); // 0 or 1
+  }
+})
+const tooltipOpacity = ref(0) // 0 or 1
 
 function centerGraph() {
-  console.debug("center");
-  graph.value?.fitToContents();
+  console.debug("center")
+  graph.value?.fitToContents()
   // graph.value?.panToCenter();
   // graph.value?.transitionWhile(() => {});
 }
 
 onMounted(() => {
-  logEvent("mounted", {});
+  logEvent("mounted", {})
   nextTick(() => {
-    TipsShow("select");
-    centerGraph();
-  });
-});
+    TipsShow("select")
+    centerGraph()
+  })
+})
 
 wsTxBus.on((ev) => {
-  logEvent("WS Tx", ev);
-});
+  logEvent("WS Tx", ev)
+})
 
 wsRxBus.on((ev) => {
-  console.debug("WS Rx", ev);
-  logEvent("WS Rx", ev);
+  console.debug("WS Rx", ev)
+  logEvent("WS Rx", ev)
   if (ev.code === WsMsgCodes.uidata) {
-    logEvent("WS load", {});
-    nextTick(centerGraph);
+    logEvent("WS load", {})
+    nextTick(centerGraph)
     //setTimeout(centerGraph, 400);
     //setTimeout(centerGraph, 2000);
     //nextTick(centerGraph);
   }
-});
+})
 
 wsTemplateBus.on((t) => {
-  console.debug("WS T", t);
-  logEvent("WS T", t);
+  console.debug("WS T", t)
+  logEvent("WS T", t)
 
   if (t.resulty) {
-    updateLabel(t);
+    updateLabel(t)
   }
-});
+})
 
 /*
  * Graphs Labels
  */
 
-const labelLayer = ref("base");
+const labelLayer = ref("base")
 function selectLayer(l: string | number) {
   if (l) {
-    labelLayer.value = String(l);
+    labelLayer.value = String(l)
   }
 }
 const labelLayers = computed(() => {
-  var res = [{ label: "base", key: "base" }] as Array<SelectOption>;
-  const s = new Set();
+  var res = [{ label: "base", key: "base" }] as Array<SelectOption>
+  const s = new Set()
   Object.keys(store.optTemplates).forEach((k) => {
-    const [nl, name] = k.split(".");
+    const [nl, name] = k.split(".")
     if (name && (nl === "node" || nl === "link")) {
       if (s.has(name)) {
-        return;
+        return
       }
-      s.add(name);
-      res.push({ label: name, key: name });
+      s.add(name)
+      res.push({ label: name, key: name })
     }
-  });
-  return res;
-});
+  })
+  return res
+})
 
 // If the templates changes, update the labels
-watchDebounced(store.optTemplates, updatelabels);
-watchDebounced(labelLayer, updatelabels);
+watchDebounced(store.optTemplates, updatelabels)
+watchDebounced(labelLayer, updatelabels)
 
 /** save the template result in the node/link labels */
 function updateLabel(t: WsTemplate) {
   if (t.name === "link" && t.resulty && t.id in store.topo.links) {
-    lblLink.value[t.id] = { ...{ size: 12 }, ...t.resulty };
+    lblLink.value[t.id] = { ...{ size: 12 }, ...t.resulty }
   }
   if (t.name === "node" && t.resulty && t.id in store.topo.nodes) {
-    lblNode.value[t.id] = { ...{ size: 12 }, ...t.resulty };
+    lblNode.value[t.id] = { ...{ size: 12 }, ...t.resulty }
   }
 }
 
 /** Update all the topology labels */
 function updatelabels() {
-  const l = labelLayer.value === "base" ? "" : "." + labelLayer.value;
+  const l = labelLayer.value === "base" ? "" : "." + labelLayer.value
 
   Object.keys(store.topo.links).forEach((lid) => {
     wsSend({
@@ -532,8 +532,8 @@ function updatelabels() {
         vars: store.linkVars(lid),
         result: "",
       },
-    });
-  });
+    })
+  })
   Object.keys(store.topo.nodes).forEach((nid) => {
     wsSend({
       code: WsMsgCodes.template,
@@ -544,26 +544,26 @@ function updatelabels() {
         vars: store.topo.vars[nid],
         result: "",
       },
-    });
-  });
+    })
+  })
 }
 
 const paths = reactive<vNG.Paths>({
   //path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
   //path2: { edges: ["edge2", "edge4", "edge6", "edge10"] },
-});
+})
 
 function togglePath(path: string) {
   if (Object.keys(paths).includes(path)) {
-    delete paths[path];
+    delete paths[path]
   } else {
-    paths[path] = { edges: path.split(",") };
+    paths[path] = { edges: path.split(",") }
   }
 }
 
 function toggleCeVisible() {
-  const v = ce_visible.value;
-  ce_visible.value = v < -2 || v === 0 ? 2 : -v;
+  const v = ce_visible.value
+  ce_visible.value = v < -2 || v === 0 ? 2 : -v
 }
 </script>
 

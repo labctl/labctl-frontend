@@ -29,22 +29,22 @@
 </template>
 
 <script setup lang="ts">
-import { useSlots } from "vue";
-import { NButton, NPopover } from "naive-ui";
+import { useSlots } from "vue"
+import { NButton, NPopover } from "naive-ui"
 
 export interface PropDef {
-  value?: boolean;
+  value?: boolean
 }
-const props = withDefaults(defineProps<PropDef>(), {});
+const props = withDefaults(defineProps<PropDef>(), {})
 
-const emit = defineEmits(["update:value"]);
+const emit = defineEmits(["update:value"])
 
 function toggle() {
-  emit("update:value", !props.value);
+  emit("update:value", !props.value)
 }
 
-const slots = useSlots();
+const slots = useSlots()
 const hasSlot = (name: string) => {
-  return !!slots[name];
-};
+  return !!slots[name]
+}
 </script>

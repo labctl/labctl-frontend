@@ -1,5 +1,5 @@
-import { App } from "vue";
-import { createRouter, createWebHistory } from "vue-router";
+import { App } from "vue"
+import { createRouter, createWebHistory } from "vue-router"
 
 export function setupRouter(app: App) {
   const router = createRouter({
@@ -17,7 +17,7 @@ export function setupRouter(app: App) {
         alias: ["/:all(.*)*"],
       },
     ],
-  });
+  })
 
-  app.use(router);
+  app.use(router)
 }

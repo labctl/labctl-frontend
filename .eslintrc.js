@@ -27,6 +27,7 @@ module.exports = {
     "vue/require-default-prop": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
+    semi: ["warn", "never"],
   },
 
   root: true,
@@ -44,4 +45,4 @@ module.exports = {
       jsx: false,
     },
   },
-};
+}

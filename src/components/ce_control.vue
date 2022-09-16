@@ -170,7 +170,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed } from "vue"
 import {
   NBadge,
   NButton,
@@ -185,40 +185,40 @@ import {
   NTab,
   NTable,
   NTabs,
-} from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import JSwitch from "@/components/j_switch.vue";
-import VarsView from "@/components/vars_view.vue";
-import CeTabHome from "@/components/ce_tab_home.vue";
-import CeTabTemplates from "@/components/ce_tab_templates.vue";
+} from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import JSwitch from "@/components/j_switch.vue"
+import VarsView from "@/components/vars_view.vue"
+import CeTabHome from "@/components/ce_tab_home.vue"
+import CeTabTemplates from "@/components/ce_tab_templates.vue"
 import {
   DescriptionOutlined,
   HomeOutlined,
   PlayArrowTwotone,
   SettingsEthernetOutlined,
-} from "@vicons/material";
+} from "@vicons/material"
 import {
   FullScreenMaximize20Filled,
   ArrowMinimize20Regular,
-} from "@vicons/fluent";
-import ConfigResults from "@/components/config_results.vue";
+} from "@vicons/fluent"
+import ConfigResults from "@/components/config_results.vue"
 
-import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket";
-import { storeToRefs } from "pinia";
-import { MsgWarning } from "@/utils/message";
-import TemplatePreviewDialog from "@/components/template_preview_dialog.vue";
-import { ActionEvent } from "@/utils/types";
+import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket"
+import { storeToRefs } from "pinia"
+import { MsgWarning } from "@/utils/message"
+import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
+import { ActionEvent } from "@/utils/types"
 
 export interface PropDef {
-  visible: number;
-  selected: Array<string>;
-  selectedLinks: Array<string>;
+  visible: number
+  selected: Array<string>
+  selectedLinks: Array<string>
 }
-const props = defineProps<PropDef>();
-const store = useMainStore();
-const loading_config = ref(false);
+const props = defineProps<PropDef>()
+const store = useMainStore()
+const loading_config = ref(false)
 
-const { optCommands } = storeToRefs(store);
+const { optCommands } = storeToRefs(store)
 
 enum tab {
   home = "home",
@@ -232,93 +232,93 @@ const emit = defineEmits([
   "update:visible",
   "update:selected",
   "update:selectedLinks",
-]);
-const cmd_active = ref("");
-const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run);
+])
+const cmd_active = ref("")
+const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run)
 
-const cmd_lastrun = ref("");
+const cmd_lastrun = ref("")
 /** Run the config command */
 function run_config() {
   if (loading_config.value) {
-    MsgWarning("Busy executing config");
-    return;
+    MsgWarning("Busy executing config")
+    return
   }
-  cmd_lastrun.value = cmd_active.value;
-  Object.keys(store.results).forEach((key) => delete store.results[key]);
-  loading_config.value = true;
+  cmd_lastrun.value = cmd_active.value
+  Object.keys(store.results).forEach((key) => delete store.results[key])
+  loading_config.value = true
 
   wsSend({
     code: WsMsgCodes.config,
     config: {
       cmd: cmd_active.value,
     },
-  });
+  })
 }
 
-const results_all = computed(() => Object.keys(store.results).sort());
+const results_all = computed(() => Object.keys(store.results).sort())
 const results_selected = computed(() =>
   Object.keys(store.results)
     .sort()
     .filter((v) => props.selected.includes(v))
-);
+)
 
 wsRxBus.on((msg) => {
   if (msg.code === WsMsgCodes.config && msg.config && msg.config.results) {
     // add this node to selected
-    const n = msg.config.results[0].node;
-    toggleSelected(n, true);
+    const n = msg.config.results[0].node
+    toggleSelected(n, true)
   }
 
   if (msg.code === WsMsgCodes.config && msg.config?.cmd) {
     // wait for 1second before allowing more commands
     setTimeout(() => {
-      loading_config.value = false;
-    }, 100);
+      loading_config.value = false
+    }, 100)
   }
-});
+})
 
 /** Toggle the selected nodes, or set it to a specific value (setTo) */
 function toggleSelected(n: string, setTo?: boolean) {
-  const current = props.selected.includes(n);
+  const current = props.selected.includes(n)
   if (typeof setTo === "undefined") {
-    setTo = !current; // toggle
+    setTo = !current // toggle
   }
   if (setTo == current) {
-    return; // no changes
+    return // no changes
   }
-  const newp = [...props.selected];
+  const newp = [...props.selected]
   if (setTo) {
-    newp.push(n);
+    newp.push(n)
   } else {
-    newp.splice(newp.indexOf(n), 1);
+    newp.splice(newp.indexOf(n), 1)
   }
-  emit("update:selected", newp);
+  emit("update:selected", newp)
 }
 
 /** Remove a link from the selectedLinks */
 function popLink(linkId: string) {
-  const newL = [...props.selectedLinks];
-  newL.splice(newL.indexOf(linkId), 1);
-  emit("update:selectedLinks", newL);
+  const newL = [...props.selectedLinks]
+  newL.splice(newL.indexOf(linkId), 1)
+  emit("update:selectedLinks", newL)
 }
 
 /** Received a click action event */
 function clickAction(action: ActionEvent) {
   if (action.action === "config") {
-    cmd_active.value = action.command;
-    selected_tab.value = tab.run;
+    cmd_active.value = action.command
+    selected_tab.value = tab.run
   } else if (action.action === "path") {
-    emit("path", action.command);
+    emit("path", action.command)
   } else {
-    console.log(action);
+    console.log(action)
   }
 }
 
 function close() {
-  emit("update:visible", 0);
+  emit("update:visible", 0)
 }
 
-const templateView = ref("");
+const templateView = ref("")
 </script>
 
 <style></style>

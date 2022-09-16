@@ -89,11 +89,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue"
 // eslint-diasble-next-line
-import DivMarkdown from "@/components/div_markdown.vue";
-import { Dictionary } from "@/utils/types";
-import { WsMessage, WsMsgCodes } from "@/utils/websocket";
+import DivMarkdown from "@/components/div_markdown.vue"
+import { Dictionary } from "@/utils/types"
+import { WsMessage, WsMsgCodes } from "@/utils/websocket"
 import {
   NCard,
   NGrid,
@@ -105,70 +105,70 @@ import {
   NSwitch,
   SelectGroupOption,
   SelectOption,
-} from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import { watchDebounced } from "@vueuse/core";
-import { wsTemplateBus, wsSend } from "@/utils/websocket";
-import JSwitch from "@/components/j_switch.vue";
-import { MsgInfo } from "@/utils/message";
-import { defaultGraphTemplates } from "@/utils/helpers";
+} from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import { watchDebounced } from "@vueuse/core"
+import { wsTemplateBus, wsSend } from "@/utils/websocket"
+import JSwitch from "@/components/j_switch.vue"
+import { MsgInfo } from "@/utils/message"
+import { defaultGraphTemplates } from "@/utils/helpers"
 
-const store = useMainStore();
-const template_result = ref("");
-const template_resulty = ref({});
+const store = useMainStore()
+const template_result = ref("")
+const template_resulty = ref({})
 
 interface PropDef {
   /** input variables */
-  vars: Dictionary;
+  vars: Dictionary
   /** the template name */
-  template: string;
-  visible: boolean;
+  template: string
+  visible: boolean
 
-  fixedTemplate?: boolean;
+  fixedTemplate?: boolean
   /** link/node is used to filter any node related templates */
-  isLink?: boolean;
+  isLink?: boolean
 }
 const props = withDefaults(defineProps<PropDef>(), {
   fixedTemplate: false,
   isLink: false,
-});
+})
 
-const emit = defineEmits(["update:template", "update:visible", "close"]);
+const emit = defineEmits(["update:template", "update:visible", "close"])
 
-const showVars = ref(true);
-const showMd = ref(false);
-const tempN = ref("");
+const showVars = ref(true)
+const showMd = ref(false)
+const tempN = ref("")
 
 /** the value of the active template */
 const tempV = computed({
   get: () => {
     // console.log(tempN.value, store.templateFiles[tempN.value]);
     if (tempN.value in store.templateFiles) {
-      return store.templateFiles[tempN.value].value;
+      return store.templateFiles[tempN.value].value
     }
     return tempN.value in store.optTemplates
       ? store.optTemplates[tempN.value]
-      : "";
+      : ""
   },
   set: (v) => {
     if (tempN.value in store.templateFiles) {
-      store.templateFiles[tempN.value].value = v;
-      return;
+      store.templateFiles[tempN.value].value = v
+      return
     }
     if (!(tempN.value in store.optTemplates)) {
-      tempN.value = (props.isLink ? "link." : "node.") + tempN.value;
+      tempN.value = (props.isLink ? "link." : "node.") + tempN.value
     }
-    store.optTemplates[tempN.value] = v;
+    store.optTemplates[tempN.value] = v
   },
-});
+})
 
 /** Send the new template to the server so that it can be rendered */
 watchDebounced(
   tempV,
   () => {
     // send socket
-    template_result.value = "...";
-    template_resulty.value = {};
+    template_result.value = "..."
+    template_resulty.value = {}
     const opt = {
       code: WsMsgCodes.template,
       template: {
@@ -176,32 +176,32 @@ watchDebounced(
         name: tempN.value,
         vars: props.vars,
       },
-    } as WsMessage;
-    wsSend(opt);
+    } as WsMessage
+    wsSend(opt)
   },
   { debounce: 1000 }
-);
+)
 
 /** save the return value from the server when we've rendered the template */
 wsTemplateBus.on((t) => {
-  template_result.value = t.result || "";
-  template_resulty.value = t.resulty || {};
-});
+  template_result.value = t.result || ""
+  template_resulty.value = t.resulty || {}
+})
 
 /** is this dialog visible */
 const visible = computed({
   get: () => props.visible,
   set: (vis) => {
     if (!vis) {
-      emit("update:visible", false);
-      emit("close");
+      emit("update:visible", false)
+      emit("close")
     }
   },
-});
+})
 
 onMounted(() => {
-  tempN.value = props.template;
-});
+  tempN.value = props.template
+})
 
 // watch(visible, (value) => {
 //   if (!value) return;
@@ -209,20 +209,20 @@ onMounted(() => {
 // });
 
 const tempOptions = computed(() => {
-  const res = [] as Array<SelectGroupOption | SelectOption>;
-  const g = {} as Record<string, SelectGroupOption>;
+  const res = [] as Array<SelectGroupOption | SelectOption>
+  const g = {} as Record<string, SelectGroupOption>
 
   function grp(name: string): SelectOption[] {
-    if (name in g) return g[name].children as any;
+    if (name in g) return g[name].children as any
     const r = {
       type: "group",
       label: name,
       key: name,
       children: [] as SelectOption[],
-    } as SelectGroupOption;
-    g[name] = r;
-    res.push(r);
-    return r.children as any;
+    } as SelectGroupOption
+    g[name] = r
+    res.push(r)
+    return r.children as any
   }
 
   Object.keys(store.optTemplates).forEach((v) => {
@@ -230,34 +230,34 @@ const tempOptions = computed(() => {
       label: v,
       value: v,
       disabled: (props.isLink ? v.indexOf("link") : v.indexOf("node")) < 0,
-    } as SelectOption);
-  });
+    } as SelectOption)
+  })
 
   if (props.isLink) {
     grp(`Template files`).push({
       label: "only shown for nodes",
       disabled: true,
-    });
-    return res;
+    })
+    return res
   }
 
-  const role = props.vars["clab_role"];
+  const role = props.vars["clab_role"]
   Object.values(store.templateFiles).forEach((t) => {
     grp(`/${t.p}/`).push({
       label: t.name,
       value: t.name,
       disabled: role ? t.name.indexOf("__" + String(role)) < 0 : false,
-    } as SelectOption);
-  });
-  return res;
-});
+    } as SelectOption)
+  })
+  return res
+})
 
 function example() {
-  const v = defaultGraphTemplates(props.isLink);
+  const v = defaultGraphTemplates(props.isLink)
   if (!tempV.value.includes(v)) {
-    tempV.value += v;
+    tempV.value += v
   } else {
-    MsgInfo("example already added to the bottom");
+    MsgInfo("example already added to the bottom")
   }
 }
 </script>

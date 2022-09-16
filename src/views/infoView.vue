@@ -28,12 +28,12 @@
 </template>
 
 <script setup lang="ts">
-import {} from "vue";
-import { NDivider } from "naive-ui";
-import { JsonViewer } from "vue3-json-viewer";
+import {} from "vue"
+import { NDivider } from "naive-ui"
+import { JsonViewer } from "vue3-json-viewer"
 
-import { useMainStore } from "@/stores/mainStore";
-const store = useMainStore();
+import { useMainStore } from "@/stores/mainStore"
+const store = useMainStore()
 
 // function pretty(json: any) {
 //   return JSON.stringify(json, null, 4);

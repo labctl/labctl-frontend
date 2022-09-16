@@ -1,26 +1,26 @@
-import { Callable2, Dictionary, JsonResponse } from "./types";
-import { api_uri } from "./const";
+import { Callable2, Dictionary, JsonResponse } from "./types"
+import { api_uri } from "./const"
 
 export function $set_array(target: any[], source: any[]): void {
-  target.splice(source.length);
+  target.splice(source.length)
   for (let i = 0; i < source.length; i += 1) {
-    target[i] = source[i];
+    target[i] = source[i]
   }
 }
 
 export function $set_object(target: Dictionary, source: Dictionary): void {
   Object.keys(target).forEach((key) => {
     if (!(key in source)) {
-      delete target[key];
+      delete target[key]
     }
-  });
+  })
   Object.keys(source).forEach((key) => {
-    target[key] = source[key];
-  });
+    target[key] = source[key]
+  })
 }
 
 export function isObject(value: any) {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
+  return value !== null && typeof value === "object" && !Array.isArray(value)
 }
 
 /** Sort a dictionary */
@@ -29,16 +29,16 @@ export function sortDictionary(
   compareKeys: Callable2<string, string, number>,
   filterObj?: Dictionary
 ) {
-  const f = typeof filterObj === "undefined" ? {} : filterObj;
-  const sortedKeys = Object.keys(obj).sort(compareKeys);
+  const f = typeof filterObj === "undefined" ? {} : filterObj
+  const sortedKeys = Object.keys(obj).sort(compareKeys)
   // build a new dictionary "accumulator" in the correct order
   return sortedKeys.reduce((accumulator: Dictionary, k: string) => {
-    const same = k in f && JSON.stringify(f[k]) === JSON.stringify(obj[k]);
+    const same = k in f && JSON.stringify(f[k]) === JSON.stringify(obj[k])
     if (!same) {
-      accumulator[k] = obj[k];
+      accumulator[k] = obj[k]
     }
-    return accumulator;
-  }, {});
+    return accumulator
+  }, {})
 }
 
 export async function json_fetch(
@@ -52,7 +52,7 @@ export async function json_fetch(
       }
     : {
         method: "GET",
-      };
+      }
 
   try {
     const response = await fetch(api_uri + url, {
@@ -63,12 +63,12 @@ export async function json_fetch(
       },
       redirect: "error" as const,
       ...opt,
-    });
+    })
     if (!response.ok) {
-      return Promise.reject(response.statusText);
+      return Promise.reject(response.statusText)
     }
-    return Promise.resolve(await response.json());
+    return Promise.resolve(await response.json())
   } catch (error) {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
 }

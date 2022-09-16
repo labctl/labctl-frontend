@@ -36,9 +36,9 @@
       /></n-button>
     </template>
 
-    <CeTabHome v-if="selected_tab === tab.home" @action="clickAction" />
+    <CeTabHome v-if="selected_tab === tab.home" />
 
-    <div v-else-if="selected_tab === tab.templates">
+    <div v-else-if="selected_tab === tab.clab">
       <h2>filename.clab.yml</h2>
       <pre>abc</pre>
     </div>
@@ -54,31 +54,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { NBadge, NButton, NCard, NIcon, NTab, NTabs } from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import CeTabHome from "@/components/ce_tab_home.vue";
-import { HomeOutlined, SettingsEthernetOutlined } from "@vicons/material";
+import { ref } from "vue"
+import { NBadge, NButton, NCard, NIcon, NTab, NTabs } from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import CeTabHome from "@/components/ce_tab_home.vue"
+import { HomeOutlined, SettingsEthernetOutlined } from "@vicons/material"
 import {
   FullScreenMaximize20Filled,
   ArrowMinimize20Regular,
-} from "@vicons/fluent";
+} from "@vicons/fluent"
 
-import { WsMsgCodes, wsRxBus } from "@/utils/websocket";
-import { storeToRefs } from "pinia";
-import TemplatePreviewDialog from "@/components/template_preview_dialog.vue";
-import { ActionEvent } from "@/utils/types";
+import { storeToRefs } from "pinia"
+import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
 
 export interface PropDef {
-  visible: number;
-  selected: Array<string>;
-  selectedLinks: Array<string>;
+  visible: number
+  selected: Array<string>
+  selectedLinks: Array<string>
 }
-const props = defineProps<PropDef>();
-const store = useMainStore();
-const loading_config = ref(false);
+const props = defineProps<PropDef>()
+const store = useMainStore()
 
-const { optCommands } = storeToRefs(store);
+const { optCommands } = storeToRefs(store)
 
 enum tab {
   home = "home",
@@ -91,15 +88,14 @@ const emit = defineEmits([
   "update:visible",
   "update:selected",
   "update:selectedLinks",
-]);
-const cmd_active = ref("");
-const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run);
+])
+const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.home)
 
 function close() {
-  emit("update:visible", 0);
+  emit("update:visible", 0)
 }
 
-const templateView = ref("");
+const templateView = ref("")
 </script>
 
 <style></style>

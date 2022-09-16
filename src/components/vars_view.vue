@@ -115,45 +115,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { NCard, NButton, NIcon, NPopover } from "naive-ui";
-import { useMainStore } from "@/stores/mainStore";
-import { JsonViewer } from "vue3-json-viewer";
+import { ref, computed } from "vue"
+import { NCard, NButton, NIcon, NPopover } from "naive-ui"
+import { useMainStore } from "@/stores/mainStore"
+import { JsonViewer } from "vue3-json-viewer"
 import {
   FitScreenTwotone,
   SplitscreenTwotone,
   DescriptionOutlined,
-} from "@vicons/material";
-import VarsTemplateDialog from "@/components/vars_template_dialog.vue";
-import { sortDictionary } from "@/utils/utils";
+} from "@vicons/material"
+import VarsTemplateDialog from "@/components/vars_template_dialog.vue"
+import { sortDictionary } from "@/utils/utils"
 
 export interface PropDef {
-  id: string;
-  link?: boolean;
+  id: string
+  link?: boolean
 }
-const props = withDefaults(defineProps<PropDef>(), { link: false });
+const props = withDefaults(defineProps<PropDef>(), { link: false })
 
-const emit = defineEmits(["update:close"]);
+const emit = defineEmits(["update:close"])
 
-const store = useMainStore();
+const store = useMainStore()
 
-const visible = ref(true);
+const visible = ref(true)
 function close() {
-  emit("update:close", false);
-  visible.value = false;
+  emit("update:close", false)
+  visible.value = false
 }
 
-const topovars = computed(() => store.topo.nodes[props.id].vars);
+const topovars = computed(() => store.topo.nodes[props.id].vars)
 
 const vars = computed(() => {
-  const v = props.link ? store.linkVars(props.id) : store.topo.vars[props.id];
-  return sortDictionary(v, compareKeys, {});
-});
+  const v = props.link ? store.linkVars(props.id) : store.topo.vars[props.id]
+  return sortDictionary(v, compareKeys, {})
+})
 
 const newvars = computed(() => {
-  const v = store.topo.vars[props.id];
-  return sortDictionary(v, compareKeys, topovars.value);
-});
+  const v = store.topo.vars[props.id]
+  return sortDictionary(v, compareKeys, topovars.value)
+})
 
 // const title = computed(() => {
 //   if (!props.link) {
@@ -163,20 +163,20 @@ const newvars = computed(() => {
 //   return `Link ${props.id}: ${link.value.source}:${link.value.source_endpoint} to ${link.value.target}:${link.value.target_endpoint}`;
 // });
 
-const link = computed(() => store.topo.links[props.id]);
+const link = computed(() => store.topo.links[props.id])
 
 /** A compare function to move large clab vars to the end */
 function compareKeys(a: string, b: string) {
-  if (a === "clab_nodes") return 1;
-  if (b === "clab_nodes") return -1;
-  if (a === "clab_links") return 1;
-  if (b === "clab_links") return -1;
-  if (a === "clab_far") return 1;
-  if (b === "clab_far") return -1;
-  return a.localeCompare(b);
+  if (a === "clab_nodes") return 1
+  if (b === "clab_nodes") return -1
+  if (a === "clab_links") return 1
+  if (b === "clab_links") return -1
+  if (a === "clab_far") return 1
+  if (b === "clab_far") return -1
+  return a.localeCompare(b)
 }
 
-const templateVisible = ref(false);
+const templateVisible = ref(false)
 // const templateVars = computed(() => {
 //   if (!link.value) {
 //     return vars.value;
@@ -188,7 +188,7 @@ const templateVisible = ref(false);
 // });
 
 function showTemplate() {
-  templateVisible.value = true;
+  templateVisible.value = true
 }
 </script>
 
