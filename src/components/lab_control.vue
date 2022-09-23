@@ -1,5 +1,11 @@
 <template>
-  <n-card title="Lab" closable style="min-height: 500px" @close="close">
+  <n-card
+    v-if="props.visible > 0"
+    title="Lab"
+    closable
+    style="min-height: 500px"
+    @close="close"
+  >
     <template #header-extra>
       <n-tabs
         v-model:value="selected_tab"
@@ -11,16 +17,10 @@
           <n-icon :component="HomeOutlined" />
         </n-tab>
         <n-tab :name="tab.clab">
-          <n-badge
-            type="info"
-            processing
-            :value="props.selected.length + props.selectedLinks.length"
-          >
-            <n-icon
-              :component="SettingsEthernetOutlined"
-              color="var(--n-tab-text-color)"
-            />
-          </n-badge>
+          <n-icon
+            :component="SettingsEthernetOutlined"
+            color="var(--n-tab-text-color)"
+          />
         </n-tab>
       </n-tabs>
       <n-button
@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
-import { NBadge, NButton, NCard, NIcon, NTab, NTabs } from "naive-ui"
+import { NButton, NCard, NIcon, NTab, NTabs } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import CeTabHome from "@/components/ce_tab_home.vue"
 import { HomeOutlined, SettingsEthernetOutlined } from "@vicons/material"
@@ -69,8 +69,6 @@ import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
 
 export interface PropDef {
   visible: number
-  selected: Array<string>
-  selectedLinks: Array<string>
 }
 const props = defineProps<PropDef>()
 const store = useMainStore()

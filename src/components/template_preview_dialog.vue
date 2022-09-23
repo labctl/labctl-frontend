@@ -35,7 +35,6 @@
             type="textarea"
             :autosize="{ minRows: 5 }"
             autofocus
-            readonly
             style="font-family: monospace"
           />
         </n-grid-item>

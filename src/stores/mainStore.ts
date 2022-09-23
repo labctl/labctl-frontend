@@ -118,6 +118,8 @@ export const useMainStore = defineStore("main", {
         source_vars: sV.length == 0 ? {} : toRaw(sV[0]),
         target_vars: tV.length == 0 ? {} : toRaw(tV[0]),
         vars: toRaw(l.vars),
+        source_node: state.topo.nodes[l.source],
+        target_node: state.topo.nodes[l.target],
       }
     },
   },

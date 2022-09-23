@@ -7,7 +7,7 @@
     -->
     <div
       :style="{
-        'white-space': 'pre-wrap',
+        'white-space': 'pre',
         // 'font-family': 'var(--n-font-family-mono)',
         // 'font-size': 'var(--n-font-size-tiny)',
         padding: '10px',

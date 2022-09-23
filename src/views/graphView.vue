@@ -9,6 +9,16 @@
           Config Engine
           <template #tooltip> Show the Config Engine. </template>
         </j-switch>
+        <j-switch
+          :v-show="false"
+          :value="lab_visible > 0"
+          @update:value="toggleLabVisible"
+        >
+          Lab
+          <template #tooltip>
+            Show the Lab Readme, topology file etc.
+          </template>
+        </j-switch>
       </n-button-group>
     </n-space>
   </teleport>
@@ -236,6 +246,10 @@
       />
     </n-grid-item>
 
+    <n-grid-item v-if="lab_visible > 0" :span="lab_visible * 2">
+      <lab-control v-model:visible="lab_visible" @path="togglePath" />
+    </n-grid-item>
+
     <n-grid-item v-if="show_logs">
       <n-card title="Logs" closable @close="show_logs = false">
         <div
@@ -279,6 +293,7 @@ import {
 
 import JSwitch from "@/components/j_switch.vue"
 import CeControl from "@/components/ce_control.vue"
+import LabControl from "@/components/lab_control.vue"
 // import ConfigResults from "@/components/config_results.vue";
 // import VarsView from "@/components/vars_view.vue";
 
@@ -315,6 +330,7 @@ const lblLink = ref({} as Record<string, LinkLabels>)
 const lblNode = ref({} as Record<string, NodeLabels>)
 
 const ce_visible = useLocalStorage("ceVisible", 2)
+const lab_visible = useLocalStorage("labVisible", 2)
 const show_logs = useLocalStorage("showLogs", false)
 const show_g_logs = useLocalStorage("showGraphLogs", false)
 const show_sidebar = useLocalStorage("showSiderbar", true)
@@ -564,6 +580,11 @@ function togglePath(path: string) {
 function toggleCeVisible() {
   const v = ce_visible.value
   ce_visible.value = v < -2 || v === 0 ? 2 : -v
+}
+
+function toggleLabVisible() {
+  const v = lab_visible.value
+  lab_visible.value = v < -2 || v === 0 ? 2 : -v
 }
 </script>
 
