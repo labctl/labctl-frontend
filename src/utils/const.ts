@@ -5,23 +5,21 @@ export const base_uri = (() => {
 })()
 
 /** If localhost, get localhost+port from local storage, else null */
-const localhost = (() => {
+export const localhost = (() => {
   if (typeof window === "undefined") return ""
-  if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+  const lh = "localhost"
+  const h = window.location.hostname
+  if (!(h === lh || h === "127.0.0.1")) {
     return ""
   }
-  const key = "localhost"
-  let s = localStorage.getItem(key)
+  let s = localStorage.getItem(lh)
   if (s === null) {
     s = "tes4:8080"
-    localStorage.setItem(key, s)
+    localStorage.setItem(lh, s)
   }
-  if (!(window as any).localhostServer) {
-    console.warn(
-      `Using upstream server ${key}=${s}. Change in Dev Tools --> Application --> Local Storage & refresh.`
-    )
-    ;(window as any).localhostServer = "s"
-  }
+  console.warn(
+    `Using upstream server ${s}. Change in Dev Tools --> Application --> Local Storage [key=${lh}] & refresh.`
+  )
   return s
 })()
 

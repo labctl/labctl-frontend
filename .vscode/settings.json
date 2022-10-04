@@ -15,5 +15,10 @@
     "[vue]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.formatOnSave": true
+    },
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#080",
+        "titleBar.activeForeground": "#eee",
+        "titleBar.inactiveBackground": "#040",
     }
 }

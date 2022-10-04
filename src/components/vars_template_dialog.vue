@@ -34,10 +34,10 @@
         <n-grid-item>
           <n-space justify="space-between">
             <span>Template</span>
-            <j-switch @update:value="example">
+            <l-switch @update:value="example">
               ?
               <template #tooltip>Add an example template</template>
-            </j-switch>
+            </l-switch>
             <n-select
               v-model:value="tempN"
               filterable
@@ -109,7 +109,7 @@ import {
 import { useMainStore } from "@/stores/mainStore"
 import { watchDebounced } from "@vueuse/core"
 import { wsTemplateBus, wsSend } from "@/utils/websocket"
-import JSwitch from "@/components/j_switch.vue"
+import LSwitch from "@/components/l_switch.vue"
 import { MsgInfo } from "@/utils/message"
 import { defaultGraphTemplates } from "@/utils/helpers"
 

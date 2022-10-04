@@ -1,10 +1,5 @@
 <template>
-  <n-card
-    title="Config Engine"
-    closable
-    style="min-height: 500px"
-    @close="close"
-  >
+  <l-panel v-model:visible="visible" title="Config Engine">
     <template #header-extra>
       <n-tabs
         v-model:value="selected_tab"
@@ -39,17 +34,6 @@
           <n-icon :component="DescriptionOutlined" />
         </n-tab>
       </n-tabs>
-      <n-button
-        quaternary
-        tiny
-        :focusable="false"
-        @click="$emit('update:visible', visible > 1 ? 1 : 2)"
-      >
-        <n-icon
-          :component="
-            visible > 1 ? ArrowMinimize20Regular : FullScreenMaximize20Filled
-          "
-      /></n-button>
     </template>
 
     <CeTabHome v-if="selected_tab === tab.home" @action="clickAction" />
@@ -79,14 +63,14 @@
         <n-space justify="space-between">
           Nodes with results
           <n-space>
-            <j-switch
+            <l-switch
               v-for="name in results_all"
               :key="`ce:nres:${name}`"
               :value="props.selected.includes(name)"
               @update:value="toggleSelected(name)"
             >
               {{ name }}
-            </j-switch>
+            </l-switch>
           </n-space>
         </n-space>
       </p>
@@ -160,13 +144,14 @@
     </div>
 
     <div v-else>Unknown tab: {{ selected_tab }}</div>
-  </n-card>
-  <template-preview-dialog
-    v-if="templateView !== ''"
-    visible
-    :template="templateView"
-    @close="templateView = ''"
-  ></template-preview-dialog>
+
+    <template-preview-dialog
+      v-if="templateView !== ''"
+      visible
+      :template="templateView"
+      @close="templateView = ''"
+    />
+  </l-panel>
 </template>
 
 <script setup lang="ts">
@@ -187,7 +172,8 @@ import {
   NTabs,
 } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
-import JSwitch from "@/components/j_switch.vue"
+import LPanel from "@/components/l_panel.vue"
+import LSwitch from "@/components/l_switch.vue"
 import VarsView from "@/components/vars_view.vue"
 import CeTabHome from "@/components/ce_tab_home.vue"
 import CeTabTemplates from "@/components/ce_tab_templates.vue"
@@ -197,10 +183,6 @@ import {
   PlayArrowTwotone,
   SettingsEthernetOutlined,
 } from "@vicons/material"
-import {
-  FullScreenMaximize20Filled,
-  ArrowMinimize20Regular,
-} from "@vicons/fluent"
 import ConfigResults from "@/components/config_results.vue"
 
 import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket"
@@ -233,6 +215,10 @@ const emit = defineEmits([
   "update:selected",
   "update:selectedLinks",
 ])
+const visible = computed({
+  get: () => props.visible,
+  set: (v) => emit("update:visible", v),
+})
 const cmd_active = ref("")
 const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run)
 
@@ -312,10 +298,6 @@ function clickAction(action: ActionEvent) {
   } else {
     console.log(action)
   }
-}
-
-function close() {
-  emit("update:visible", 0)
 }
 
 const templateView = ref("")

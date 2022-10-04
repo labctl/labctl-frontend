@@ -1,7 +1,7 @@
 <template>
   <p>
     Recommended commands for this lab
-    <j-switch v-model:value="edit">edit</j-switch>
+    <l-switch v-model:value="edit">edit</l-switch>
   </p>
   <n-table striped size="small">
     <tbody>
@@ -82,7 +82,7 @@ import {
   NTable,
 } from "naive-ui"
 import DivMarkdown from "@/components/div_markdown.vue"
-import JSwitch from "@/components/j_switch.vue"
+import LSwitch from "@/components/l_switch.vue"
 import {
   ModeEditOutlineTwotone,
   RouteFilled,

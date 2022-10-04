@@ -4,21 +4,33 @@
       <n-button secondary round size="small" @click="centerGraph">
         <n-icon><center-focus-weak-sharp /></n-icon>
       </n-button>
+      <n-button
+        :disabled="selectedNodes.length !== 1"
+        secondary
+        round
+        size="small"
+        @click="sshNode"
+      >
+        <n-icon><ConnectedTvSharp /></n-icon>
+      </n-button>
       <n-button-group>
-        <j-switch :value="ce_visible > 0" @update:value="toggleCeVisible">
+        <l-switch
+          :value="ce_visible > 0"
+          @update:value="ce_visible = toggleVisible(ce_visible)"
+        >
           Config Engine
           <template #tooltip> Show the Config Engine. </template>
-        </j-switch>
-        <j-switch
-          :v-show="false"
+        </l-switch>
+        <l-switch
+          v-if="localhost"
           :value="lab_visible > 0"
-          @update:value="toggleLabVisible"
+          @update:value="lab_visible = toggleVisible(lab_visible)"
         >
           Lab
           <template #tooltip>
             Show the Lab Readme, topology file etc.
           </template>
-        </j-switch>
+        </l-switch>
       </n-button-group>
     </n-space>
   </teleport>
@@ -74,35 +86,38 @@
         <n-list-item>
           <n-space justify="space-between">
             Layout {{ optLayout }}
-            <j-switch @update:value="centerGraph">
+            <l-switch @update:value="centerGraph">
               <n-icon><center-focus-weak-sharp /></n-icon>
               <template #tooltip>Center the graph</template>
-            </j-switch>
+            </l-switch>
           </n-space>
 
           <template #suffix>
-            <j-switch
+            <l-switch
               :value="optLayout === 'force'"
               @update:value="(v) => (optLayout = v ? 'force' : 'grid')"
             >
               F
               <template #tooltip>Toggle force layout</template>
-            </j-switch>
+            </l-switch>
           </template>
         </n-list-item>
         <n-list-item>
           <n-space justify="space-between">
             Show logs
-            <j-switch v-model:value="show_g_logs">
+            <l-switch v-model:value="show_g_logs">
               G
               <template #tooltip>Include graph events in the logs</template>
-            </j-switch>
+            </l-switch>
           </n-space>
           <template #suffix>
-            <j-switch v-model:value="show_logs">
+            <l-switch
+              :value="show_logs > 0"
+              @update:value="show_logs = $event ? 1 : -1"
+            >
               L
               <template #tooltip>Toggle logs</template>
-            </j-switch>
+            </l-switch>
           </template>
         </n-list-item>
       </n-list>
@@ -237,8 +252,8 @@
   </n-layout>
 
   <n-grid cols="2 1210:4 2420:6" :x-gap="10" :y-gap="10">
-    <n-grid-item v-if="ce_visible > 0" :span="ce_visible * 2">
-      <ce-control
+    <n-grid-item v-if="ce_visible > 0" :span="ce_visible">
+      <ce-panel
         v-model:visible="ce_visible"
         v-model:selected="selectedNodes"
         v-model:selectedLinks="selectedLinks"
@@ -246,12 +261,24 @@
       />
     </n-grid-item>
 
-    <n-grid-item v-if="lab_visible > 0" :span="lab_visible * 2">
-      <lab-control v-model:visible="lab_visible" @path="togglePath" />
+    <n-grid-item v-if="lab_visible > 0" :span="lab_visible">
+      <lab-panel v-model:visible="lab_visible" @path="togglePath" />
+    </n-grid-item>
+
+    <n-grid-item
+      v-for="n in sshNodes"
+      :key="'ssh_' + n"
+      :span="panelWidth[n] ?? 2"
+    >
+      <xterm-panel
+        :target="`clab-${store.topo.name}-${n}`"
+        :visible="panelWidth[n] ?? 2"
+        @update:visible="(v) => sshVis(n, v)"
+      />
     </n-grid-item>
 
     <n-grid-item v-if="show_logs">
-      <n-card title="Logs" closable @close="show_logs = false">
+      <l-panel v-model:visible="show_logs" title="Logs">
         <div
           v-for="([timestamp, type, log], idx) in eventLogs"
           :key="`${timestamp}/${type}/${log}`"
@@ -262,7 +289,7 @@
             <b class="event-type">{{ type }}</b> {{ log }}
           </n-ellipsis>
         </div>
-      </n-card>
+      </l-panel>
     </n-grid-item>
   </n-grid>
 </template>
@@ -279,7 +306,6 @@ import {
   NEllipsis,
   NList,
   NListItem,
-  NCard,
   NButtonGroup,
   NLayout,
   NLayoutSider,
@@ -291,13 +317,19 @@ import {
   useNotification,
 } from "naive-ui"
 
-import JSwitch from "@/components/j_switch.vue"
-import CeControl from "@/components/ce_control.vue"
-import LabControl from "@/components/lab_control.vue"
+import LSwitch from "@/components/l_switch.vue"
+import LPanel from "@/components/l_panel.vue"
+import CePanel from "@/components/ce_panel.vue"
+import LabPanel from "@/components/lab_panel.vue"
+import XtermPanel from "@/components/xterm_panel.vue"
 // import ConfigResults from "@/components/config_results.vue";
 // import VarsView from "@/components/vars_view.vue";
 
-import { RefreshSharp, CenterFocusWeakSharp } from "@vicons/material"
+import {
+  RefreshSharp,
+  CenterFocusWeakSharp,
+  ConnectedTvSharp,
+} from "@vicons/material"
 import * as vNG from "v-network-graph"
 import { ForceLayout } from "v-network-graph/lib/force-layout"
 import dayjs from "dayjs"
@@ -317,6 +349,7 @@ import { labelDirection } from "@/utils/helpers"
 
 import { MsgInit } from "@/utils/message"
 import { TipsInit, TipsShow } from "@/utils/tips"
+import { localhost } from "@/utils/const"
 
 MsgInit(useMessage())
 TipsInit(useNotification())
@@ -330,11 +363,13 @@ const lblLink = ref({} as Record<string, LinkLabels>)
 const lblNode = ref({} as Record<string, NodeLabels>)
 
 const ce_visible = useLocalStorage("ceVisible", 2)
-const lab_visible = useLocalStorage("labVisible", 2)
-const show_logs = useLocalStorage("showLogs", false)
+console.log(localhost)
+const lab_visible = localhost ? useLocalStorage("labVisible", 2) : ref(-1)
+const show_logs = useLocalStorage("showLogs", -1)
 const show_g_logs = useLocalStorage("showGraphLogs", false)
 const show_sidebar = useLocalStorage("showSiderbar", true)
 const EVENTS_COUNT = 12
+const panelWidth = ref({} as Record<string, number>)
 
 const eventLogs = reactive<[string, string, string][]>([])
 
@@ -577,14 +612,32 @@ function togglePath(path: string) {
   }
 }
 
-function toggleCeVisible() {
-  const v = ce_visible.value
-  ce_visible.value = v < -2 || v === 0 ? 2 : -v
+function toggleVisible(v: number) {
+  return v < -2 || v === 0 ? 2 : -v
 }
 
-function toggleLabVisible() {
-  const v = lab_visible.value
-  lab_visible.value = v < -2 || v === 0 ? 2 : -v
+const sshNodes = ref([] as string[])
+
+function sshVis(n: string, v: number) {
+  panelWidth.value[n] = v
+  if (v < 1) {
+    if (sshNodes.value.includes(n)) {
+      sshNodes.value.splice(sshNodes.value.indexOf(n), 1)
+    }
+  }
+}
+function sshNode() {
+  if (selectedNodes.value.length !== 1) {
+    return
+  }
+  const n = selectedNodes.value[0]
+
+  if (sshNodes.value.includes(n)) {
+    console.log("focus", n)
+    return
+  }
+  sshNodes.value.push(n)
+  console.log(sshNodes)
 }
 </script>
 

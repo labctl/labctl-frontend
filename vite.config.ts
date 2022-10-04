@@ -1,10 +1,10 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vite"
 
-import eslintPlugin from "vite-plugin-eslint";
-import vue from "@vitejs/plugin-vue";
-import { base_uri } from "./src/utils/const";
+import eslintPlugin from "vite-plugin-eslint"
+import vue from "@vitejs/plugin-vue"
+import { base_uri } from "./src/utils/const"
 
-const path = require("path");
+const path = require("path")
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -22,4 +22,4 @@ export default defineConfig({
       maxParallelFileReads: 5,
     },
   },
-});
+})
