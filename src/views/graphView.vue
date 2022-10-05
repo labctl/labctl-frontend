@@ -1,18 +1,17 @@
 <template>
   <teleport to="#mtoolbar">
     <n-space justify="end">
-      <n-button secondary round size="small" @click="centerGraph">
+      <l-button @click="centerGraph">
         <n-icon><center-focus-weak-sharp /></n-icon>
-      </n-button>
-      <n-button
-        :disabled="selectedNodes.length !== 1"
-        secondary
-        round
-        size="small"
-        @click="sshNode"
-      >
+        <template #tooltip> Center graph view </template>
+      </l-button>
+      <l-button :disabled="selectedNodes.length !== 1" @click="sshNode">
         <n-icon><ConnectedTvSharp /></n-icon>
-      </n-button>
+        <template #tooltip> SSH to {{ selectedNodes[0] }} </template>
+        <template #tooltip-disabled>
+          Select a single node to enable SSH
+        </template>
+      </l-button>
       <n-button-group>
         <l-switch
           :value="ce_visible > 0"
@@ -317,6 +316,7 @@ import {
   useNotification,
 } from "naive-ui"
 
+import LButton from "@/components/l_button.vue"
 import LSwitch from "@/components/l_switch.vue"
 import LPanel from "@/components/l_panel.vue"
 import CePanel from "@/components/ce_panel.vue"
@@ -369,7 +369,7 @@ const show_logs = useLocalStorage("showLogs", -1)
 const show_g_logs = useLocalStorage("showGraphLogs", false)
 const show_sidebar = useLocalStorage("showSiderbar", true)
 const EVENTS_COUNT = 12
-const panelWidth = ref({} as Record<string, number>)
+const panelWidth = ref<Record<string, number>>({})
 
 const eventLogs = reactive<[string, string, string][]>([])
 
@@ -613,17 +613,19 @@ function togglePath(path: string) {
 }
 
 function toggleVisible(v: number) {
-  return v < -2 || v === 0 ? 2 : -v
+  return v === 0 ? 2 : -v
 }
 
 const sshNodes = ref([] as string[])
 
 function sshVis(n: string, v: number) {
-  panelWidth.value[n] = v
   if (v < 1) {
     if (sshNodes.value.includes(n)) {
       sshNodes.value.splice(sshNodes.value.indexOf(n), 1)
     }
+    panelWidth.value[n] = -v // for the next show!
+  } else {
+    panelWidth.value[n] = v
   }
 }
 function sshNode() {

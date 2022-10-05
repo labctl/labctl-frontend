@@ -159,15 +159,16 @@ export const useMainStore = defineStore("main", {
       const resp = await json_fetch(base_uri + "topo")
       console.debug("got topo")
 
-      if (this.topo.name !== resp.data.name) {
-        Object.assign(this.topo, resp.data)
-        json_fetch(base_uri + "vars").then((resp) => {
-          Object.assign(this.topo.vars, resp.data)
-        })
-        json_fetch(base_uri + "templates").then((resp) => {
-          Object.assign(this.templateFiles, resp.data)
-        })
-      }
+      // if (this.topo.name !== resp.data.name) {
+      // Reload the UI data
+      Object.assign(this.topo, resp.data)
+      json_fetch(base_uri + "vars").then((resp) => {
+        Object.assign(this.topo.vars, resp.data)
+      })
+      json_fetch(base_uri + "templates").then((resp) => {
+        Object.assign(this.templateFiles, resp.data)
+      })
+      // }
     },
 
     load_config(data?: Array<WsTxResponse>) {

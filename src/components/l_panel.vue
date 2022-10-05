@@ -3,7 +3,7 @@
     :title="props.title"
     closable
     style="min-height: 500px"
-    @close="visible = -visible"
+    @close="close"
   >
     <template #header-extra>
       <slot name="header-extra"></slot>
@@ -60,10 +60,21 @@ const props = withDefaults(defineProps<PropDef>(), { minV: 2, maxV: 4 })
 
 const emit = defineEmits(["update:visible"])
 
+function bound(v: number): number {
+  if (v > 0) {
+    return v < props.minV ? props.minV : v > props.maxV ? props.maxV : v
+  }
+  return v > -props.minV ? -props.minV : v < -props.maxV ? -props.maxV : v
+}
+
 const visible = computed({
-  get: () => props.visible,
-  set: (v) => emit("update:visible", v),
+  get: () => bound(props.visible),
+  set: (v) => emit("update:visible", bound(v)),
 })
+
+function close() {
+  visible.value = bound(-visible.value)
+}
 </script>
 
 <style></style>
