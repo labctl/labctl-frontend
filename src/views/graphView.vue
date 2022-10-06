@@ -14,7 +14,6 @@
       </l-button>
       <n-button-group>
         <l-switch
-          v-if="localhost"
           :value="lab_visible > 0"
           @update:value="lab_visible = toggleVisible(lab_visible)"
         >
@@ -235,7 +234,6 @@ import { useLocalStorage, watchDebounced } from "@vueuse/core"
 
 import { MsgInit } from "@/utils/message"
 import { TipsInit, TipsShow } from "@/utils/tips"
-import { localhost } from "@/utils/const"
 import { actionBus, ActionEvent, logBus } from "@/utils/action"
 
 MsgInit(useMessage())
@@ -284,6 +282,9 @@ onMounted(() => {
   logEvent("mounted", {})
   nextTick(() => {
     TipsShow("select")
+    if (lab_visible.value < 1) {
+      lab_visible.value = toggleVisible(lab_visible.value)
+    }
     centerGraph()
   })
 })

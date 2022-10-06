@@ -19,8 +19,10 @@
     <tab-home v-if="tab === 'home'" />
 
     <div v-else-if="tab === 'readme'">
-      <h3>Readme.md</h3>
-      <div-markdown :value="store.labFiles['readme.md'] || ''"></div-markdown>
+      <div v-for="(text, fn) in store.labFiles" :key="`md_${fn}`">
+        <h2>{{ fn }}</h2>
+        <div-markdown :value="text" />
+      </div>
     </div>
 
     <div v-else>Unknown tab: {{ tab }}</div>
