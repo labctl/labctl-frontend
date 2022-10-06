@@ -1,5 +1,5 @@
 <template>
-  <l-panel v-model:visible="visible" title="Config Engine">
+  <l-panel ref="ceref" v-model:visible="visible" title="Config Engine">
     <template #header-extra>
       <n-tabs
         v-model:value="selected_tab"
@@ -7,9 +7,6 @@
         size="large"
         :style="{ 'margin-right': '20px' }"
       >
-        <n-tab :name="tab.home">
-          <n-icon :component="HomeOutlined" />
-        </n-tab>
         <n-tab :name="tab.run">
           <n-badge type="warning" processing :value="results_all.length">
             <n-icon
@@ -36,16 +33,15 @@
       </n-tabs>
     </template>
 
-    <CeTabHome v-if="selected_tab === tab.home" @action="clickAction" />
-    <CeTabTemplates v-else-if="selected_tab === tab.templates" />
+    <tab-templates v-if="selected_tab === tab.templates" />
 
     <div v-else-if="selected_tab === tab.run">
       <p>
         <n-input-group>
           <n-input-group-label>Run a command</n-input-group-label>
           <n-input
+            ref="inputref"
             v-model:value="cmd_active"
-            autofocus
             placeholder="compare / commit / send"
             :style="{ width: '100%' }"
             @keyup.ctrl.enter="run_config"
@@ -175,21 +171,18 @@ import { useMainStore } from "@/stores/mainStore"
 import LPanel from "@/components/l_panel.vue"
 import LSwitch from "@/components/l_switch.vue"
 import VarsView from "@/components/vars_view.vue"
-import CeTabHome from "@/components/ce_tab_home.vue"
-import CeTabTemplates from "@/components/ce_tab_templates.vue"
+import TabTemplates from "@/components/tab_templates.vue"
 import {
   DescriptionOutlined,
-  HomeOutlined,
   PlayArrowTwotone,
   SettingsEthernetOutlined,
 } from "@vicons/material"
 import ConfigResults from "@/components/config_results.vue"
 
 import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket"
-import { storeToRefs } from "pinia"
 import { MsgWarning } from "@/utils/message"
 import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
-import { ActionEvent } from "@/utils/types"
+import { ActionEvent, actionBus } from "@/utils/action"
 
 export interface PropDef {
   visible: number
@@ -200,17 +193,13 @@ const props = defineProps<PropDef>()
 const store = useMainStore()
 const loading_config = ref(false)
 
-const { optCommands } = storeToRefs(store)
-
 enum tab {
-  home = "home",
   run = "run",
   templates = "templates",
   vars = "vars",
 }
 
 const emit = defineEmits([
-  "path",
   "update:visible",
   "update:selected",
   "update:selectedLinks",
@@ -220,7 +209,7 @@ const visible = computed({
   set: (v) => emit("update:visible", v),
 })
 const cmd_active = ref("")
-const selected_tab = ref(optCommands.value.length > 0 ? tab.home : tab.run)
+const selected_tab = ref(tab.run)
 
 const cmd_lastrun = ref("")
 /** Run the config command */
@@ -288,17 +277,17 @@ function popLink(linkId: string) {
   emit("update:selectedLinks", newL)
 }
 
+const ceref = ref()
+const inputref = ref()
+
 /** Received a click action event */
-function clickAction(action: ActionEvent) {
+actionBus.on((action: ActionEvent) => {
   if (action.action === "config") {
     cmd_active.value = action.command
     selected_tab.value = tab.run
-  } else if (action.action === "path") {
-    emit("path", action.command)
-  } else {
-    console.log(action)
+    inputref.value?.focus()
   }
-}
+})
 
 const templateView = ref("")
 </script>

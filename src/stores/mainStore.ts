@@ -34,6 +34,7 @@ export const useMainStore = defineStore("main", {
     },
     /** *.tmpl files from the template path */
     templateFiles: {} as Record<string, TemplateFile>,
+    labFiles: {} as Record<string, string>,
     // option file
     optLayouts: {
       nodes: {},
@@ -165,9 +166,22 @@ export const useMainStore = defineStore("main", {
       json_fetch(base_uri + "vars").then((resp) => {
         Object.assign(this.topo.vars, resp.data)
       })
-      json_fetch(base_uri + "templates").then((resp) => {
-        Object.assign(this.templateFiles, resp.data)
-      })
+      json_fetch(base_uri + "templates")
+        .then((resp) => {
+          Object.assign(this.templateFiles, resp.data)
+        })
+        .catch((err) =>
+          MsgError(
+            `Could not load templates\n\n${err}\n\nReload the webpage and/or check the server`
+          )
+        )
+      json_fetch(base_uri + "files")
+        .then((resp) => {
+          Object.assign(this.labFiles, resp.data)
+        })
+        .catch(() => {
+          this.labFiles = { "readme.md": "could not load lab files" }
+        })
       // }
     },
 

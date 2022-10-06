@@ -12,7 +12,7 @@ import { computed } from "vue"
 import { marked } from "marked"
 import DOMPurify from "dompurify"
 import { MsgInfo } from "@/utils/message"
-import { ActionEvent } from "@/utils/types"
+import { ActionEvent } from "@/utils/action"
 
 export interface PropDef {
   value: string
@@ -22,7 +22,6 @@ const props = withDefaults(defineProps<PropDef>(), {
   showMsg: false,
 })
 
-//const emit = defineEmits(["action"]);
 const emit = defineEmits<{
   (e: "action", action: ActionEvent): void
 }>()

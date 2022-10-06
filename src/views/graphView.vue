@@ -14,13 +14,6 @@
       </l-button>
       <n-button-group>
         <l-switch
-          :value="ce_visible > 0"
-          @update:value="ce_visible = toggleVisible(ce_visible)"
-        >
-          Config Engine
-          <template #tooltip> Show the Config Engine. </template>
-        </l-switch>
-        <l-switch
           v-if="localhost"
           :value="lab_visible > 0"
           @update:value="lab_visible = toggleVisible(lab_visible)"
@@ -29,6 +22,13 @@
           <template #tooltip>
             Show the Lab Readme, topology file etc.
           </template>
+        </l-switch>
+        <l-switch
+          :value="ce_visible > 0"
+          @update:value="ce_visible = toggleVisible(ce_visible)"
+        >
+          Config Engine
+          <template #tooltip> Show the Config Engine. </template>
         </l-switch>
       </n-button-group>
     </n-space>
@@ -56,9 +56,15 @@
             </n-button>
           </n-dropdown>
           <template #suffix>
-            <n-button circle secondary @click="updatelabels">
+            <l-button circle secondary @click="updatelabels">
               <n-icon><refresh-sharp /></n-icon>
-            </n-button>
+              <template #tooltip>
+                Refresh the labels using the node.{{ labelLayer }} & link.{{
+                  labelLayer
+                }}
+                templates
+              </template>
+            </l-button>
           </template>
         </n-list-item>
         <n-list-item>
@@ -84,7 +90,7 @@
         </n-list-item>
         <n-list-item>
           <n-space justify="space-between">
-            Layout {{ optLayout }}
+            Layout: {{ optLayout }}
             <l-switch @update:value="centerGraph">
               <n-icon><center-focus-weak-sharp /></n-icon>
               <template #tooltip>Center the graph</template>
@@ -102,17 +108,11 @@
           </template>
         </n-list-item>
         <n-list-item>
-          <n-space justify="space-between">
-            Show logs
-            <l-switch v-model:value="show_g_logs">
-              G
-              <template #tooltip>Include graph events in the logs</template>
-            </l-switch>
-          </n-space>
+          Show logs
           <template #suffix>
             <l-switch
               :value="show_logs > 0"
-              @update:value="show_logs = $event ? 1 : -1"
+              @update:value="show_logs = toggleVisible(show_logs)"
             >
               L
               <template #tooltip>Toggle logs</template>
@@ -123,145 +123,26 @@
     </n-layout-sider>
 
     <n-layout-content embedded :native-scrollbar="false">
-      <v-network-graph
-        ref="graph"
-        v-model:selected-nodes="selectedNodes"
-        v-model:selected-edges="selectedLinks"
-        :style="{ height: `${store.optHeight}px` }"
-        :nodes="store.topo.nodes"
-        :edges="store.topo.links"
-        :paths="paths"
-        :configs="configs"
-        :layouts="optLayouts"
-        :event-handlers="eventHandlers"
-      >
-        <template
-          #override-node-label="{
-            nodeId,
-            scale,
-            x,
-            y,
-            config,
-            textAnchor,
-            dominantBaseline,
-          }"
-        >
-          <text
-            v-if="nodeId in lblNode && lblNode[nodeId].label"
-            x="0"
-            y="0"
-            :font-size="9 * scale"
-            text-anchor="middle"
-            dominant-baseline="central"
-            fill="#ffffff"
-          >
-            {{ lblNode[nodeId].label }}
-          </text>
-          <text
-            v-if="nodeId in lblNode && lblNode[nodeId].label_below"
-            :x="x"
-            :y="y"
-            :font-size="config.fontSize * scale"
-            :text-anchor="textAnchor"
-            :dominant-baseline="dominantBaseline"
-            :fill="config.color"
-          >
-            {{ lblNode[nodeId].label_below }}
-          </text>
-        </template>
-        <template #edge-label="{ edgeId, scale, ...slotProps }">
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].center_above"
-            :text="String(lblLink[edgeId].center_above)"
-            align="center"
-            vertical-align="above"
-            v-bind="slotProps"
-            :font-size="12 * scale"
-          />
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].center_below"
-            :text="String(lblLink[edgeId].center_below)"
-            align="center"
-            vertical-align="below"
-            v-bind="slotProps"
-            :font-size="12 * scale"
-          />
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].source_above"
-            :text="String(lblLink[edgeId].source_above)"
-            align="source"
-            vertical-align="above"
-            v-bind="slotProps"
-            fill="#ff5500"
-            :font-size="10 * scale"
-          />
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].source_below"
-            :text="String(lblLink[edgeId].source_below)"
-            align="source"
-            vertical-align="below"
-            v-bind="slotProps"
-            fill="#ff5500"
-            :font-size="10 * scale"
-          />
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].target_above"
-            :text="String(lblLink[edgeId].target_above)"
-            align="target"
-            vertical-align="above"
-            v-bind="slotProps"
-            fill="#ff5500"
-            :font-size="10 * scale"
-          />
-          <v-edge-label
-            v-if="edgeId in lblLink && lblLink[edgeId].target_below"
-            :text="String(lblLink[edgeId].target_below)"
-            align="target"
-            vertical-align="below"
-            v-bind="slotProps"
-            fill="#ff5500"
-            :font-size="10 * scale"
-          />
-        </template>
-        <!-- <template #badge="{ scale }">
-        <circle
-          v-for="(pos, node) in optLayouts.nodes"
-          :key="xx"
-          :cx="pos.x + 9 * scale + pan.x"
-          :cy="pos.y - 9 * scale + pan.y"
-          :r="4 * scale"
-          :fill="'#00cc00'"
-          style="pointer-events: none"
-        />
-      </template> -->
-      </v-network-graph>
-
-      <div
-        ref="tooltip"
-        class="tooltip"
-        :style="{ ...tooltipPos, opacity: tooltipOpacity }"
-      >
-        <div>
-          {{ store.topo.nodes[tooltipTNode]?.name ?? "" }}
-          {{ lblNode[tooltipTNode]?.label ?? "" }}
-          {{ lblNode[tooltipTNode]?.label_below ?? "" }}
-        </div>
-      </div>
+      <div-graph
+        v-model:selectedNodes="selectedNodes"
+        v-model:selectedLinks="selectedLinks"
+        :node-labels="lblNode"
+        :link-labels="lblLink"
+      ></div-graph>
     </n-layout-content>
   </n-layout>
 
   <n-grid cols="2 1210:4 2420:6" :x-gap="10" :y-gap="10">
+    <n-grid-item v-if="lab_visible > 0" :span="lab_visible">
+      <panel-lab v-model:visible="lab_visible" />
+    </n-grid-item>
+
     <n-grid-item v-if="ce_visible > 0" :span="ce_visible">
-      <ce-panel
+      <panel-ce
         v-model:visible="ce_visible"
         v-model:selected="selectedNodes"
         v-model:selectedLinks="selectedLinks"
-        @path="togglePath"
       />
-    </n-grid-item>
-
-    <n-grid-item v-if="lab_visible > 0" :span="lab_visible">
-      <lab-panel v-model:visible="lab_visible" @path="togglePath" />
     </n-grid-item>
 
     <n-grid-item
@@ -269,15 +150,21 @@
       :key="'ssh_' + n"
       :span="panelWidth[n] ?? 2"
     >
-      <xterm-panel
+      <panel-xterm
         :target="`clab-${store.topo.name}-${n}`"
         :visible="panelWidth[n] ?? 2"
         @update:visible="(v) => sshVis(n, v)"
       />
     </n-grid-item>
 
-    <n-grid-item v-if="show_logs">
-      <l-panel v-model:visible="show_logs" title="Logs">
+    <n-grid-item v-if="show_logs > 0" :span="show_logs">
+      <l-panel v-model:visible="show_logs" title="Logs" :min-v="1" :max-v="2">
+        <template #header-extra>
+          <l-switch v-model:value="show_g_logs">
+            G
+            <template #tooltip>Include graph events in the logs</template>
+          </l-switch>
+        </template>
         <div
           v-for="([timestamp, type, log], idx) in eventLogs"
           :key="`${timestamp}/${type}/${log}`"
@@ -294,7 +181,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch, ref, onMounted, nextTick } from "vue"
+import { reactive, computed, ref, onMounted, nextTick } from "vue"
 import { storeToRefs } from "pinia"
 
 import {
@@ -319,9 +206,10 @@ import {
 import LButton from "@/components/l_button.vue"
 import LSwitch from "@/components/l_switch.vue"
 import LPanel from "@/components/l_panel.vue"
-import CePanel from "@/components/ce_panel.vue"
-import LabPanel from "@/components/lab_panel.vue"
-import XtermPanel from "@/components/xterm_panel.vue"
+import PanelCe from "@/components/panel_ce.vue"
+import PanelLab from "@/components/panel_lab.vue"
+import PanelXterm from "@/components/panel_xterm.vue"
+import DivGraph from "@/components/div_graph.vue"
 // import ConfigResults from "@/components/config_results.vue";
 // import VarsView from "@/components/vars_view.vue";
 
@@ -330,8 +218,7 @@ import {
   CenterFocusWeakSharp,
   ConnectedTvSharp,
 } from "@vicons/material"
-import * as vNG from "v-network-graph"
-import { ForceLayout } from "v-network-graph/lib/force-layout"
+
 import dayjs from "dayjs"
 
 import { useMainStore } from "@/stores/mainStore"
@@ -345,11 +232,11 @@ import {
 } from "@/utils/websocket"
 import { LinkLabels, NodeLabels } from "@/utils/types"
 import { useLocalStorage, watchDebounced } from "@vueuse/core"
-import { labelDirection } from "@/utils/helpers"
 
 import { MsgInit } from "@/utils/message"
 import { TipsInit, TipsShow } from "@/utils/tips"
 import { localhost } from "@/utils/const"
+import { actionBus, ActionEvent, logBus } from "@/utils/action"
 
 MsgInit(useMessage())
 TipsInit(useNotification())
@@ -357,14 +244,13 @@ TipsInit(useNotification())
 const store = useMainStore()
 const selectedNodes = ref<string[]>([])
 const selectedLinks = ref<string[]>([])
-const { optLayout, optLayouts } = storeToRefs(store)
+const { optLayout } = storeToRefs(store)
 
 const lblLink = ref({} as Record<string, LinkLabels>)
 const lblNode = ref({} as Record<string, NodeLabels>)
 
-const ce_visible = useLocalStorage("ceVisible", 2)
-console.log(localhost)
-const lab_visible = localhost ? useLocalStorage("labVisible", 2) : ref(-1)
+const ce_visible = useLocalStorage("ceVisible", -2)
+const lab_visible = useLocalStorage("labVisible", 2)
 const show_logs = useLocalStorage("showLogs", -1)
 const show_g_logs = useLocalStorage("showGraphLogs", false)
 const show_sidebar = useLocalStorage("showSiderbar", true)
@@ -372,6 +258,12 @@ const EVENTS_COUNT = 12
 const panelWidth = ref<Record<string, number>>({})
 
 const eventLogs = reactive<[string, string, string][]>([])
+
+logBus.on((l) => {
+  if (show_g_logs.value) {
+    logEvent(l.msg, l.ev)
+  }
+})
 
 function logEvent(msg: string, ev: any) {
   const timestamp = dayjs().format("HH:mm:ss.SSS")
@@ -384,116 +276,8 @@ function logEvent(msg: string, ev: any) {
   eventLogs.unshift([timestamp, msg, JSON.stringify(ev)])
 }
 
-const eventHandlers: vNG.EventHandlers = {
-  "node:pointerover": ({ node }) => {
-    tooltipTNode.value = node
-    tooltipOpacity.value = 1 // show
-  },
-  "node:pointerout": () => {
-    tooltipOpacity.value = 0 // hide
-  },
-  "node:pointermove": store.save,
-  "view:zoom": () => {
-    // if (eventLogs.length > 4) {
-    //   // dont save initial zoom event
-    //   store.save();
-    // }
-  },
-  // wildcard: capture all events
-  "*": (m, ev) => show_g_logs.value && logEvent(m, ev),
-}
-
-function getLayoutHandler() {
-  if (optLayout.value === "force") {
-    return new ForceLayout()
-  } else if (optLayout.value === "grid") {
-    return new vNG.GridLayout({ grid: 15 })
-  }
-  return new vNG.SimpleLayout()
-}
-
-watch(optLayout, () => {
-  store.save()
-  if (configs.view) {
-    configs.view.layoutHandler = getLayoutHandler()
-  }
-})
-
-const nodeSize = 30
-
-const directions = computed(() =>
-  labelDirection(optLayouts.value.nodes, store.topo.links)
-)
-
-const configs = reactive(
-  vNG.defineConfigs({
-    view: {
-      layoutHandler: getLayoutHandler(),
-      scalingObjects: true,
-      minZoomLevel: 0.5, // 0.1,
-      maxZoomLevel: 8, // 16
-      //autoPanAndZoomOnLoad: false,
-      boxSelectionEnabled: true,
-      selection: {
-        box: {
-          color: "#0000ff20",
-          strokeWidth: 1,
-          strokeColor: "#aaaaff",
-          strokeDasharray: "0",
-        },
-      },
-    },
-    node: {
-      normal: { radius: nodeSize / 2 },
-      label: {
-        visible: true,
-        fontFamily: undefined,
-        fontSize: 11,
-        lineHeight: 1.1,
-        color: "#000000",
-        margin: 4,
-        direction: (n) =>
-          (n.name ? directions.value[n.name] : false) || "south",
-        text: "name",
-      },
-      selectable: true,
-    },
-    edge: {
-      selectable: true,
-    },
-    path: {
-      visible: true,
-      path: {
-        width: 10,
-      },
-    },
-  } as vNG.UserConfigs)
-)
-
-const graph = ref<vNG.VNetworkGraphInstance>() // ref="graph"
-const tooltip = ref<HTMLDivElement>() // ref="tooltip"
-
-const tooltipTNode = ref("")
-const tooltipPos = computed(() => {
-  if (!graph.value || !tooltip.value) return { x: 0, y: 0 }
-  if (!tooltipTNode.value) return { x: 0, y: 0 }
-
-  const nodePos = store.optLayouts.nodes[tooltipTNode.value]
-  // translate coordinates: SVG -> DOM
-  const domPoint = graph.value.translateFromSvgToDomCoordinates(nodePos)
-  // calculates top-left position of the tooltip.
-  return {
-    left: domPoint.x - tooltip.value.offsetWidth / 2 + "px",
-    top: domPoint.y - nodeSize / 2 - tooltip.value.offsetHeight - 10 + "px",
-  }
-})
-const tooltipOpacity = ref(0) // 0 or 1
-
 function centerGraph() {
-  console.debug("center")
-  graph.value?.fitToContents()
-  // graph.value?.panToCenter();
-  // graph.value?.transitionWhile(() => {});
+  actionBus.emit({ action: "center", command: "" })
 }
 
 onMounted(() => {
@@ -514,9 +298,6 @@ wsRxBus.on((ev) => {
   if (ev.code === WsMsgCodes.uidata) {
     logEvent("WS load", {})
     nextTick(centerGraph)
-    //setTimeout(centerGraph, 400);
-    //setTimeout(centerGraph, 2000);
-    //nextTick(centerGraph);
   }
 })
 
@@ -599,19 +380,6 @@ function updatelabels() {
   })
 }
 
-const paths = reactive<vNG.Paths>({
-  //path1: { edges: ["edge1", "edge3", "edge5", "edge7"] },
-  //path2: { edges: ["edge2", "edge4", "edge6", "edge10"] },
-})
-
-function togglePath(path: string) {
-  if (Object.keys(paths).includes(path)) {
-    delete paths[path]
-  } else {
-    paths[path] = { edges: path.split(",") }
-  }
-}
-
 function toggleVisible(v: number) {
   return v === 0 ? 2 : -v
 }
@@ -641,6 +409,16 @@ function sshNode() {
   sshNodes.value.push(n)
   console.log(sshNodes)
 }
+
+/** Received a click action event */
+actionBus.on((action: ActionEvent) => {
+  if (action.action === "config") {
+    if (ce_visible.value < 1) {
+      ce_visible.value = toggleVisible(ce_visible.value)
+      nextTick(() => actionBus.emit(action))
+    }
+  }
+})
 </script>
 
 <style lang="css" scoped>

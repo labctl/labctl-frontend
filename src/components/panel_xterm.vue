@@ -9,17 +9,17 @@
         <n-icon :component="PlugDisconnected20Filled" />
         Connect
       </n-button>
-      <n-button quaternary @click="pingToggle">
+      <l-button quaternary @click="pingToggle">
         <n-icon :component="ConnectWithoutContactRound" />
-        ping
-      </n-button>
+        <template #tooltip>Ping the node. Click to start/stop/hide</template>
+      </l-button>
     </template>
-    <XtermDiv
+    <div-xterm
       v-if="ping"
       v-model:connected="pconnected"
       :cmd="'ping ' + props.target"
     />
-    <XtermDiv
+    <div-xterm
       v-model:connected="connected"
       :cmd="'labctl color ssh ' + props.target"
     />
@@ -29,7 +29,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue"
 import { NButton, NIcon } from "naive-ui"
-import XtermDiv from "@/components/xterm_div.vue"
+import DivXterm from "@/components/div_xterm.vue"
+import LButton from "@/components/l_button.vue"
 import LPanel from "@/components/l_panel.vue"
 import { PlugDisconnected20Filled } from "@vicons/fluent"
 import { CancelOutlined, ConnectWithoutContactRound } from "@vicons/material"

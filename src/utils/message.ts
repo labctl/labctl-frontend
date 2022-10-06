@@ -15,22 +15,22 @@ interface Msg {
 }
 
 function show(m: Msg) {
-  if (typeof (window as any).$message !== "undefined") {
-    ;(window as any).$message[m.type](m.msg, m.opt)
+  const w = window as any
+  if (typeof w.$message !== "undefined") {
+    w.$message[m.type](m.msg, m.opt)
   }
-  if (typeof (window as any).$backlog === "undefined") {
-    ;(window as any).$backlog = []
+  if (typeof w.$backlog === "undefined") {
+    w.$backlog = []
   }
-  ;(window as any).$backlog.push(m)
+  w.$backlog.push(m)
 }
 
 export function MsgInit(m: MessageApi) {
-  ;(window as any).$message = m
-  if (typeof (window as any).$backlog !== "undefined") {
-    ;(window as any).$backlog.forEach((m: Msg) =>
-      (window as any).$message[m.type](m.msg, m.opt)
-    )
-    delete (window as any).$backlog
+  const w = window as any
+  w.$message = m
+  if (typeof w.$backlog !== "undefined") {
+    w.$backlog.forEach((m: Msg) => w.$message[m.type](m.msg, m.opt))
+    delete w.$backlog
   }
 }
 

@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: ${{ env.NODEVER }}
           cache: "npm"
-      - run: npm ci
+      - run: npm run test
       - run: npm run build --if-present
       - name: Push frontend to labctl
         uses: cpina/github-action-push-to-another-repository@main

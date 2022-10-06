@@ -7,7 +7,7 @@
     <tbody>
       <tr v-for="(cmd, idx) in optCommands" :key="`cmd:labf:${idx}`">
         <td class="rel">
-          <DivMarkdown :value="cmd" @action="$emit('action', $event)" />
+          <DivMarkdown :value="cmd" @action="action" />
           <n-button-group v-if="edit" class="topright">
             <n-button x-small quaternary @click="editItem(idx)">
               <n-icon :component="ModeEditOutlineTwotone" />
@@ -90,15 +90,15 @@ import {
   ArrowUpwardTwotone,
   AddTwotone,
 } from "@vicons/material"
-import { ActionEvent } from "@/utils/types"
+import { ActionEvent, actionBus } from "@/utils/action"
 
 import { useMainStore } from "@/stores/mainStore"
 const store = useMainStore()
 const optCommands = reactive(store.optCommands)
 
-defineEmits<{
-  (e: "action", action: ActionEvent): void
-}>()
+// defineEmits<{
+//   (e: "action", action: ActionEvent): void
+// }>()
 
 const text1 = ref<InputInst | null>(null)
 
@@ -174,6 +174,10 @@ function moveUp(idx: number) {
   optCommands[idx] = optCommands[idx - 1]
   optCommands[idx - 1] = save
   editv.value--
+}
+
+function action(a: ActionEvent) {
+  actionBus.emit(a)
 }
 </script>
 
