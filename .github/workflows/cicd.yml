@@ -17,11 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ env.NODEVER }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODEVER }}
           cache: "npm"
-      - run: npm run test
+      - run: npm ci
+      - run: npm test
       - run: npm run build --if-present
       - name: Push frontend to labctl
         uses: cpina/github-action-push-to-another-repository@main
@@ -34,4 +35,4 @@ jobs:
           user-email: kellerza@gmail.com
           target-branch: main
           target-directory: helpers/frontend/html
-          commit-message: labctl-js
+          #commit-message: labctl-js
