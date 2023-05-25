@@ -8,7 +8,7 @@
     <template #header-extra>
       <slot name="header-extra"></slot>
       <n-button
-        v-if="visible > minV"
+        v-if="vis > minV"
         text
         class="n-base-close"
         :focusable="false"
@@ -17,14 +17,14 @@
           margin-left: 12px;
           --n-text-color-hover: black;
         "
-        @click="visible -= 1"
+        @click="vis -= 1"
       >
         <n-icon>
           <ArrowMinimize20Regular />
         </n-icon>
       </n-button>
       <n-button
-        v-if="visible < maxV"
+        v-if="vis < maxV"
         text
         class="n-base-close"
         :focusable="false"
@@ -33,7 +33,7 @@
           margin-left: 12px;
           --n-text-color-hover: black;
         "
-        @click="visible += 1"
+        @click="vis += 1"
       >
         <n-icon>
           <ArrowMaximize20Regular />
@@ -67,13 +67,13 @@ function bound(v: number): number {
   return v > -props.minV ? -props.minV : v < -props.maxV ? -props.maxV : v
 }
 
-const visible = computed({
+const vis = computed({
   get: () => bound(props.visible),
   set: (v) => emit("update:visible", bound(v)),
 })
 
 function close() {
-  visible.value = bound(-visible.value)
+  vis.value = bound(-vis.value)
 }
 </script>
 

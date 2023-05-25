@@ -1,5 +1,5 @@
 <template>
-  <l-panel v-model:visible="visible" title="Lab">
+  <l-panel v-model:visible="vis" title="Lab">
     <template #header-extra>
       <n-tabs
         v-model:value="tab"
@@ -7,21 +7,18 @@
         size="large"
         :style="{ 'margin-right': '20px' }"
       >
-        <n-tab name="home">
-          <n-icon :component="HomeOutlined" />
-        </n-tab>
         <n-tab name="readme">
           <n-icon :component="Readme" />
         </n-tab>
       </n-tabs>
     </template>
 
-    <tab-home v-if="tab === 'home'" />
+    <!-- <tab-home v-if="tab === 'home'" /> -->
 
-    <div v-else-if="tab === 'readme'">
+    <div v-if="tab === 'readme'">
       <div v-for="(text, fn) in store.labFiles" :key="`md_${fn}`">
         <h2>{{ fn }}</h2>
-        <div-markdown :value="text" />
+        <div-markdown :value="text" @action="action" />
       </div>
     </div>
 
@@ -40,14 +37,13 @@
 import { ref, computed } from "vue"
 import { NIcon, NTab, NTabs } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
-import TabHome from "@/components/tab_home.vue"
+// import TabHome from "@/components/tab_home.vue"
 import LPanel from "@/components/l_panel.vue"
 import DivMarkdown from "@/components/div_markdown.vue"
-import { HomeOutlined } from "@vicons/material"
 import { Readme } from "@vicons/fa"
 
-import { storeToRefs } from "pinia"
 import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
+import { ActionEvent, actionBus } from "@/utils/action"
 
 export interface PropDef {
   visible: number
@@ -61,18 +57,19 @@ const emit = defineEmits([
 ])
 
 const store = useMainStore()
-const { optCommands } = storeToRefs(store)
 
-const visible = computed({
+const vis = computed({
   get: () => props.visible,
   set: (v) => emit("update:visible", v),
 })
 
-const tab = ref<"home" | "clab" | "readme">(
-  optCommands.value.length > 0 ? "home" : "readme"
-)
+const tab = ref<"clab" | "readme">("readme")
 
 const templateView = ref("")
+
+function action(a: ActionEvent) {
+  actionBus.emit(a)
+}
 </script>
 
 <style></style>

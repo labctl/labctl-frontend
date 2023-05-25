@@ -20,7 +20,10 @@ module.exports = {
   plugins: ["@typescript-eslint", "prettier"],
 
   rules: {
-    "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
+    "no-console":
+      process.env.NODE_ENV === "production"
+        ? ["warn", { allow: ["warn", "error", "debug"] }]
+        : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
     "prettier/prettier": ["error"],
     "vue/no-v-html": "off",

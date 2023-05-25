@@ -1,5 +1,5 @@
 <template>
-  <l-panel ref="ceref" v-model:visible="visible" title="Config Engine">
+  <l-panel ref="ceref" v-model:visible="vis" title="Config Engine">
     <template #header-extra>
       <n-tabs
         v-model:value="selected_tab"
@@ -204,7 +204,7 @@ const emit = defineEmits([
   "update:selected",
   "update:selectedLinks",
 ])
-const visible = computed({
+const vis = computed({
   get: () => props.visible,
   set: (v) => emit("update:visible", v),
 })

@@ -12,12 +12,12 @@
         // 'font-size': 'var(--n-font-size-tiny)',
         padding: '10px',
       }"
-      :class="{ boxed: true, 'jv-code': true, open: open }"
-      v-html="value"
+      :class="{ boxed: true, 'jv-code': true, open: opn }"
+      v-html="ansi"
     ></div>
 
     <div class="jv-more" @click="toggleOpen">
-      <span :class="{ 'jv-toggle': true, open: open }"></span>
+      <span :class="{ 'jv-toggle': true, open: opn }"></span>
     </div>
   </div>
 </template>
@@ -32,16 +32,16 @@ interface PropDef {
   open?: boolean
 }
 const props = withDefaults(defineProps<PropDef>(), { open: false })
-const open = ref(props.open)
+const opn = ref(props.open)
 function toggleOpen() {
-  open.value = !open.value
+  opn.value = !opn.value
 }
 
 // function copy() {
 //   console.log("copy");
 // }
 
-const value = computed(() => {
+const ansi = computed(() => {
   const ansiup = new AnsiUp()
   const result = ansiup.ansi_to_html(props.value)
 

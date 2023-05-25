@@ -14,6 +14,7 @@ import { ws_uri } from "@/utils/const"
 import { webttyRx, webttyTx } from "@/utils/webtty"
 
 import "xterm/css/xterm.css"
+import { ActionEvent, actionBus } from "@/utils/action"
 
 interface PropDef {
   cmd: string
@@ -21,6 +22,7 @@ interface PropDef {
 }
 const props = withDefaults(defineProps<PropDef>(), { connected: true })
 const emit = defineEmits(["update:connected"])
+defineExpose({ focus })
 
 const terminal = ref()
 
@@ -28,7 +30,7 @@ const term = new Terminal({
   rows: 24,
   cols: 80,
   convertEol: true,
-  scrollback: 10,
+  scrollback: 50,
   disableStdin: false,
   fontSize: 14,
   cursorBlink: true,
@@ -136,15 +138,28 @@ useResizeObserver(terminal, (el) => {
 
 onMounted(() => {
   open()
-  term.open(terminal.value)
   term.loadAddon(fitAddon)
+  term.open(terminal.value)
   term.writeln(`$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
+  focus()
 })
 
 onBeforeUnmount(() => {
   close()
   if (term) {
     term.dispose()
+  }
+})
+
+function focus() {
+  terminal.value.scrollIntoView()
+  term.focus()
+}
+
+actionBus.on((action: ActionEvent) => {
+  if (action.action == "ssh" && props.cmd.endsWith(action.command)) {
+    // console.log("focus", action.command, props.cmd)
+    focus()
   }
 })
 </script>

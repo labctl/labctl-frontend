@@ -1,7 +1,7 @@
 import { useEventBus } from "@vueuse/core"
 
 export interface ActionEvent {
-  action: "config" | "clab" | "path" | "center"
+  action: "config" | "clab" | "path" | "center" | "ssh"
   command: string
 }
 

@@ -1,10 +1,10 @@
 <template>
-  <n-modal v-if="visible" v-model:show="visible">
+  <n-modal v-if="visible" v-model:show="vis">
     <n-card
       :title="props.isLink ? 'Render link template' : 'Render node template'"
       style="width: 95%"
       closable
-      @close="visible = false"
+      @close="vis = false"
     >
       <template #header-extra>
         <n-switch v-model:value="showVars" small>
@@ -189,7 +189,7 @@ wsTemplateBus.on((t) => {
 })
 
 /** is this dialog visible */
-const visible = computed({
+const vis = computed({
   get: () => props.visible,
   set: (vis) => {
     if (!vis) {
@@ -203,7 +203,7 @@ onMounted(() => {
   tempN.value = props.template
 })
 
-// watch(visible, (value) => {
+// watch(vis, (value) => {
 //   if (!value) return;
 //   tempN.value = props.template;
 // });

@@ -3,14 +3,14 @@
     <template #header>
       <template v-if="props.link">
         Link {{ props.id }}:
-        <span class="fn">{{ link.source }}:{{ link.source_endpoint }}</span> to
-        <span class="fn">{{ link.target }}:{{ link.target_endpoint }}</span>
+        <span class="fn">{{ lnk.source }}:{{ lnk.source_endpoint }}</span> to
+        <span class="fn">{{ lnk.target }}:{{ lnk.target_endpoint }}</span>
       </template>
       <template v-else> Node {{ props.id }} </template>
     </template>
 
     <template #header-extra>
-      <n-popover v-if="!link" trigger="hover">
+      <n-popover v-if="!lnk" trigger="hover">
         <template #trigger>
           <n-button
             text
@@ -34,14 +34,14 @@
         Test on a template
       </n-popover>
     </template>
-    <div v-if="store.split_vars && !link">
+    <div v-if="store.split_vars && !lnk">
       <p>
         Variables used to render templates.
         <JsonViewer :value="vars" copyable boxed color theme="dark" />
       </p>
     </div>
 
-    <div v-else-if="!link">
+    <div v-else-if="!lnk">
       <p>
         Variables from the topology file and magic variables added by
         containerlab.
@@ -68,7 +68,7 @@
     <div v-else>
       <p>Variables in the topo file</p>
       <json-viewer
-        :value="link.vars"
+        :value="lnk.vars"
         copyable
         boxed
         color
@@ -78,7 +78,7 @@
       />
       <p>
         Variables available in <code>clab_links[]</code> when you render
-        {{ link.source }}
+        {{ lnk.source }}
       </p>
       <json-viewer
         :value="vars.source_vars"
@@ -91,7 +91,7 @@
       />
       <p>
         Variables available in <code>clab_links[]</code> when you render
-        {{ link.target }}
+        {{ lnk.target }}
       </p>
       <json-viewer
         :value="vars.target_vars"
@@ -107,7 +107,7 @@
       v-if="templateVisible"
       v-model:visible="templateVisible"
       :vars="vars"
-      :template="link ? 'link' : 'node'"
+      :template="lnk ? 'link' : 'node'"
       :is-link="props.link"
       :is-node="!props.link"
     ></vars-template-dialog>
@@ -163,7 +163,7 @@ const newvars = computed(() => {
 //   return `Link ${props.id}: ${link.value.source}:${link.value.source_endpoint} to ${link.value.target}:${link.value.target_endpoint}`;
 // });
 
-const link = computed(() => store.topo.links[props.id])
+const lnk = computed(() => store.topo.links[props.id])
 
 /** A compare function to move large clab vars to the end */
 function compareKeys(a: string, b: string) {

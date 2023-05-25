@@ -1,8 +1,8 @@
 <template>
   <v-network-graph
     ref="graph"
-    v-model:selected-nodes="selectedNodes"
-    v-model:selected-edges="selectedLinks"
+    v-model:selected-nodes="selNodes"
+    v-model:selected-edges="selLinks"
     :style="{ height: `${store.optHeight}px` }"
     :nodes="store.topo.nodes"
     :edges="store.topo.links"
@@ -149,12 +149,12 @@ const props = withDefaults(defineProps<PropDef>(), { nodeSize: 30 })
 
 const emit = defineEmits(["update:selectedNodes", "update:selectedLinks"])
 
-const selectedNodes = computed({
+const selNodes = computed({
   get: () => props.selectedNodes,
   set: (v) => emit("update:selectedNodes", v),
 })
 
-const selectedLinks = computed({
+const selLinks = computed({
   get: () => props.selectedLinks,
   set: (v) => emit("update:selectedLinks", v),
 })

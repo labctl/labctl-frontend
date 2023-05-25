@@ -1,10 +1,6 @@
 <template>
-  <n-modal v-if="visible" v-model:show="visible">
-    <n-card
-      style="width: 90%; max-width: 980px"
-      closable
-      @close="visible = false"
-    >
+  <n-modal v-if="visible" v-model:show="vis">
+    <n-card style="width: 90%; max-width: 980px" closable @close="vis = false">
       <template #header>
         Template
         <span class="fn">{{ tempFN.name }}</span> role
@@ -21,17 +17,17 @@
       </template>
       <p>
         Filename:
-        <span class="fn"> &hellip;/{{ template.p }}/{{ template.name }} </span>
+        <span class="fn"> &hellip;/{{ templ.p }}/{{ templ.name }} </span>
       </p>
-      <p v-if="template.shadow.length">
+      <p v-if="templ.shadow.length">
         This template shadows/hides other templates with the same name:
-        {{ template.shadow.join(", ") }}
+        {{ templ.shadow.join(", ") }}
       </p>
 
       <n-grid :cols="1" :x-gap="6">
         <n-grid-item>
           <n-input
-            :value="template.value"
+            :value="templ.value"
             type="textarea"
             :autosize="{ minRows: 5 }"
             autofocus
@@ -44,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, withDefaults, onMounted } from "vue"
+import { computed, onMounted } from "vue"
 import { NButton, NCard, NGrid, NGridItem, NModal, NInput } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { TemplateFile } from "@/utils/types"
@@ -64,7 +60,7 @@ const props = withDefaults(defineProps<PropDef>(), {})
 const emit = defineEmits(["update:visible", "close"])
 
 /** the value of the active template */
-const template = computed(() => {
+const templ = computed(() => {
   const tn = props.template
   if (tn in store.templateFiles) {
     return store.templateFiles[tn]
@@ -82,7 +78,7 @@ onMounted(() => {
 })
 
 /** is this dialog visible */
-const visible = computed({
+const vis = computed({
   get: () => props.visible,
   set: (vis) => {
     if (!vis) {

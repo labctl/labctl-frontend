@@ -1,15 +1,13 @@
 <template>
-  <l-panel v-model:visible="visible" :title="'SSH ' + props.target">
+  <l-panel v-model:visible="vis" :title="'SSH ' + props.target">
     <template #header-extra>
-      <n-button v-if="connected" quaternary @click="connected = false">
-        <n-icon :component="CancelOutlined" />
-        Disconnect
+      <n-button quaternary @click="connected = !connected">
+        <n-icon
+          :component="connected ? CancelOutlined : PlugDisconnected20Filled"
+        />
+        {{ connected ? "Disconnect" : "Connect" }}
       </n-button>
-      <n-button v-else quaternary @click="connected = true">
-        <n-icon :component="PlugDisconnected20Filled" />
-        Connect
-      </n-button>
-      <l-button quaternary @click="pingToggle">
+      <l-button ref="xtermref" quaternary @click="pingToggle">
         <n-icon :component="ConnectWithoutContactRound" />
         <template #tooltip>Ping the node. Click to start/stop/hide</template>
       </l-button>
@@ -19,10 +17,12 @@
       v-model:connected="pconnected"
       :cmd="'ping ' + props.target"
     />
-    <div-xterm
-      v-model:connected="connected"
-      :cmd="'labctl color ssh ' + props.target"
-    />
+    <div ref="xtermref">
+      <div-xterm
+        v-model:connected="connected"
+        :cmd="'labctl color ssh ' + props.target"
+      />
+    </div>
   </l-panel>
 </template>
 
@@ -42,7 +42,7 @@ export interface PropDef {
 const props = defineProps<PropDef>()
 const emit = defineEmits(["close", "update:visible"])
 
-const visible = computed({
+const vis = computed({
   get: () => props.visible,
   set: (v) => {
     if (v < 0) {
@@ -65,7 +65,7 @@ function pingToggle() {
   ping.value = !ping.value
 }
 
-watch(visible, (v: number) => {
+watch(vis, (v: number) => {
   if (v > 0) {
     return
   }

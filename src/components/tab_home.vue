@@ -7,7 +7,7 @@
     <tbody>
       <tr v-for="(cmd, idx) in optCommands" :key="`cmd:labf:${idx}`">
         <td class="rel">
-          <DivMarkdown :value="cmd" @action="action" />
+          <div-markdown :value="cmd" @action="action" />
           <n-button-group v-if="edit" class="topright">
             <n-button x-small quaternary @click="editItem(idx)">
               <n-icon :component="ModeEditOutlineTwotone" />
@@ -60,7 +60,7 @@
         </n-grid-item>
 
         <n-grid-item>
-          <DivMarkdown :value="optCommands[editv]" show-msg />
+          <div-markdown :value="optCommands[editv]" show-msg />
         </n-grid-item>
       </n-grid>
     </n-card>

@@ -404,7 +404,7 @@ function sshNode() {
   const n = selectedNodes.value[0]
 
   if (sshNodes.value.includes(n)) {
-    console.log("focus", n)
+    actionBus.emit({ action: "ssh", command: n })
     return
   }
   sshNodes.value.push(n)

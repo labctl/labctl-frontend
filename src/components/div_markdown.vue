@@ -3,16 +3,16 @@
     :xstyle="{ 'white-space': 'pre-wrap' }"
     class="markdown-body jv-code"
     @click.a="uriHandler"
-    v-html="value"
+    v-html="md"
   ></div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { marked } from "marked"
 import DOMPurify from "dompurify"
 import { MsgInfo } from "@/utils/message"
 import { ActionEvent } from "@/utils/action"
+import { mdIt } from "@/utils/mark"
 
 export interface PropDef {
   value: string
@@ -26,18 +26,8 @@ const emit = defineEmits<{
   (e: "action", action: ActionEvent): void
 }>()
 
-const value = computed(() => {
-  const default_text = "---"
-  let result = ""
-  // Convert MD to html
-  try {
-    result = marked(props.value || default_text, { smartLists: true })
-  } catch (error) {
-    const value = props.value
-    /* eslint-disable-next-line no-console */
-    console.error({ msg: "marked issue", value, error })
-    return String(error)
-  }
+const md = computed(() => {
+  const result = mdIt.render(props.value || "---")
 
   // DOMPurify
   try {
@@ -46,9 +36,12 @@ const value = computed(() => {
         /^(?:(?:(?:f|ht)tps?|mailto|es|path|run|config|gnmic|containerlab|clab):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
     })
   } catch (error) {
-    const value = props.value
     /* eslint-disable-next-line no-console */
-    console.error({ msg: "DOMPurify issue with ansiup", value, error })
+    console.error({
+      msg: "DOMPurify issue with markdown",
+      value: props.value,
+      error,
+    })
     return String(error)
   }
 })
