@@ -27,6 +27,7 @@ export const useMainStore = defineStore("main", {
     /** topo file */
     topo: {
       name: "",
+      prefix: undefined as string | undefined,
       nodes: {} as Nodes,
       links: {} as Links,
       /** compiled vars per NE */
@@ -68,6 +69,14 @@ export const useMainStore = defineStore("main", {
           templates: state.optTemplates,
         } as UiData,
       } as WsMessage
+    },
+
+    hostName: (state) => (nodeName: string) => {
+      // https://containerlab.dev/manual/topo-def-file/#prefix
+      const p: string = state.topo.prefix ?? "clab"
+      if (p === "") return nodeName
+      if (p === "__lab-name") return `${state.topo.name}-${nodeName}`
+      return `${p}-${state.topo.name}-${nodeName}`
     },
 
     linkVars: (state) => (linkid: string) => {
@@ -166,6 +175,11 @@ export const useMainStore = defineStore("main", {
       json_fetch(base_uri + "vars").then((resp) => {
         Object.assign(this.topo.vars, resp.data)
       })
+      this.fetch_templates()
+      this.fetch_labfiles()
+    },
+
+    fetch_templates() {
       json_fetch(base_uri + "templates")
         .then((resp) => {
           Object.assign(this.templateFiles, resp.data)
@@ -175,14 +189,17 @@ export const useMainStore = defineStore("main", {
             `Could not load templates\n\n${err}\n\nReload the webpage and/or check the server`
           )
         )
+    },
+
+    fetch_labfiles() {
       json_fetch(base_uri + "files")
         .then((resp) => {
           Object.assign(this.labFiles, resp.data)
         })
         .catch(() => {
+          MsgError("Could not load lab files")
           this.labFiles = { "readme.md": "could not load lab files" }
         })
-      // }
     },
 
     load_config(data?: Array<WsTxResponse>) {
@@ -229,6 +246,11 @@ export const useMainStore = defineStore("main", {
             MsgInfo(msg.msg ?? JSON.stringify(msg))
             return // don't emit!
 
+          case WsMsgCodes.fschange:
+            console.log(msg)
+            this.fschange(msg.msg ?? "")
+            return // don't emit!
+
           default:
             console.debug("unknown msg code", msg)
             MsgError(`unknown message code\n\n${JSON.stringify(msg)}`, {
@@ -242,6 +264,22 @@ export const useMainStore = defineStore("main", {
 
       // Pass on the message for updates etc
       wsRxBus.emit(msg)
+    },
+
+    fschange(name: string) {
+      if (this.labFiles[name] !== undefined) {
+        console.log("load lf!", name)
+        this.fetch_labfiles()
+        return
+      }
+      const np = name.split("/")
+      const basename = np[np.length - 1]
+      if (this.templateFiles[basename] !== undefined) {
+        console.log("load t!", name)
+        this.fetch_templates()
+        return
+      }
+      console.log("unhandled file change: ", name)
     },
   },
   debounce: {

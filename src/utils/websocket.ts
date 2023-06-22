@@ -34,6 +34,7 @@ export enum WsMsgCodes {
   error = "error",
   warn = "warn",
   info = "info",
+  fschange = "fschange",
 }
 
 export interface WsTxResponse {

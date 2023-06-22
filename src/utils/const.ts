@@ -1,26 +1,36 @@
+/** If localhost, get localhost+port from local storage, else null */
+function lhURL(): URL {
+  let u = localStorage.getItem("localhost")
+  if (u === null) {
+    u = "https://tes4:8080/labctl"
+    localStorage.setItem("localhost", u)
+  }
+  return new URL(u)
+}
+
+export const localhost = (() => {
+  if (typeof window === "undefined") return ""
+  const h = window.location.hostname
+  if (!(h === "localhost" || h === "127.0.0.1")) {
+    return ""
+  }
+  const url = lhURL()
+  console.warn(
+    `Using upstream server ${url.host}${url.pathname}. Change in Dev Tools --> Application --> Local Storage [key=localhost] & refresh.`
+  )
+  return url.host
+})()
+
 export const base_uri = (() => {
+  if (localhost) {
+    const url = lhURL()
+    if (url.pathname && url.pathname !== "/") {
+      return url.pathname.endsWith("/") ? url.pathname : url.pathname + "/"
+    }
+  }
   if (typeof window === "undefined") return "/labctl/"
   const p = window.location.pathname.split("/", 2)
   return `/${p[1] || "labctl"}/`
-})()
-
-/** If localhost, get localhost+port from local storage, else null */
-export const localhost = (() => {
-  if (typeof window === "undefined") return ""
-  const lh = "localhost"
-  const h = window.location.hostname
-  if (!(h === lh || h === "127.0.0.1")) {
-    return ""
-  }
-  let s = localStorage.getItem(lh)
-  if (s === null) {
-    s = "tes4:8080"
-    localStorage.setItem(lh, s)
-  }
-  console.warn(
-    `Using upstream server ${s}. Change in Dev Tools --> Application --> Local Storage [key=${lh}] & refresh.`
-  )
-  return s
 })()
 
 export const api_uri = (() => {

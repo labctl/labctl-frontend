@@ -150,7 +150,7 @@
       :span="panelWidth[n] ?? 2"
     >
       <panel-xterm
-        :target="`clab-${store.topo.name}-${n}`"
+        :target="store.hostName(n)"
         :visible="panelWidth[n] ?? 2"
         @update:visible="(v) => sshVis(n, v)"
       />
@@ -382,7 +382,7 @@ function updatelabels() {
 }
 
 function toggleVisible(v: number) {
-  return v === 0 ? 2 : -v
+  return isNaN(v) || v === 0 ? 2 : -v
 }
 
 const sshNodes = ref([] as string[])

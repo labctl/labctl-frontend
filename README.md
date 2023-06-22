@@ -15,16 +15,20 @@ The frontend was built using:
 
 Github Actions will test, build and upload the frontend to the [labctl repo](https://github.com/labctl/labctl/tree/main/helpers/frontend/html).
 
-# Local testing
+## Testing the frontend locally
 
-For local testing you could point it towards another running labctl server instance. This instance is define in the **localhost** variable in Local Storage. You can change this in Web Tools: Application->Local Storage from the default, *tes4:8080*.
+When the frontend opens it usually connects to the host and URL on which it was served,- this will not work while testing the frontend on localhost with vite.
 
-When the frontend opens on a http://localhost:* URL it will use the **localhost** variable, else it will connect to the host and URL on which it was served.
+For local testing you should point the fontend toward a running labctl server instance. This instance is defined in the **localhost** variable in Local Storage. You can change this in Web Tools: Application->Local Storage from the default, `https://tes4:8080/labctl`.
 
 1. Clone the repo and install deps: `npm install`
 2. Start the web server with `npm run dev` or `npx vite`
-3. When the frontend runs on http://localhost it will try to connect to a server identified by the value of **localhost** in Local Storage
+3. When the frontend runs on <http://localhost> it will try to connect to a server identified by the value of **localhost** in Local Storage
 
-# Local unit tests
+## Local unit tests
 
 `npm test` or `npx vitest` for continuous testing during development
+
+## Web API endpoints & Websocket messages
+
+These are documented in the labctl main repo's README file - [labctl/labctl](https://github.com/labctl/labctl)
