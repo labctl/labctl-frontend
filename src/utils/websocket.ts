@@ -1,6 +1,6 @@
 import { useEventBus } from "@vueuse/core"
 import * as vNG from "v-network-graph"
-import { Dictionary } from "@/utils/types"
+import { Dictionary, Context } from "@/utils/types"
 
 export interface Options {
   layout: string
@@ -13,6 +13,7 @@ export interface UiData {
   options: Options
   layouts: vNG.Layouts
   templates: Record<string, string>
+  context: Context
 }
 
 export interface WsTemplate {

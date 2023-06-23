@@ -1,5 +1,9 @@
 import { test, expect } from "vitest"
-import { parseTemplateFN, labelDirection } from "../src/utils/helpers"
+import {
+  parseTemplateFN,
+  labelDirection,
+  TTemplateFN,
+} from "../src/utils/helpers"
 import { Point, Links, Link } from "../src/utils/types"
 
 test("label position", async () => {
@@ -42,7 +46,21 @@ test("label position", async () => {
 })
 
 test("name role", async () => {
-  const res = parseTemplateFN("c7__vr-sros.tmpl")
-  expect(res.name).eq("c7")
-  expect(res.role).eq("vr-sros")
+  expect(parseTemplateFN("c7__vr-sros.tmpl")).to.deep.equal({
+    name: "c7",
+    role: "vr-sros",
+    ext: "tmpl",
+  } as TTemplateFN)
+
+  expect(parseTemplateFN("c7_vr-sros.tmpl")).to.deep.equal({
+    name: "c7_vr-sros",
+    role: "",
+    ext: "tmpl",
+  } as TTemplateFN)
+
+  expect(parseTemplateFN("c7__vr-sros__tmpl")).to.deep.equal({
+    name: "c7__vr-sros",
+    role: "tmpl",
+    ext: "",
+  } as TTemplateFN)
 })

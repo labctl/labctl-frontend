@@ -75,7 +75,7 @@ export function labelDirection(
   return res
 }
 
-interface TTemplateFN {
+export interface TTemplateFN {
   name: string
   role: string
   ext: string
@@ -83,9 +83,15 @@ interface TTemplateFN {
 
 /** Parse the template filename into parts */
 export function parseTemplateFN(name: string): TTemplateFN {
-  const n = name.split("__")
-  const r = n[1].split(".")
-  return { name: n[0], role: r[0], ext: r[1] }
+  const sn = name.split(".")
+  const ext = sn.length > 1 ? sn.pop() || "" : ""
+  name = sn.join(".")
+  if (name.includes("__")) {
+    const r = name.split("__")
+    const role = r.length > 1 ? r.pop() || "" : ""
+    return { name: r.join("__"), role: role, ext: ext }
+  }
+  return { name: name, role: "", ext: ext }
 }
 
 /** Return example graph templates */

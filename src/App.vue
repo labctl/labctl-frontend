@@ -119,6 +119,8 @@ watch(data, (msg) => {
   } else {
     store.websock_handler(m)
   }
+  // Clear the last rx websocket message to allow duplicate messages (i.e file saves)
+  if (msg === data.value) data.value = null
 })
 
 watch(status, (s) => {

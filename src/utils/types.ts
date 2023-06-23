@@ -108,3 +108,10 @@ export interface NodeLabels {
   label?: string
   size: number
 }
+
+export interface Context {
+  command: string
+  topofile: string
+  topoerror: string
+  template_paths: string[]
+}

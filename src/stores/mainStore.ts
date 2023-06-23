@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { $set_array, json_fetch } from "@/utils/utils"
 
 import { useLocalStorage } from "@vueuse/core"
-import { NodeVars, Links, Nodes, TemplateFile } from "@/utils/types"
+import { NodeVars, Links, Nodes, TemplateFile, Context } from "@/utils/types"
 
 import {
   WsMessage,
@@ -33,6 +33,7 @@ export const useMainStore = defineStore("main", {
       /** compiled vars per NE */
       vars: {} as NodeVars,
     },
+    context: { topoerror: "" } as Context,
     /** *.tmpl files from the template path */
     templateFiles: {} as Record<string, TemplateFile>,
     labFiles: {} as Record<string, string>,
@@ -141,6 +142,7 @@ export const useMainStore = defineStore("main", {
         console.warn("no data to load")
         return
       }
+      this.context = data.context
       console.debug("load layouts+", data.options)
       this.optHeight = Math.max(400, Math.min(900, data.options.height || 450))
       this.optLayout = data.options.layout
@@ -148,10 +150,7 @@ export const useMainStore = defineStore("main", {
       if (Array.isArray(data.options.commands)) {
         $set_array(this.optCommands, data.options.commands)
       } else {
-        this.optCommands = [
-          "Run a show [send -l show](config:)",
-          "Check config [compare -l ports](config:)",
-        ]
+        this.optCommands = []
       }
 
       Object.assign(this, data.options)
@@ -165,6 +164,17 @@ export const useMainStore = defineStore("main", {
         this.optTemplates["node"] = defaultGraphTemplates(false)
       }
 
+      if (this.context.topoerror) {
+        MsgError(this.context.topoerror)
+      } else {
+        await this.fetch_topo()
+      }
+
+      this.fetch_templates()
+      this.fetch_labfiles()
+    },
+
+    async fetch_topo() {
       console.debug("req topo")
       const resp = await json_fetch(base_uri + "topo")
       console.debug("got topo")
@@ -175,8 +185,6 @@ export const useMainStore = defineStore("main", {
       json_fetch(base_uri + "vars").then((resp) => {
         Object.assign(this.topo.vars, resp.data)
       })
-      this.fetch_templates()
-      this.fetch_labfiles()
     },
 
     fetch_templates() {
@@ -247,7 +255,6 @@ export const useMainStore = defineStore("main", {
             return // don't emit!
 
           case WsMsgCodes.fschange:
-            console.log(msg)
             this.fschange(msg.msg ?? "")
             return // don't emit!
 
@@ -268,21 +275,33 @@ export const useMainStore = defineStore("main", {
 
     fschange(name: string) {
       if (this.labFiles[name] !== undefined) {
-        console.log("load lf!", name)
+        console.debug("fetch /files", name)
         this.fetch_labfiles()
         return
       }
       const np = name.split("/")
       const basename = np[np.length - 1]
       if (this.templateFiles[basename] !== undefined) {
-        console.log("load t!", name)
+        console.log("fetch /templates", name)
         this.fetch_templates()
         return
       }
-      console.log("unhandled file change: ", name)
+      if (this.context.topofile.endsWith(`/${name}`)) {
+        console.error("topo file updated, should have received a WS msg")
+        return
+      }
+      if (
+        this.context.topofile.endsWith(`/${name.replace(".labctl.", ".clab.")}`)
+      ) {
+        // updated when we move nodes
+        // MsgWarning(`labctl file updated, you need to restart the labctl server`)
+        return
+      }
+
+      MsgWarning(`unhandled file change: ${name}`)
     },
   },
   debounce: {
-    save: 1500, // debounce save by 300ms
+    save: 1500, // debounce save
   },
 })
