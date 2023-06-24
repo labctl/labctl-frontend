@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { $set_array, json_fetch } from "@/utils/utils"
+import { $set_array, $set_object, json_fetch } from "@/utils/utils"
 
 import { useLocalStorage } from "@vueuse/core"
 import { NodeVars, Links, Nodes, TemplateFile, Context } from "@/utils/types"
@@ -165,7 +165,7 @@ export const useMainStore = defineStore("main", {
       }
 
       if (this.context.topoerror) {
-        MsgError(this.context.topoerror)
+        MsgWarning("Failed to read the topology file")
       } else {
         await this.fetch_topo()
       }
@@ -175,15 +175,19 @@ export const useMainStore = defineStore("main", {
     },
 
     async fetch_topo() {
-      console.debug("req topo")
       const resp = await json_fetch(base_uri + "topo")
-      console.debug("got topo")
+      console.debug(`got topo ${resp.data.name}`)
 
-      // if (this.topo.name !== resp.data.name) {
       // Reload the UI data
-      Object.assign(this.topo, resp.data)
+      // Object.assign(this.topo, resp.data)
+      this.topo.name = resp.data.name as string
+      this.topo.prefix = resp.data.prefix as string
+      $set_object(this.topo.nodes, resp.data.nodes as Nodes)
+      $set_object(this.topo.links, resp.data.links as Links)
+
       json_fetch(base_uri + "vars").then((resp) => {
-        Object.assign(this.topo.vars, resp.data)
+        $set_object(this.topo.vars, resp.data as NodeVars)
+        //Object.assign(this.topo.vars, resp.data)
       })
     },
 

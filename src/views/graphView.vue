@@ -122,6 +122,19 @@
     </n-layout-sider>
 
     <n-layout-content embedded :native-scrollbar="false">
+      <n-alert
+        v-if="context.topoerror"
+        title="Failed to read topology file"
+        type="error"
+      >
+        {{ context.topoerror }}
+        <p style="font-size: smaller; text-align: right">
+          {{ context.topofile }}<br />
+          <a href="https://containerlab.dev/rn/0.42/" target="blank">
+            Containerlab Release notes</a
+          >
+        </p>
+      </n-alert>
       <div-graph
         v-model:selectedNodes="selectedNodes"
         v-model:selectedLinks="selectedLinks"
@@ -200,6 +213,7 @@ import {
   NIcon,
   useMessage,
   useNotification,
+  NAlert,
 } from "naive-ui"
 
 import LButton from "@/components/l_button.vue"
@@ -242,7 +256,7 @@ TipsInit(useNotification())
 const store = useMainStore()
 const selectedNodes = ref<string[]>([])
 const selectedLinks = ref<string[]>([])
-const { optLayout } = storeToRefs(store)
+const { optLayout, context } = storeToRefs(store)
 
 const lblLink = ref({} as Record<string, LinkLabels>)
 const lblNode = ref({} as Record<string, NodeLabels>)
