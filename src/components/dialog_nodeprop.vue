@@ -1,6 +1,7 @@
 <template>
   <n-modal
     v-if="!!node"
+    ref="dialogRef"
     show
     preset="card"
     :style="{
@@ -99,6 +100,7 @@ import { useMainStore } from "@/stores/mainStore"
 import { colors } from "@/utils/colors"
 import { $set_object } from "@/utils/utils"
 import { codePointAsDict } from "@/utils/icon_codepoints"
+import { useElementSize } from "@vueuse/core"
 
 const props = defineProps<{
   node: string
@@ -115,6 +117,8 @@ const showCP = ref(false)
 const store = useMainStore()
 const nodeP = ref<NodeProps>({})
 const swatches = Object.values(colors)
+const dialogRef = ref()
+const dialogSize = useElementSize(dialogRef.value, { width: 600, height: 350 })
 const defaultP = {
   color: colors.blue,
   icon: "",
@@ -133,11 +137,15 @@ const dialogPos = computed(() => {
   const { innerWidth: mx, innerHeight: my } = window as any
   if (mx - props.x > 620) {
     res.left = `${props.x + 10}px`
+  } else if (props.x < 620) {
+    res.left = "0px"
   } else {
     res.right = `${mx - props.x - 10}px`
   }
-  if (my - props.y > 400) {
+  if (my - props.y > dialogSize.height.value + 10) {
     res.top = `${props.y + 10}px`
+  } else if (props.y < dialogSize.height.value + 10) {
+    res.bottom = "0px"
   } else {
     res.bottom = `${my - props.y - 10}px`
   }
