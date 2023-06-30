@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { computed, ref } from "vue"
 import {
   NBadge,
   NButton,
@@ -179,7 +179,7 @@ import {
 } from "@vicons/material"
 import ConfigResults from "@/components/config_results.vue"
 
-import { wsSend, WsMsgCodes, wsRxBus } from "@/utils/websocket"
+import { WsMsgCodes, wsRxBus, wsSend } from "@/utils/websocket"
 import { MsgWarning } from "@/utils/message"
 import TemplatePreviewDialog from "@/components/template_preview_dialog.vue"
 import { ActionEvent, actionBus } from "@/utils/action"

@@ -4,6 +4,7 @@ import { NotificationApiInjection } from "naive-ui/es/notification/src/Notificat
 export const tipN = useLocalStorage("tipN", 1)
 
 export function TipsInit(n: NotificationApiInjection) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).$labctl_notify = n
 }
 
@@ -41,5 +42,6 @@ export function TipsShow(tip: string) {
 
   const z = { duration: 6000 }
   Object.assign(z, t[0])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;((window as any).$labctl_notify as NotificationApiInjection).info(z)
 }

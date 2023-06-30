@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { computed, ref } from "vue"
 import { NButton, NEllipsis, NIcon, NPopover, NTable } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { CheckBoxOutlined, LibraryAddCheckOutlined } from "@vicons/material"

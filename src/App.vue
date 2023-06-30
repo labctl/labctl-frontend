@@ -59,43 +59,48 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, computed, watch } from "vue"
+import { computed, onBeforeMount, watch } from "vue"
 import {
-  ContactlessTwotone,
-  ChangeCircleTwotone,
   CancelTwotone,
+  ChangeCircleTwotone,
+  ContactlessTwotone,
 } from "@vicons/material"
 import {
-  NLayout,
-  NImage,
-  NNotificationProvider,
-  NLayoutHeader,
-  NLayoutContent,
-  NSpace,
-  NIcon,
+  NAvatar,
   NConfigProvider,
+  NIcon,
+  NImage,
+  NLayout,
+  NLayoutContent,
+  NLayoutHeader,
   NMessageProvider,
+  NNotificationProvider,
+  NSpace,
   darkTheme,
   lightTheme,
-  NAvatar,
 } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { useWebSocket } from "@vueuse/core"
 import { ws_uri } from "@/utils/const"
 import {
-  wsTemplateBus,
-  wsTxBus,
   WsMessage,
   WsMsgCodes,
+  wsTemplateBus,
+  wsTxBus,
 } from "@/utils/websocket"
-import logoUrl from "@/assets/labctl1.svg"
+import logoUrl from "@/assets/labctl1.svg" // tslint:disable-line
 
 const store = useMainStore()
 
 const theme = computed(() => (store.dark ? darkTheme : lightTheme))
 
 /** websocket to eventbus handlers */
-const { status, data, send, open } = useWebSocket<string>(ws_uri, {
+const {
+  status,
+  data,
+  send,
+  open: openWs,
+} = useWebSocket<string>(ws_uri, {
   heartbeat: {
     message: "%",
     interval: 5000,
@@ -142,7 +147,7 @@ const wsstatus = computed(() => {
 
 onBeforeMount(() => {
   store.init()
-  open()
+  openWs()
 })
 
 function open_if_closed() {

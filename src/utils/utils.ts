@@ -1,7 +1,7 @@
 import { Callable2, Dictionary, JsonResponse } from "./types"
 import { api_uri } from "./const"
 
-export function $set_array(target: any[], source: any[]): void {
+export function $set_array(target: unknown[], source: unknown[]): void {
   target.splice(source.length)
   for (let i = 0; i < source.length; i += 1) {
     target[i] = source[i]
@@ -19,7 +19,7 @@ export function $set_object(target: Dictionary, source: Dictionary): void {
   })
 }
 
-export function isObject(value: any) {
+export function isObject(value: unknown) {
   return value !== null && typeof value === "object" && !Array.isArray(value)
 }
 

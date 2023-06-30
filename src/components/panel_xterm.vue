@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue"
+import { computed, ref, watch } from "vue"
 import { NButton, NIcon } from "naive-ui"
 import DivXterm from "@/components/div_xterm.vue"
 import LButton from "@/components/l_button.vue"

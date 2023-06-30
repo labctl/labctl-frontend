@@ -26,7 +26,7 @@
 import { computed } from "vue"
 import { useMainStore } from "@/stores/mainStore"
 import DivAnsi from "@/components/div_ansi.vue"
-import { NSpace, NCollapse, NCollapseItem, NTag } from "naive-ui"
+import { NCollapse, NCollapseItem, NSpace, NTag } from "naive-ui"
 import { WsTxResponse } from "@/utils/websocket"
 
 export interface PropDef {

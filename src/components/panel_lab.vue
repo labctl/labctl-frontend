@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
+import { computed, ref } from "vue"
 import { NIcon, NTab, NTabs } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 // import TabHome from "@/components/tab_home.vue"

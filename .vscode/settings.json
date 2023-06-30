@@ -1,24 +1,24 @@
 {
+    "eslint.run": "onType",
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
+        "source.fixAll.eslint": true,
     },
-    "editor.formatOnSave": true,
-    "eslint.validate": ["javascript", "javascriptreact", "ts", "vue"],
-    "[javascript]": {
+      "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
+        },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
     },
     "[vue]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
-        "editor.formatOnSave": true
     },
     "workbench.colorCustomizations": {
         "titleBar.activeBackground": "#080",
         "titleBar.activeForeground": "#eee",
         "titleBar.inactiveBackground": "#040",
-    }
+    },
+    "vue.codeActions.savingTimeLimit": 1500
 }

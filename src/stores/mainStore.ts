@@ -2,22 +2,31 @@ import { defineStore } from "pinia"
 import { $set_array, $set_object, json_fetch } from "@/utils/utils"
 
 import { useLocalStorage } from "@vueuse/core"
-import { NodeVars, Links, Nodes, TemplateFile, Context } from "@/utils/types"
+import {
+  Context,
+  Links,
+  NodeProps,
+  NodeVars,
+  Nodes,
+  TemplateFile,
+  vngLayouts,
+} from "@/utils/types"
 
 import {
-  WsMessage,
-  WsMsgCodes,
   Options,
   UiData,
+  WsMessage,
+  WsMsgCodes,
   WsTxResponse,
+  wsRxBus,
+  wsSend,
 } from "@/utils/websocket"
 
-import { Layouts } from "v-network-graph"
 import { defaultGraphTemplates, fFarEndNode } from "@/utils/helpers"
 import { MsgError, MsgInfo, MsgWarning } from "@/utils/message"
-import { wsRxBus, wsSend } from "@/utils/websocket"
-import { toRaw } from "vue"
+import { nextTick, toRaw } from "vue"
 import { base_uri } from "@/utils/const"
+import { actionBus } from "@/utils/action"
 
 // main is the name of the store. It is unique across your application
 // and will appear in devtools
@@ -37,14 +46,16 @@ export const useMainStore = defineStore("main", {
     /** *.tmpl files from the template path */
     templateFiles: {} as Record<string, TemplateFile>,
     labFiles: {} as Record<string, string>,
-    // option file
-    optLayouts: {
-      nodes: {},
-    } as Layouts,
+    /** Node positions: x, y */
+    optNodeLayouts: { nodes: {} } as vngLayouts,
+    /** Node properties: color, size, type, icon */
+    optNodeProps: {} as Record<string, NodeProps>,
     optTemplates: {} as Record<string, string>,
-    optLayout: "grid",
-    optCommands: ["compare -l ports -f R1,R2"],
-    /** height of the graph */
+    /** Layout handler that will be used by the graph */
+    optLayoutHandler: "grid",
+    /** not used */
+    optCommands: [""],
+    /** Height of the graph */
     optHeight: 450,
 
     results: {} as Record<string, Array<WsTxResponse>>,
@@ -62,12 +73,13 @@ export const useMainStore = defineStore("main", {
         code: WsMsgCodes.uidata,
         uidata: {
           options: {
-            layout: state.optLayout,
+            layout: state.optLayoutHandler,
             height: state.optHeight,
             commands: toRaw(state.optCommands),
+            props: toRaw(state.optNodeProps),
           } as Options,
-          layouts: state.optLayouts,
-          templates: state.optTemplates,
+          layouts: toRaw(state.optNodeLayouts),
+          templates: toRaw(state.optTemplates),
         } as UiData,
       } as WsMessage
     },
@@ -135,17 +147,20 @@ export const useMainStore = defineStore("main", {
     },
   },
   actions: {
-    init() {},
+    init() {
+      // Init store
+    },
 
     async load_uidata(data?: UiData) {
       if (!data) {
         console.warn("no data to load")
         return
       }
-      this.context = data.context
+      this.context = data.context as Context
       console.debug("load layouts+", data.options)
       this.optHeight = Math.max(400, Math.min(900, data.options.height || 450))
-      this.optLayout = data.options.layout
+      this.optLayoutHandler = data.options.layout
+      this.optNodeProps = data.options.props || {}
 
       if (Array.isArray(data.options.commands)) {
         $set_array(this.optCommands, data.options.commands)
@@ -154,7 +169,7 @@ export const useMainStore = defineStore("main", {
       }
 
       Object.assign(this, data.options)
-      this.optLayouts = data.layouts
+      this.optNodeLayouts = data.layouts
       this.optTemplates = data.templates
 
       if (!("link" in this.optTemplates)) {
@@ -185,9 +200,22 @@ export const useMainStore = defineStore("main", {
       $set_object(this.topo.nodes, resp.data.nodes as Nodes)
       $set_object(this.topo.links, resp.data.links as Links)
 
+      // copy icons
+      Object.keys(this.topo.nodes).forEach((n) => {
+        const prop = this.optNodeProps[n]
+        if (prop) {
+          this.topo.nodes[n].icon = prop.icon
+          this.topo.nodes[n].color = prop.color
+          this.topo.nodes[n].size = prop.size
+        }
+      })
+
       json_fetch(base_uri + "vars").then((resp) => {
         $set_object(this.topo.vars, resp.data as NodeVars)
         //Object.assign(this.topo.vars, resp.data)
+      })
+      nextTick(() => {
+        actionBus.emit({ action: "center", command: "" })
       })
     },
 
@@ -226,7 +254,7 @@ export const useMainStore = defineStore("main", {
     },
 
     save() {
-      console.log("save layouts+", this.wsState.uidata?.options)
+      console.debug("save layouts+", this.wsState.uidata)
       wsSend(this.wsState)
     },
 

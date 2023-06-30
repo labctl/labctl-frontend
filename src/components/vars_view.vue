@@ -115,14 +115,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue"
-import { NCard, NButton, NIcon, NPopover } from "naive-ui"
+import { computed, ref } from "vue"
+import { NButton, NCard, NIcon, NPopover } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { JsonViewer } from "vue3-json-viewer"
 import {
+  DescriptionOutlined,
   FitScreenTwotone,
   SplitscreenTwotone,
-  DescriptionOutlined,
 } from "@vicons/material"
 import VarsTemplateDialog from "@/components/vars_template_dialog.vue"
 import { sortDictionary } from "@/utils/utils"

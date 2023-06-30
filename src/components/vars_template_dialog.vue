@@ -89,11 +89,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue"
+import { computed, onMounted, ref } from "vue"
 // eslint-diasble-next-line
 import DivMarkdown from "@/components/div_markdown.vue"
 import { Dictionary } from "@/utils/types"
-import { WsMessage, WsMsgCodes } from "@/utils/websocket"
+import { WsMessage, WsMsgCodes, wsSend, wsTemplateBus } from "@/utils/websocket"
 import {
   NCard,
   NGrid,
@@ -108,7 +108,6 @@ import {
 } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { watchDebounced } from "@vueuse/core"
-import { wsTemplateBus, wsSend } from "@/utils/websocket"
 import LSwitch from "@/components/l_switch.vue"
 import { MsgInfo } from "@/utils/message"
 import { defaultGraphTemplates } from "@/utils/helpers"
@@ -213,7 +212,7 @@ const tempOptions = computed(() => {
   const g = {} as Record<string, SelectGroupOption>
 
   function grp(name: string): SelectOption[] {
-    if (name in g) return g[name].children as any
+    if (name in g) return g[name].children as SelectOption[]
     const r = {
       type: "group",
       label: name,
@@ -222,7 +221,7 @@ const tempOptions = computed(() => {
     } as SelectGroupOption
     g[name] = r
     res.push(r)
-    return r.children as any
+    return r.children as SelectOption[]
   }
 
   Object.keys(store.optTemplates).forEach((v) => {

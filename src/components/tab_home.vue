@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, nextTick } from "vue"
+import { nextTick, reactive, ref, watch } from "vue"
 import {
   InputInst,
   NButton,
@@ -84,11 +84,11 @@ import {
 import DivMarkdown from "@/components/div_markdown.vue"
 import LSwitch from "@/components/l_switch.vue"
 import {
-  ModeEditOutlineTwotone,
-  RouteFilled,
-  PlayArrowTwotone,
-  ArrowUpwardTwotone,
   AddTwotone,
+  ArrowUpwardTwotone,
+  ModeEditOutlineTwotone,
+  PlayArrowTwotone,
+  RouteFilled,
 } from "@vicons/material"
 import { ActionEvent, actionBus } from "@/utils/action"
 

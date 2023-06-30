@@ -1,4 +1,10 @@
-import * as vNG from "v-network-graph"
+import {
+  Edge as vngEdge,
+  Node as vngNode,
+  Point as vngPoint,
+} from "v-network-graph"
+
+export type { Layouts as vngLayouts } from "v-network-graph"
 
 // export interface DictionaryOf<T> {
 //   [key: string]: T;
@@ -26,10 +32,10 @@ export interface Dialog {
   close(): void
 }
 
-export interface Point extends vNG.Point {}
+export type Point = vngPoint
 
 interface pLinkVar {
-  [x: string]: any
+  [x: string]: unknown
   clab_link_ip?: string
   clab_link_name?: string
   port?: string
@@ -52,11 +58,16 @@ interface NodeVar extends pNodeVar {
 }
 
 /** node from the topo file */
-export interface Node extends vNG.Node {
+export interface Node extends vngNode {
+  name: string
+  vars: Record<string, unknown>
+  /** Docker image */
   image?: string
   kind?: string
-  name: string
-  vars: Record<string, any>
+  // icon?: string
+  // color?: string
+  // /** default: 16 */
+  // radius?: number
 }
 
 interface topoVars extends Dictionary {
@@ -66,7 +77,7 @@ interface topoVars extends Dictionary {
 }
 
 /** link from the topo file */
-export interface Link extends vNG.Edge {
+export interface Link extends vngEdge {
   source_endpoint: string
   target_endpoint: string
   vars: topoVars
@@ -106,7 +117,7 @@ export interface LinkLabels {
 export interface NodeLabels {
   label_below?: string
   label?: string
-  size: number
+  size?: number
 }
 
 export interface Context {
@@ -114,4 +125,13 @@ export interface Context {
   topofile: string
   topoerror: string
   template_paths: string[]
+}
+
+// Node Properties
+// https://dash14.github.io/v-network-graph/examples/appearance.html
+export interface NodeProps {
+  color?: string
+  icon?: string
+  size?: number
+  type?: "circle" | "rect"
 }

@@ -89,7 +89,7 @@
         </n-list-item>
         <n-list-item>
           <n-space justify="space-between">
-            Layout: {{ optLayout }}
+            Layout: {{ optLayoutHandler }}
             <l-switch @update:value="centerGraph">
               <n-icon><center-focus-weak-sharp /></n-icon>
               <template #tooltip>Center the graph</template>
@@ -98,8 +98,8 @@
 
           <template #suffix>
             <l-switch
-              :value="optLayout === 'force'"
-              @update:value="(v) => (optLayout = v ? 'force' : 'grid')"
+              :value="optLayoutHandler === 'force'"
+              @update:value="(v) => (optLayoutHandler = v ? 'force' : 'grid')"
             >
               F
               <template #tooltip>Toggle force layout</template>
@@ -136,10 +136,15 @@
         </p>
       </n-alert>
       <div-graph
-        v-model:selectedNodes="selectedNodes"
-        v-model:selectedLinks="selectedLinks"
+        v-model:selected-nodes="selectedNodes"
+        v-model:selected-links="selectedLinks"
         :node-labels="lblNode"
         :link-labels="lblLink"
+        :opt-layout-handler="optLayoutHandler"
+        canedit
+        :topo-links="store.topo.links"
+        :topo-nodes="store.topo.nodes"
+        :opt-height="store.optHeight"
       ></div-graph>
     </n-layout-content>
   </n-layout>
@@ -193,27 +198,27 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, ref, onMounted, nextTick } from "vue"
+import { computed, nextTick, onMounted, reactive, ref } from "vue"
 import { storeToRefs } from "pinia"
 
 import {
-  NGridItem,
-  NGrid,
-  NSpace,
+  NAlert,
   NButton,
+  NButtonGroup,
+  NDropdown,
   NEllipsis,
+  NGrid,
+  NGridItem,
+  NIcon,
+  NLayout,
+  NLayoutContent,
+  NLayoutSider,
   NList,
   NListItem,
-  NButtonGroup,
-  NLayout,
-  NLayoutSider,
-  NLayoutContent,
+  NSpace,
   SelectOption,
-  NDropdown,
-  NIcon,
   useMessage,
   useNotification,
-  NAlert,
 } from "naive-ui"
 
 import LButton from "@/components/l_button.vue"
@@ -227,28 +232,28 @@ import DivGraph from "@/components/div_graph.vue"
 // import VarsView from "@/components/vars_view.vue";
 
 import {
-  RefreshSharp,
   CenterFocusWeakSharp,
   ConnectedTvSharp,
+  RefreshSharp,
 } from "@vicons/material"
 
 import dayjs from "dayjs"
 
 import { useMainStore } from "@/stores/mainStore"
 import {
-  wsTemplateBus,
-  wsTxBus,
+  WsMsgCodes,
+  WsTemplate,
   wsRxBus,
   wsSend,
-  WsTemplate,
-  WsMsgCodes,
+  wsTemplateBus,
+  wsTxBus,
 } from "@/utils/websocket"
 import { LinkLabels, NodeLabels } from "@/utils/types"
 import { useLocalStorage, watchDebounced } from "@vueuse/core"
 
 import { MsgInit } from "@/utils/message"
 import { TipsInit, TipsShow } from "@/utils/tips"
-import { actionBus, ActionEvent, logBus } from "@/utils/action"
+import { ActionEvent, actionBus, logBus } from "@/utils/action"
 
 MsgInit(useMessage())
 TipsInit(useNotification())
@@ -256,7 +261,7 @@ TipsInit(useNotification())
 const store = useMainStore()
 const selectedNodes = ref<string[]>([])
 const selectedLinks = ref<string[]>([])
-const { optLayout, context } = storeToRefs(store)
+const { optLayoutHandler, context } = storeToRefs(store)
 
 const lblLink = ref({} as Record<string, LinkLabels>)
 const lblNode = ref({} as Record<string, NodeLabels>)
@@ -277,7 +282,7 @@ logBus.on((l) => {
   }
 })
 
-function logEvent(msg: string, ev: any) {
+function logEvent(msg: string, ev: unknown) {
   const timestamp = dayjs().format("HH:mm:ss.SSS")
   if (eventLogs.length > EVENTS_COUNT) {
     eventLogs.splice(EVENTS_COUNT, eventLogs.length - EVENTS_COUNT)
@@ -299,7 +304,7 @@ onMounted(() => {
     if (lab_visible.value < 1) {
       lab_visible.value = toggleVisible(lab_visible.value)
     }
-    centerGraph()
+    //centerGraph()
   })
 })
 

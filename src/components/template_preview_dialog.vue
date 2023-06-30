@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue"
-import { NButton, NCard, NGrid, NGridItem, NModal, NInput } from "naive-ui"
+import { NButton, NCard, NGrid, NGridItem, NInput, NModal } from "naive-ui"
 import { useMainStore } from "@/stores/mainStore"
 import { TemplateFile } from "@/utils/types"
 import { TipsShow } from "@/utils/tips"

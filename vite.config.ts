@@ -4,7 +4,7 @@ import eslintPlugin from "vite-plugin-eslint"
 import vue from "@vitejs/plugin-vue"
 import { base_uri } from "./src/utils/const"
 
-const path = require("path")
+import { resolve } from "path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,7 +13,7 @@ export default defineConfig({
   define: { "process.env": {} },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": resolve(__dirname, "src"),
     },
   },
   // test: {},

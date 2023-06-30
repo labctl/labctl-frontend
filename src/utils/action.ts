@@ -9,7 +9,7 @@ export const actionBus = useEventBus<ActionEvent>("action")
 
 interface Log {
   msg: string
-  ev: any
+  ev: unknown
 }
 
 export const logBus = useEventBus<Log>("log")

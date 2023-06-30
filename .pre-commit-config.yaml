@@ -8,4 +8,4 @@ repos:
           - ASend,asend
           - --skip
           - "package-lock.json,*.mod"
-        #exclude: ^helpers/frontend/html
+        exclude: ^src/utils/icon_codepoints.ts$

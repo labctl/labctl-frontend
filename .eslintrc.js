@@ -6,18 +6,16 @@ module.exports = {
   },
 
   extends: [
-    // add more generic rulesets here, such as:
     "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:vue/base",
     "plugin:vue/vue3-recommended",
-    // 'plugin:vue/recommended' // Use this if you are using Vue.js 2.x.
-    // "plugin:vue/vue3-essential",
-    //"plugin:@typescript-eslint/eslint-recommended",
-    //"plugin:@typescript-eslint/recommended",
-    "prettier",
-    "plugin:prettier/recommended", // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
+    "plugin:@typescript-eslint/recommended",
+    "prettier", // https://prettier.io/docs/en/integrating-with-linters.html
   ],
 
-  plugins: ["@typescript-eslint", "prettier"],
+  plugins: ["@typescript-eslint", "import"],
 
   rules: {
     "no-console":
@@ -25,12 +23,21 @@ module.exports = {
         ? ["warn", { allow: ["warn", "error", "debug"] }]
         : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
-    "prettier/prettier": ["error"],
     "vue/no-v-html": "off",
     "vue/require-default-prop": "off",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
     semi: ["warn", "never"],
+    "sort-imports": [
+      "error",
+      {
+        ignoreCase: false,
+        ignoreDeclarationSort: true, // don"t want to sort import lines, use eslint-plugin-import instead
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ["none", "all", "multiple", "single"],
+        allowSeparatedGroups: true,
+      },
+    ],
   },
 
   root: true,
@@ -46,6 +53,15 @@ module.exports = {
       globalReturn: false,
       impliedStrict: false,
       jsx: false,
+    },
+  },
+
+  settings: {
+    "import/resolver": {
+      //# You will also need to install and configure the TypeScript resolver
+      //# See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
+      typescript: true,
+      node: true,
     },
   },
 }

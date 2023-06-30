@@ -1,19 +1,19 @@
 import { useEventBus } from "@vueuse/core"
-import * as vNG from "v-network-graph"
-import { Dictionary, Context } from "@/utils/types"
+import { Dictionary, Context, NodeProps, vngLayouts } from "@/utils/types"
 
 export interface Options {
   layout: string
   height: number
   commands: string[]
+  props: Record<string, NodeProps>
   // [x: string]: any;
 }
 
 export interface UiData {
   options: Options
-  layouts: vNG.Layouts
+  layouts: vngLayouts
   templates: Record<string, string>
-  context: Context
+  context?: Context
 }
 
 export interface WsTemplate {

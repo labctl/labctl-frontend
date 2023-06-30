@@ -9,7 +9,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { IDisposable, Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
 import { Base64 } from "js-base64"
-import { useWebSocket, useResizeObserver } from "@vueuse/core"
+import { useResizeObserver, useWebSocket } from "@vueuse/core"
 import { ws_uri } from "@/utils/const"
 import { webttyRx, webttyTx } from "@/utils/webtty"
 
