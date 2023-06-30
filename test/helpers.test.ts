@@ -1,10 +1,10 @@
-import { test, expect } from "vitest"
+import { expect, test } from "vitest"
 import {
-  parseTemplateFN,
-  labelDirection,
   TTemplateFN,
+  labelDirection,
+  parseTemplateFN,
 } from "../src/utils/helpers"
-import { Point, Links, Link } from "../src/utils/types"
+import { Link, Links, Point } from "../src/utils/types"
 
 test("label position", async () => {
   const nodes = {

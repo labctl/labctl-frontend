@@ -1,5 +1,5 @@
 import { useEventBus } from "@vueuse/core"
-import { Dictionary, Context, NodeProps, vngLayouts } from "@/utils/types"
+import { Context, Dictionary, NodeProps, vngLayouts } from "@/utils/types"
 
 export interface Options {
   layout: string

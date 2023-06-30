@@ -1,4 +1,4 @@
-import { h, VNodeChild } from "vue"
+import { VNodeChild, h } from "vue"
 import {
   MessageApi,
   MessageOptions,

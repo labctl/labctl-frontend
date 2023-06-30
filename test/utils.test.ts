@@ -1,6 +1,7 @@
-import { test, expect } from "vitest"
-import { sortDictionary, isObject } from "../src/utils/utils"
+import { expect, test } from "vitest"
+import { isObject, sortDictionary } from "../src/utils/utils"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function comp(a: any, b: any) {
   return a.localeCompare(b)
 }
@@ -11,7 +12,7 @@ test("sortDictionary", () => {
       { b: 1, a: 2 },
       { a: 1, b: 2 },
     ],
-  ] as Array<Array<Record<string, any>>>
+  ] as Array<Array<Record<string, unknown>>>
 
   tests.map((t) => {
     let res = sortDictionary(t[1], comp)

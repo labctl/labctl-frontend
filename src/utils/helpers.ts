@@ -1,4 +1,4 @@
-import { Dictionary, Point, Links, Link } from "./types"
+import { Dictionary, Link, Links, Point } from "./types"
 
 /** filter function for links ensure we match clab_far.clab_node */
 export function fFarEndNode(far: string) {
