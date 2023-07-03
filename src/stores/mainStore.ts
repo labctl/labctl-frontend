@@ -65,6 +65,9 @@ export const useMainStore = defineStore("main", {
     split_vars: useLocalStorage("split_vars", true),
     /** dark theme */
     dark: useLocalStorage("dark_mode", false),
+
+    /** last save time */
+    lastSave: 0,
   }),
   // optional getters
   getters: {
@@ -154,6 +157,10 @@ export const useMainStore = defineStore("main", {
     async load_uidata(data?: UiData) {
       if (!data) {
         console.warn("no data to load")
+        return
+      }
+      if (Date.now() - this.lastSave < 800) {
+        console.debug("ignoring changes from server")
         return
       }
       this.context = data.context as Context
@@ -256,6 +263,7 @@ export const useMainStore = defineStore("main", {
     save() {
       console.debug("save layouts+", this.wsState.uidata)
       wsSend(this.wsState)
+      this.lastSave = Date.now()
     },
 
     /* process a received websock message */
@@ -316,17 +324,6 @@ export const useMainStore = defineStore("main", {
       if (this.templateFiles[basename] !== undefined) {
         console.log("fetch /templates", name)
         this.fetch_templates()
-        return
-      }
-      if (this.context.topofile.endsWith(`/${name}`)) {
-        console.error("topo file updated, should have received a WS msg")
-        return
-      }
-      if (
-        this.context.topofile.endsWith(`/${name.replace(".labctl.", ".clab.")}`)
-      ) {
-        // updated when we move nodes
-        // MsgWarning(`labctl file updated, you need to restart the labctl server`)
         return
       }
 

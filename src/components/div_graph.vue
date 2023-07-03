@@ -26,10 +26,10 @@
       <template #override-node="{ nodeId, scale, config, ...slotProps }">
         <rect
           v-if="getNodeProps(nodeId).type == 'rect'"
-          :x="(-config.width * scale) / 2"
-          :y="(-config.height * scale) / 2"
-          :width="config.width * scale"
-          :height="config.height * scale"
+          :x="-config.radius * scale"
+          :y="-config.radius * scale"
+          :width="config.radius * scale * 2"
+          :height="config.radius * scale * 2"
           :fill="config.color"
           v-bind="slotProps"
         />
