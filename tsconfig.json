@@ -14,12 +14,13 @@
       "isolatedModules": true,
 
       "typeRoots": [
-        "./node_modules/@types"
+        "./node_modules/@types",
+        "./node_modules/"
       ],
       "types": [
         "node",
-        "../vite/client",
-        "../naive-ui/volar"
+        "vite/client",
+        "naive-ui/volar"
       ],
       "paths": {
         "@/*": [

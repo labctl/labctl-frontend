@@ -326,6 +326,10 @@ export const useMainStore = defineStore("main", {
         this.fetch_templates()
         return
       }
+      if (name.startsWith(".")) {
+        // Ignore backup files being created by clab load
+        return
+      }
 
       MsgWarning(`unhandled file change: ${name}`)
     },
