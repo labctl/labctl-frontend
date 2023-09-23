@@ -8,23 +8,36 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue"
 import { IDisposable, Terminal } from "xterm"
 import { FitAddon } from "xterm-addon-fit"
+import { WebglAddon } from "xterm-addon-webgl"
 import { Base64 } from "js-base64"
 import { useResizeObserver, useWebSocket } from "@vueuse/core"
 import { ws_uri } from "@/utils/const"
 import { webttyRx, webttyTx } from "@/utils/webtty"
 
-import "xterm/css/xterm.css"
 import { ActionEvent, actionBus } from "@/utils/action"
+import "xterm/css/xterm.css"
 
-interface PropDef {
-  cmd: string
-  connected: boolean
-}
-const props = withDefaults(defineProps<PropDef>(), { connected: true })
-const emit = defineEmits(["update:connected"])
-defineExpose({ focus })
+const props = withDefaults(
+  defineProps<{
+    /** The command to execute */
+    cmd: string
+    connected: boolean
+  }>(),
+  { connected: true }
+)
+const emit = defineEmits<{
+  (e: "update:connected", connected: boolean): void
+}>()
+defineExpose({ focus, fit })
 
 const terminal = ref()
+
+function fit() {
+  fitAddon.fit()
+
+  term.refresh(0, term.rows - 1)
+  console.log("fit")
+}
 
 const term = new Terminal({
   rows: 24,
@@ -139,6 +152,7 @@ useResizeObserver(terminal, (el) => {
 onMounted(() => {
   open()
   term.loadAddon(fitAddon)
+  term.loadAddon(new WebglAddon())
   term.open(terminal.value)
   term.writeln(`$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
   focus()
@@ -152,12 +166,12 @@ onBeforeUnmount(() => {
 })
 
 function focus() {
-  terminal.value.scrollIntoView()
+  terminal.value?.scrollIntoView()
   term.focus()
 }
 
 actionBus.on((action: ActionEvent) => {
-  if (action.action == "ssh" && props.cmd.endsWith(action.command)) {
+  if (action.action == "focus" && props.cmd.endsWith(action.command)) {
     // console.log("focus", action.command, props.cmd)
     focus()
   }

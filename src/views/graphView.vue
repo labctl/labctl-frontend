@@ -5,7 +5,7 @@
         <n-icon><center-focus-weak-sharp /></n-icon>
         <template #tooltip> Center graph view </template>
       </l-button>
-      <l-button :disabled="selectedNodes.length !== 1" @click="sshNode">
+      <l-button :disabled="selectedNodes.length !== 1" @click="sshNodeClick">
         <n-icon><ConnectedTvSharp /></n-icon>
         <template #tooltip> SSH to {{ selectedNodes[0] }} </template>
         <template #tooltip-disabled>
@@ -15,7 +15,7 @@
       <n-button-group>
         <l-switch
           :value="lab_visible > 0"
-          @update:value="lab_visible = toggleVisible(lab_visible)"
+          @update:value="lab_visible = toggleVis(lab_visible)"
         >
           Lab
           <template #tooltip>
@@ -24,7 +24,7 @@
         </l-switch>
         <l-switch
           :value="ce_visible > 0"
-          @update:value="ce_visible = toggleVisible(ce_visible)"
+          @update:value="ce_visible = toggleVis(ce_visible)"
         >
           Config Engine
           <template #tooltip> Show the Config Engine. </template>
@@ -111,7 +111,7 @@
           <template #suffix>
             <l-switch
               :value="show_logs > 0"
-              @update:value="show_logs = toggleVisible(show_logs)"
+              @update:value="show_logs = toggleVis(show_logs)"
             >
               L
               <template #tooltip>Toggle logs</template>
@@ -163,6 +163,18 @@
     </n-grid-item>
 
     <n-grid-item
+      v-for="(s, idx) in activeScripts"
+      :key="'ascript_' + idx"
+      :span="panelWidth[s] ?? 2"
+    >
+      <panel-xterm-exec
+        :cmd="s"
+        :visible="panelWidth[s] ?? 2"
+        @update:visible="(v) => setVis(activeScripts, s, v)"
+      />
+    </n-grid-item>
+
+    <n-grid-item
       v-for="n in sshNodes"
       :key="'ssh_' + n"
       :span="panelWidth[n] ?? 2"
@@ -170,7 +182,7 @@
       <panel-xterm
         :target="store.hostName(n)"
         :visible="panelWidth[n] ?? 2"
-        @update:visible="(v) => sshVis(n, v)"
+        @update:visible="(v) => setVis(sshNodes, n, v)"
       />
     </n-grid-item>
 
@@ -195,6 +207,24 @@
       </l-panel>
     </n-grid-item>
   </n-grid>
+
+  <n-modal
+    :show="scriptModalVis > 0"
+    size="large"
+    :style="{
+      width: `${scriptModalVis * 100}px`,
+    }"
+    :mask-closable="false"
+    @update:show="scriptModalVis = toggleVis(scriptModalVis)"
+  >
+    <panel-xterm-exec
+      v-model:visible="scriptModalVis"
+      :cmd="scriptModalCmd"
+      :min-v="5"
+      :max-v="10"
+      delay-show
+    />
+  </n-modal>
 </template>
 
 <script setup lang="ts">
@@ -215,6 +245,7 @@ import {
   NLayoutSider,
   NList,
   NListItem,
+  NModal,
   NSpace,
   SelectOption,
   useMessage,
@@ -227,6 +258,7 @@ import LPanel from "@/components/l_panel.vue"
 import PanelCe from "@/components/panel_ce.vue"
 import PanelLab from "@/components/panel_lab.vue"
 import PanelXterm from "@/components/panel_xterm.vue"
+import PanelXtermExec from "@/components/panel_xterm_exec.vue"
 import DivGraph from "@/components/div_graph.vue"
 // import ConfigResults from "@/components/config_results.vue";
 // import VarsView from "@/components/vars_view.vue";
@@ -254,6 +286,7 @@ import { useLocalStorage, watchDebounced } from "@vueuse/core"
 import { MsgInit } from "@/utils/message"
 import { TipsInit, TipsShow } from "@/utils/tips"
 import { ActionEvent, actionBus, logBus } from "@/utils/action"
+import { toggleVis } from "@/utils/panel"
 
 MsgInit(useMessage())
 TipsInit(useNotification())
@@ -302,7 +335,7 @@ onMounted(() => {
   nextTick(() => {
     TipsShow("select")
     if (lab_visible.value < 1) {
-      lab_visible.value = toggleVisible(lab_visible.value)
+      lab_visible.value = toggleVis(lab_visible.value)
     }
     //centerGraph()
   })
@@ -400,43 +433,63 @@ function updatelabels() {
   })
 }
 
-function toggleVisible(v: number) {
-  return isNaN(v) || v === 0 ? 2 : -v
+/** Set visible in an array */
+function setVis(items: string[], key: string, v: number) {
+  if (v < 1) {
+    if (items.includes(key)) {
+      items.splice(items.indexOf(key), 1)
+    }
+    panelWidth.value[key] = toggleVis(v) // for the next show!
+  } else {
+    panelWidth.value[key] = v
+  }
 }
 
+/** list of active scripts */
+const activeScripts = ref([] as string[])
+
+/** list of SSH sessions to node targets */
 const sshNodes = ref([] as string[])
 
-function sshVis(n: string, v: number) {
-  if (v < 1) {
-    if (sshNodes.value.includes(n)) {
-      sshNodes.value.splice(sshNodes.value.indexOf(n), 1)
-    }
-    panelWidth.value[n] = -v // for the next show!
-  } else {
-    panelWidth.value[n] = v
+function sshNodesAdd(node: string) {
+  !sshNodes.value.includes(node) && sshNodes.value.push(node)
+  nextTick(() => actionBus.emit({ action: "focus", command: node }))
+}
+
+function sshNodeClick() {
+  if (selectedNodes.value.length === 1) {
+    sshNodesAdd(selectedNodes.value[0])
   }
 }
-function sshNode() {
-  if (selectedNodes.value.length !== 1) {
-    return
-  }
-  const n = selectedNodes.value[0]
 
-  if (sshNodes.value.includes(n)) {
-    actionBus.emit({ action: "ssh", command: n })
+/** script to run in a modal dialog */
+const scriptModalVis = ref(-8)
+const scriptModalCmd = ref("")
+
+/** run a script */
+function runScript(cmd: string, modal: boolean) {
+  if (modal) {
+    scriptModalCmd.value = cmd
+    scriptModalVis.value = toggleVis(scriptModalVis.value)
     return
   }
-  sshNodes.value.push(n)
-  console.log(sshNodes)
+  !activeScripts.value.includes(cmd) && activeScripts.value.push(cmd)
+  nextTick(() => actionBus.emit({ action: "focus", command: cmd }))
 }
 
 /** Received a click action event */
 actionBus.on((action: ActionEvent) => {
   if (action.action === "config") {
     if (ce_visible.value < 1) {
-      ce_visible.value = toggleVisible(ce_visible.value)
+      ce_visible.value = toggleVis(ce_visible.value)
       nextTick(() => actionBus.emit(action))
     }
+  }
+  if (action.action == "ssh") {
+    sshNodesAdd(action.command)
+  }
+  if (action.action == "run" || action.action == "run+") {
+    runScript(action.command, action.action == "run")
   }
 })
 </script>

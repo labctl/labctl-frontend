@@ -33,7 +33,7 @@ const md = computed(() => {
   try {
     return DOMPurify.sanitize(result, {
       ALLOWED_URI_REGEXP:
-        /^(?:(?:(?:f|ht)tps?|mailto|es|path|run|config|gnmic|containerlab|clab):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+        /^(?:(?:(?:f|ht)tps?|mailto|es|path|run|run\+|config|ssh|gnmic|containerlab|clab):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
     })
   } catch (error) {
     /* eslint-disable-next-line no-console */
@@ -63,9 +63,6 @@ function uriHandler(e: Event) {
     command: url.replaceAll("/", " ").trim() || target.textContent || "",
   } as ActionEvent
   switch (proto) {
-    case "run":
-      action.action = "config"
-      break
     case "containerlab":
       action.action = "clab"
       break

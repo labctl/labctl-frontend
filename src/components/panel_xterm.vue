@@ -35,12 +35,14 @@ import LPanel from "@/components/l_panel.vue"
 import { PlugDisconnected20Filled } from "@vicons/fluent"
 import { CancelOutlined, ConnectWithoutContactRound } from "@vicons/material"
 
-export interface PropDef {
+const props = defineProps<{
   target: string
   visible: number
-}
-const props = defineProps<PropDef>()
-const emit = defineEmits(["close", "update:visible"])
+}>()
+const emit = defineEmits<{
+  (e: "close"): void
+  (e: "update:visible", v: number): void
+}>()
 
 const vis = computed({
   get: () => props.visible,

@@ -1,7 +1,24 @@
 import { useEventBus } from "@vueuse/core"
 
 export interface ActionEvent {
-  action: "config" | "clab" | "path" | "center" | "ssh"
+  /** action can be one of:
+   * - config: Send commands using the config engine
+   * - run: execute a script on the server
+   * - run+: execute a long-running script on the server
+   * - clab: execute clab commands (not yet implemented)
+   * - path: highlight a path
+   * - ssh: ssh to a node
+   * - center: center the graph on a node
+   */
+  action:
+    | "config"
+    | "clab"
+    | "path"
+    | "center"
+    | "ssh"
+    | "run"
+    | "run+"
+    | "focus"
   command: string
 }
 

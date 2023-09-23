@@ -30,7 +30,8 @@
     "vue3-json-viewer": "^2.2.2",
     "webfontloader": "^1.6.28",
     "xterm": "^5.0.0",
-    "xterm-addon-fit": "^0.7.0"
+    "xterm-addon-fit": "^0.7.0",
+    "xterm-addon-webgl": "^0.16.0"
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.2",

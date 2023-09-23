@@ -96,10 +96,10 @@ const theme = computed(() => (store.dark ? darkTheme : lightTheme))
 
 /** websocket to eventbus handlers */
 const {
-  status,
-  data,
-  send,
-  open: openWs,
+  status: wsStatus,
+  data: wsData,
+  send: wsSend,
+  open: wsOpen,
 } = useWebSocket<string>(ws_uri, {
   heartbeat: {
     message: "%",
@@ -112,11 +112,11 @@ const {
 
 wsTxBus.on((tx) => {
   console.debug("WS Tx", tx)
-  send(JSON.stringify(tx))
+  wsSend(JSON.stringify(tx))
 })
 
 // on any data change, transmit the message on the template bus or send to store
-watch(data, (msg) => {
+watch(wsData, (msg) => {
   if (!msg) return
   const m: WsMessage = JSON.parse(msg)
   if (m.code === WsMsgCodes.template) {
@@ -125,17 +125,17 @@ watch(data, (msg) => {
     store.websock_handler(m)
   }
   // Clear the last rx websocket message to allow duplicate messages (i.e file saves)
-  if (msg === data.value) data.value = null
+  if (msg === wsData.value) wsData.value = null
 })
 
-watch(status, (s) => {
+watch(wsStatus, (s) => {
   if (s === "CLOSED") {
     setTimeout(open_if_closed, 2000)
   }
 })
 
 const wsstatus = computed(() => {
-  switch (status.value) {
+  switch (wsStatus.value) {
     case "OPEN":
       return { color: "green", icon: ContactlessTwotone }
     case "CONNECTING":
@@ -147,12 +147,12 @@ const wsstatus = computed(() => {
 
 onBeforeMount(() => {
   store.init()
-  openWs()
+  wsOpen()
 })
 
 function open_if_closed() {
-  if (status.value !== "OPEN") {
-    open()
+  if (wsStatus.value !== "OPEN") {
+    wsOpen()
   }
 }
 </script>
