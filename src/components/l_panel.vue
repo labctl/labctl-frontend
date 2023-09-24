@@ -25,13 +25,7 @@
             <n-icon :component="ArrowMaximize20Regular" />
           </template>
         </n-button>
-        <n-button
-          v-if="vis < maxV"
-          quaternary
-          :focusable="false"
-          size="small"
-          @click="close"
-        >
+        <n-button quaternary :focusable="false" size="small" @click="close">
           <template #icon>
             <n-icon :component="CloseFilled" />
           </template>
