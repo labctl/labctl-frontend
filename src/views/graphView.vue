@@ -140,7 +140,7 @@
         v-model:selected-links="selectedLinks"
         :node-labels="lblNode"
         :link-labels="lblLink"
-        :opt-layout-handler="optLayoutHandler"
+        :opt-layout-handler="optLayoutHandler ?? ''"
         canedit
         :topo-links="store.topo.links"
         :topo-nodes="store.topo.nodes"

@@ -13,7 +13,6 @@ import { Base64 } from "js-base64"
 import { useResizeObserver, useWebSocket } from "@vueuse/core"
 import { ws_uri } from "@/utils/const"
 import { webttyRx, webttyTx } from "@/utils/webtty"
-
 import { ActionEvent, actionBus } from "@/utils/action"
 import "xterm/css/xterm.css"
 
@@ -22,22 +21,17 @@ const props = withDefaults(
     /** The command to execute */
     cmd: string
     connected: boolean
+    rows?: number
+    backgroundColor?: string
   }>(),
-  { connected: true }
+  { connected: true, rows: 24, backgroundColor: "#000" }
 )
 const emit = defineEmits<{
   (e: "update:connected", connected: boolean): void
 }>()
-defineExpose({ focus, fit })
+defineExpose({ focus })
 
 const terminal = ref()
-
-function fit() {
-  fitAddon.fit()
-
-  term.refresh(0, term.rows - 1)
-  console.log("fit")
-}
 
 const term = new Terminal({
   rows: 24,
@@ -51,25 +45,54 @@ const term = new Terminal({
 })
 const fitAddon = new FitAddon()
 
-const { status, data, close, send, open } = useWebSocket(ws_uri + "pty", {
+const {
+  status: wsStatus,
+  data: wsData,
+  close: wsClose,
+  send: wsSend,
+  open: wsOpen,
+} = useWebSocket(ws_uri + "pty", {
   immediate: false,
+})
+
+onMounted(() => {
+  wsOpen()
+  term.resize(80, props.rows)
+  if (props.backgroundColor !== "") {
+    if (!term.options.theme) {
+      term.options.theme = {}
+    }
+    term.options.theme.background = props.backgroundColor
+  }
+  term.loadAddon(fitAddon)
+  term.loadAddon(new WebglAddon())
+  term.open(terminal.value)
+  term.writeln(`$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
+  focus()
+})
+
+onBeforeUnmount(() => {
+  wsClose()
+  if (term) {
+    term.dispose()
+  }
 })
 
 watch(
   () => props.connected,
   (c: boolean) => {
-    if (c == false && status.value !== "CLOSED") {
-      close() // the websocket
+    if (c == false && wsStatus.value !== "CLOSED") {
+      wsClose() // the websocket
       return
     }
-    if (c && status.value === "CLOSED") {
-      open()
+    if (c && wsStatus.value === "CLOSED") {
+      wsOpen()
       term.writeln(`\n$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
     }
   }
 )
 
-watch(status, (value) => {
+watch(wsStatus, (value) => {
   if (value == "CLOSED") {
     termDispose.map((v) => v.dispose())
     termDispose.splice(0, termDispose.length)
@@ -82,7 +105,7 @@ watch(status, (value) => {
   }
 })
 
-watch(data, (val: string) => {
+watch(wsData, (val: string) => {
   const code = val.slice(0, 1)
   const data = Base64.decode(val.slice(1))
   switch (code) {
@@ -97,11 +120,11 @@ const termDispose: IDisposable[] = []
 
 function termAttach(cmd: string) {
   // Send connection parameters
-  send(JSON.stringify({ cmd: cmd }))
+  wsSend(JSON.stringify({ cmd: cmd }))
 
   termDispose.push(
     term.onResize((size) => {
-      send(
+      wsSend(
         webttyTx.ResizeTerminal +
           JSON.stringify({ Columns: size.cols, Rows: size.rows })
       )
@@ -120,7 +143,7 @@ function termAttach(cmd: string) {
         } else {
           bufData = data
           setTimeout(() => {
-            send(webttyTx.Input + bufData)
+            wsSend(webttyTx.Input + bufData)
             if (bufData.length > 1) {
               console.log(`send ${bufData}`)
             }
@@ -128,14 +151,14 @@ function termAttach(cmd: string) {
           }, bufTime)
         }
       } else {
-        send(webttyTx.Input + data)
+        wsSend(webttyTx.Input + data)
       }
     })
   )
 
   // send heartbeat to avoid server closing webSocket (i.e. nginx)
   const heartBeatTimer = setInterval(function () {
-    send(webttyTx.Ping)
+    wsSend(webttyTx.Ping)
   }, 20 * 1000)
   termDispose.push({
     dispose: () => {
@@ -147,22 +170,6 @@ function termAttach(cmd: string) {
 useResizeObserver(terminal, (el) => {
   console.debug("resize", el)
   fitAddon.fit()
-})
-
-onMounted(() => {
-  open()
-  term.loadAddon(fitAddon)
-  term.loadAddon(new WebglAddon())
-  term.open(terminal.value)
-  term.writeln(`$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
-  focus()
-})
-
-onBeforeUnmount(() => {
-  close()
-  if (term) {
-    term.dispose()
-  }
 })
 
 function focus() {

@@ -1,4 +1,3 @@
-console.log("visible")
 <template>
   <l-panel
     v-model:visible="vis"
@@ -7,7 +6,12 @@ console.log("visible")
     :max-v="maxV"
   >
     <template #header-extra>
-      <n-button v-if="connected" quaternary @click="connected = !connected">
+      <n-button
+        v-if="connected"
+        quaternary
+        size="small"
+        @click="connected = !connected"
+      >
         <n-icon
           :component="connected ? CancelOutlined : PlugDisconnected20Filled"
         />

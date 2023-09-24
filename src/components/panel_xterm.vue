@@ -1,21 +1,28 @@
 <template>
   <l-panel v-model:visible="vis" :title="'SSH ' + props.target">
     <template #header-extra>
-      <n-button quaternary @click="connected = !connected">
+      <n-button quaternary size="small" @click="connected = !connected">
         <n-icon
           :component="connected ? CancelOutlined : PlugDisconnected20Filled"
         />
         {{ connected ? "Disconnect" : "Connect" }}
       </n-button>
-      <l-button ref="xtermref" quaternary @click="pingToggle">
-        <n-icon :component="ConnectWithoutContactRound" />
-        <template #tooltip>Ping the node. Click to start/stop/hide</template>
-      </l-button>
+      <n-tooltip trigger="hover" placement="bottom">
+        <template #trigger>
+          <n-button quaternary size="small" @click="pingToggle">
+            <n-icon :component="ConnectWithoutContactRound" />
+            {{ !ping ? "Ping" : pconnected ? "Stop ping" : "Close ping" }}
+          </n-button>
+        </template>
+        Ping the node. Click to start/stop/hide
+      </n-tooltip>
     </template>
     <div-xterm
       v-if="ping"
       v-model:connected="pconnected"
       :cmd="'ping ' + props.target"
+      :rows="6"
+      background-color="#00008B"
     />
     <div ref="xtermref">
       <div-xterm
@@ -28,9 +35,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue"
-import { NButton, NIcon } from "naive-ui"
+import { NButton, NIcon, NTooltip } from "naive-ui"
 import DivXterm from "@/components/div_xterm.vue"
-import LButton from "@/components/l_button.vue"
 import LPanel from "@/components/l_panel.vue"
 import { PlugDisconnected20Filled } from "@vicons/fluent"
 import { CancelOutlined, ConnectWithoutContactRound } from "@vicons/material"
