@@ -9,3 +9,24 @@ repos:
           - --skip
           - "package-lock.json,*.mod"
         exclude: ^src/utils/icon_codepoints.ts$
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npm run lint
+        language: node
+        pass_filenames: false
+
+      - id: prettier
+        name: prettier
+        entry: npm run format
+        language: node
+        pass_filenames: false
+
+      - id: vitest
+        name: vitest
+        entry: npm run test
+        language: node
+        pass_filenames: false
+

@@ -12,12 +12,12 @@ env:
 jobs:
   build:
     name: build & push to labctl repo
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ env.NODEVER }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODEVER }}
           cache: "npm"
