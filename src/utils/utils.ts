@@ -27,7 +27,7 @@ export function isObject(value: unknown) {
 export function sortDictionary(
   obj: Dictionary,
   compareKeys: Callable2<string, string, number>,
-  filterObj?: Dictionary
+  filterObj?: Dictionary,
 ) {
   const f = typeof filterObj === "undefined" ? {} : filterObj
   const sortedKeys = Object.keys(obj).sort(compareKeys)
@@ -43,10 +43,11 @@ export function sortDictionary(
 
 export async function json_fetch(
   url: string,
-  data?: Dictionary
+  data?: Dictionary,
 ): Promise<JsonResponse> {
-  const opt = data
-    ? {
+  const opt =
+    data ?
+      {
         method: "POST",
         body: JSON.stringify(data),
       }

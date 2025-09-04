@@ -36,7 +36,6 @@ const md = computed(() => {
         /^(?:(?:(?:f|ht)tps?|mailto|es|path|run|run\+|config|ssh|gnmic|containerlab|clab):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
     })
   } catch (error) {
-    /* eslint-disable-next-line no-console */
     console.error({
       msg: "DOMPurify issue with markdown",
       value: props.value,
@@ -71,7 +70,7 @@ function uriHandler(e: Event) {
   e.preventDefault()
   if (props.showMsg) {
     MsgInfo(
-      `Clicked on (proto:${proto})\n\n${action.action}\n${action.command}`
+      `Clicked on (proto:${proto})\n\n${action.action}\n${action.command}`,
     )
   } else {
     emit("action", action)

@@ -133,7 +133,6 @@ const iconOptions = Object.keys(codePointAsDict).map((k) => ({
 /** Calculate the dialog position */
 const dialogPos = computed(() => {
   const res = {} as Record<string, unknown>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { innerWidth: mx, innerHeight: my } = window as any
   if (mx - props.x > 620) {
     res.left = `${props.x + 10}px`
@@ -164,7 +163,7 @@ watch(
     store.optNodeProps[v].size = store.optNodeProps[v].size ?? defaultP.size
     store.optNodeProps[v].type = store.optNodeProps[v].type ?? defaultP.type
     nodeP.value = store.optNodeProps[v]
-  }
+  },
 )
 
 /** Apply setting to all selected nodes */

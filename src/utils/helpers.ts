@@ -10,7 +10,7 @@ export function fFarEndNode(far: string) {
     const f = l.clab_far as Dictionary
     if (!("clab_node" in f)) {
       console.log(
-        `clab_far.clab_node not in dictionary. Filtering on ${far}: ${l}`
+        `clab_far.clab_node not in dictionary. Filtering on ${far}: ${l}`,
       )
       return true
     }
@@ -27,7 +27,7 @@ function diff(p1: Point, p2: Point): Point {
 export function labelDirection(
   nodes: Record<string, Point>,
   links: Links,
-  debug?: boolean
+  debug?: boolean,
 ) {
   const res: Record<string, string> = {}
   Object.keys(nodes).forEach((n) => {
@@ -96,8 +96,8 @@ export function parseTemplateFN(name: string): TTemplateFN {
 
 /** Return example graph templates */
 export function defaultGraphTemplates(isLink: boolean): string {
-  return isLink
-    ? `
+  return isLink ?
+      `
 source_above: {{ .source_endpoint }}
 source_below: ".{{ .source_vars.clab_link_ip | ip | split "." | index -1 }}"
 target_above: {{ .target_endpoint }}

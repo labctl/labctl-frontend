@@ -50,7 +50,7 @@ const props = withDefaults(
     minV: 2,
     maxV: 4,
     delayShow: false,
-  }
+  },
 )
 const emit = defineEmits<{
   (e: "close"): void
@@ -69,7 +69,7 @@ watch(
         showterm.value = true
       }, 200)
     }
-  }
+  },
 )
 
 const vis = computed({

@@ -190,7 +190,7 @@ const props = withDefaults(
     // optNodeLayouts: vngLayouts
     // optNodeProps: Record<string, NodeProps>
   }>(),
-  { nodeSize: 30, canedit: false }
+  { nodeSize: 30, canedit: false },
 )
 
 const emit = defineEmits<{
@@ -273,7 +273,7 @@ const configs = reactive(
         width: 10,
       },
     },
-  } as vNG.UserConfigs)
+  } as vNG.UserConfigs),
 )
 
 watch(
@@ -282,7 +282,7 @@ watch(
     if (configs.view) {
       configs.view.layoutHandler = getLayoutHandler()
     }
-  }
+  },
 )
 
 const paths = reactive<vNG.Paths>({
@@ -328,7 +328,7 @@ watch(
       top: domPoint.y - radius - tooltip.value.offsetHeight - 10 + "px",
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 const eventHandlers: vNG.EventHandlers = {

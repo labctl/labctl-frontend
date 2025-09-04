@@ -6,29 +6,29 @@
 
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, ref, watch } from "vue"
-import { IDisposable, Terminal } from "xterm"
-import { FitAddon } from "xterm-addon-fit"
-import { WebglAddon } from "xterm-addon-webgl"
+import { IDisposable, Terminal } from "@xterm/xterm"
+import { FitAddon } from "@xterm/addon-fit"
+import { WebglAddon } from "@xterm/addon-webgl"
 import { Base64 } from "js-base64"
 import { useResizeObserver, useWebSocket } from "@vueuse/core"
 import { ws_uri } from "@/utils/const"
 import { webttyRx, webttyTx } from "@/utils/webtty"
 import { ActionEvent, actionBus } from "@/utils/action"
-import "xterm/css/xterm.css"
+import "@xterm/xterm/css/xterm.css"
+
+const connected = defineModel<boolean>("connected", { default: true })
 
 const props = withDefaults(
   defineProps<{
     /** The command to execute */
     cmd: string
-    connected: boolean
     rows?: number
     backgroundColor?: string
   }>(),
-  { connected: true, rows: 24, backgroundColor: "#000" }
+  { rows: 24, backgroundColor: "#000" },
 )
-const emit = defineEmits<{
-  (e: "update:connected", connected: boolean): void
-}>()
+// const emit = defineEmits<{
+// }>()
 defineExpose({ focus })
 
 const terminal = ref()
@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => props.connected,
+  () => connected.value,
   (c: boolean) => {
     if (c == false && wsStatus.value !== "CLOSED") {
       wsClose() // the websocket
@@ -89,19 +89,21 @@ watch(
       wsOpen()
       term.writeln(`\n$ \x1B[1;3;31m${props.cmd}\x1B[0m`)
     }
-  }
+  },
 )
 
 watch(wsStatus, (value) => {
   if (value == "CLOSED") {
     termDispose.map((v) => v.dispose())
     termDispose.splice(0, termDispose.length)
-    emit("update:connected", false)
+    connected.value = false
+    //emit("update:connected", false)
     term.writeln(`\n\x1B[1;3;31mdisconnected\x1B[0m`)
   }
   if (value == "OPEN") {
     termAttach(props.cmd)
-    emit("update:connected", true)
+    connected.value = true
+    //emit("update:connected", true)
   }
 })
 
@@ -126,10 +128,10 @@ function termAttach(cmd: string) {
     term.onResize((size) => {
       wsSend(
         webttyTx.ResizeTerminal +
-          JSON.stringify({ Columns: size.cols, Rows: size.rows })
+          JSON.stringify({ Columns: size.cols, Rows: size.rows }),
       )
       console.log("resize")
-    })
+    }),
   )
 
   const bufTime = 100
@@ -153,7 +155,7 @@ function termAttach(cmd: string) {
       } else {
         wsSend(webttyTx.Input + data)
       }
-    })
+    }),
   )
 
   // send heartbeat to avoid server closing webSocket (i.e. nginx)

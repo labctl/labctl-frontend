@@ -11,7 +11,11 @@
         <template #trigger>
           <n-button quaternary size="small" @click="pingToggle">
             <n-icon :component="ConnectWithoutContactRound" />
-            {{ !ping ? "Ping" : pconnected ? "Stop ping" : "Close ping" }}
+            {{
+              !ping ? "Ping"
+              : pconnected ? "Stop ping"
+              : "Close ping"
+            }}
           </n-button>
         </template>
         Ping the node. Click to start/stop/hide

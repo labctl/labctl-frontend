@@ -145,8 +145,8 @@ const tempV = computed({
     if (tempN.value in store.templateFiles) {
       return store.templateFiles[tempN.value].value
     }
-    return tempN.value in store.optTemplates
-      ? store.optTemplates[tempN.value]
+    return tempN.value in store.optTemplates ?
+        store.optTemplates[tempN.value]
       : ""
   },
   set: (v) => {
@@ -178,7 +178,7 @@ watchDebounced(
     } as WsMessage
     wsSend(opt)
   },
-  { debounce: 1000 }
+  { debounce: 1000 },
 )
 
 /** save the return value from the server when we've rendered the template */

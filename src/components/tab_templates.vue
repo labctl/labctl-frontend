@@ -16,7 +16,7 @@
           {{
             [
               ...new Set(
-                Object.keys(rols).map((r) => ".../" + getT(name, r).p)
+                Object.keys(rols).map((r) => ".../" + getT(name, r).p),
               ),
             ].join(",")
           }}
@@ -32,9 +32,9 @@
               >
                 <n-icon
                   :component="
-                    getT(name, r).shadow.length
-                      ? LibraryAddCheckOutlined
-                      : CheckBoxOutlined
+                    getT(name, r).shadow.length ?
+                      LibraryAddCheckOutlined
+                    : CheckBoxOutlined
                   "
                   size="18px"
                 />
@@ -99,7 +99,7 @@ const templates = computed(() => {
 /** List available roles/kinds from the templateFiles */
 const roles = computed(() => {
   const ra = Object.keys(store.templateFiles).map(
-    (fn) => parseTemplateFN(fn).role
+    (fn) => parseTemplateFN(fn).role,
   )
   const rs = new Set<string>(ra)
   return [...rs].sort()
@@ -108,8 +108,8 @@ const roles = computed(() => {
 /** Get the templateFile from the store using name & role */
 function getT(name: string, role: string) {
   const n = `${name}__${role}.tmpl`
-  return n in store.templateFiles
-    ? store.templateFiles[n]
+  return n in store.templateFiles ?
+      store.templateFiles[n]
     : {
         name: n,
         p: "",

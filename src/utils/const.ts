@@ -16,7 +16,7 @@ export const localhost = (() => {
   }
   const url = lhURL()
   console.warn(
-    `Using upstream server ${url.host}${url.pathname}. Change in Dev Tools --> Application --> Local Storage [key=localhost] & refresh.`
+    `Using upstream server ${url.host}${url.pathname}. Change in Dev Tools --> Application --> Local Storage [key=localhost] & refresh.`,
   )
   return url.host
 })()
@@ -35,15 +35,15 @@ export const base_uri = (() => {
 
 export const api_uri = (() => {
   if (typeof window === "undefined") return ""
-  return localhost
-    ? `http://${localhost}`
+  return localhost ?
+      `http://${localhost}`
     : `${window.location.protocol}//${window.location.host}`
 })()
 
 export const ws_uri = (() => {
   if (typeof window === "undefined") return ""
   const ws = window.location.protocol === "https:" ? "wss:" : "ws:"
-  return localhost
-    ? `${ws}//${localhost}${base_uri}ws`
+  return localhost ?
+      `${ws}//${localhost}${base_uri}ws`
     : `${ws}//${window.location.host}${base_uri}ws`
 })()

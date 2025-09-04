@@ -1,7 +1,6 @@
 import { expect, test } from "vitest"
 import { isObject, sortDictionary } from "../src/utils/utils"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function comp(a: any, b: any) {
   return a.localeCompare(b)
 }

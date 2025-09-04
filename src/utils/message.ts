@@ -15,7 +15,6 @@ interface Msg {
 }
 
 function show(m: Msg) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any
   if (typeof w.$message !== "undefined") {
     w.$message[m.type](m.msg, m.opt)
@@ -27,7 +26,6 @@ function show(m: Msg) {
 }
 
 export function MsgInit(m: MessageApi) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any
   w.$message = m
   if (typeof w.$backlog !== "undefined") {
@@ -92,6 +90,6 @@ const renderMessage: MessageRenderMessage = (props) => {
     {
       default: () =>
         h("div", { style: { "white-space": "pre-wrap" } }, props.content),
-    }
+    },
   )
 }

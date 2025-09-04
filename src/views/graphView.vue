@@ -158,7 +158,7 @@
       <panel-ce
         v-model:visible="ce_visible"
         v-model:selected="selectedNodes"
-        v-model:selectedLinks="selectedLinks"
+        v-model:selected-links="selectedLinks"
       />
     </n-grid-item>
 
@@ -452,7 +452,9 @@ const activeScripts = ref([] as string[])
 const sshNodes = ref([] as string[])
 
 function sshNodesAdd(node: string) {
-  !sshNodes.value.includes(node) && sshNodes.value.push(node)
+  if (!sshNodes.value.includes(node)) {
+    sshNodes.value.push(node)
+  }
   nextTick(() => actionBus.emit({ action: "focus", command: node }))
 }
 
@@ -473,7 +475,9 @@ function runScript(cmd: string, modal: boolean) {
     scriptModalVis.value = toggleVis(scriptModalVis.value)
     return
   }
-  !activeScripts.value.includes(cmd) && activeScripts.value.push(cmd)
+  if (!activeScripts.value.includes(cmd)) {
+    activeScripts.value.push(cmd)
+  }
   nextTick(() => actionBus.emit({ action: "focus", command: cmd }))
 }
 

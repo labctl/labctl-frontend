@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import AnsiUp from "ansi_up"
+import { AnsiUp } from "ansi_up"
 import DOMPurify from "dompurify"
 
 interface PropDef {
@@ -50,7 +50,6 @@ const ansi = computed(() => {
     return DOMPurify.sanitize(result)
   } catch (error) {
     const value = props.value
-    /* eslint-disable-next-line no-console */
     console.error({ msg: "DOMPurify issue with ansiup", value, error })
     return String(error)
   }

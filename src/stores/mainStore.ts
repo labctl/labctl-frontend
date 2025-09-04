@@ -20,6 +20,7 @@ import {
   WsTxResponse,
   wsRxBus,
   wsSend,
+  type WsConfig,
 } from "@/utils/websocket"
 
 import { defaultGraphTemplates, fFarEndNode } from "@/utils/helpers"
@@ -53,7 +54,7 @@ export const useMainStore = defineStore("main", {
     optTemplates: {} as Record<string, string>,
     /** Layout handler that will be used by the graph */
     optLayoutHandler: "grid",
-    /** not used */
+    /** not used - rather using md files */
     optCommands: [""],
     /** Height of the graph */
     optHeight: 450,
@@ -106,7 +107,7 @@ export const useMainStore = defineStore("main", {
 
       // get variables on the source node (filtered on far end node)
       let sV = state.topo.vars[l.source].clab_links.filter(
-        fFarEndNode(l.target)
+        fFarEndNode(l.target),
       )
       if (sV.length > 1) {
         sV = sV.filter((v) => {
@@ -120,7 +121,7 @@ export const useMainStore = defineStore("main", {
 
       // get variables on the target node (filtered on far end node)
       let tV = state.topo.vars[l.target].clab_links.filter(
-        fFarEndNode(l.source)
+        fFarEndNode(l.source),
       )
       if (tV.length > 1) {
         console.debug(tV)
@@ -233,8 +234,8 @@ export const useMainStore = defineStore("main", {
         })
         .catch((err) =>
           MsgError(
-            `Could not load templates\n\n${err}\n\nReload the webpage and/or check the server`
-          )
+            `Could not load templates\n\n${err}\n\nReload the webpage and/or check the server`,
+          ),
         )
     },
 
@@ -249,12 +250,38 @@ export const useMainStore = defineStore("main", {
         })
     },
 
-    load_config(data?: Array<WsTxResponse>) {
-      if (!data) {
+    load_config(config?: WsConfig) {
+      if (!config) {
         MsgError("No config results")
         return
       }
-      data.forEach((e) => {
+      if (config.cmd === "done") {
+        return
+      }
+      if (!config.results) {
+        // might be template command
+        console.log("no results in config message", config)
+        const env = config.env
+        if (env) {
+          config.results = [
+            {
+              response: env.Data?.join("\n"),
+              prompt: "",
+              command: "template",
+              source: env.Info?.join("\n"),
+              node: env.TargetNode?.shortname,
+              level: 0,
+            },
+          ] as WsTxResponse[]
+        }
+      }
+
+      if (!config.results) {
+        MsgError("No config results")
+        return
+      }
+      config.results.forEach((e) => {
+        console.log("load config", e)
         this.results[e.node] ??= []
         this.results[e.node].push(e)
       })
@@ -277,9 +304,7 @@ export const useMainStore = defineStore("main", {
             break
 
           case WsMsgCodes.config:
-            if (msg.config?.cmd !== "done") {
-              this.load_config(msg.config?.results)
-            }
+            this.load_config(msg.config)
             break
 
           case WsMsgCodes.error:
@@ -314,7 +339,7 @@ export const useMainStore = defineStore("main", {
     },
 
     fschange(name: string) {
-      if (this.labFiles[name] !== undefined) {
+      if (name.toLowerCase().endsWith(".md")) {
         console.debug("fetch /files", name)
         this.fetch_labfiles()
         return

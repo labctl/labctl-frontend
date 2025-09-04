@@ -14,7 +14,7 @@ export type { Layouts as vngLayouts } from "v-network-graph"
 export type Dictionary = Record<string, unknown>
 
 export interface Callable<T1, T2> {
-  (key: T1): T2 // eslint-disable-line no-unused-vars
+  (key: T1): T2
 }
 
 export interface Callable2<T1, T2, T3> {

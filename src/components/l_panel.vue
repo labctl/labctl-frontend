@@ -50,16 +50,24 @@ const props = withDefaults(
     minV?: number
     maxV?: number
   }>(),
-  { minV: 2, maxV: 4 }
+  { minV: 2, maxV: 4 },
 )
 
 const emit = defineEmits<{ "update:visible": [v: number] }>()
 
 function bound(v: number): number {
   if (v > 0) {
-    return v < props.minV ? props.minV : v > props.maxV ? props.maxV : v
+    return (
+      v < props.minV ? props.minV
+      : v > props.maxV ? props.maxV
+      : v
+    )
   }
-  return v > -props.minV ? -props.minV : v < -props.maxV ? -props.maxV : v
+  return (
+    v > -props.minV ? -props.minV
+    : v < -props.maxV ? -props.maxV
+    : v
+  )
 }
 
 const vis = computed({

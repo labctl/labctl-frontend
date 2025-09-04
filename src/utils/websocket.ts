@@ -48,7 +48,17 @@ export interface WsTxResponse {
 }
 export interface WsConfig {
   cmd?: string
-  results?: Array<WsTxResponse>
+  results?: WsTxResponse[]
+  env?: WsEnv
+}
+
+export interface WsEnv {
+  Data: string[]
+  TargetNode: {
+    shortname: string
+    [key: string]: any
+  }
+  Info: string[]
 }
 
 export interface WsMessage {

@@ -234,7 +234,7 @@ const results_all = computed(() => Object.keys(store.results).sort())
 const results_selected = computed(() =>
   Object.keys(store.results)
     .sort()
-    .filter((v) => props.selected.includes(v))
+    .filter((v) => props.selected.includes(v)),
 )
 
 wsRxBus.on((msg) => {
