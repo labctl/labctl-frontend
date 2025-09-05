@@ -27,7 +27,8 @@ jobs:
       - name: Push frontend to labctl
         uses: cpina/github-action-push-to-another-repository@main
         env:
-          SSH_DEPLOY_KEY: ${{ secrets.LABCTL_SSH_DEPLOY_KEY }}
+          #SSH_DEPLOY_KEY: ${{ secrets.LABCTL_SSH_DEPLOY_KEY }}
+          API_TOKEN_GITHUB: ${{ secrets.LABCTL_SSH_DEPLOY_KEY }}
         with:
           source-directory: "dist"
           destination-github-username: "labctl"
